@@ -1,0 +1,367 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>Food &amp; Water Log, Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <style>
+        .cal-progress{margin-bottom:24px;background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-lg);padding:18px 22px}
+        .cal-progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+        .cal-progress-title{font-family:var(--font-display);font-size:18px;color:var(--fg-1)}
+        .cal-progress-num{font-family:var(--font-mono);font-size:14px;color:var(--accent-deep);font-weight:600}
+        .cal-bar-track{width:100%;height:14px;background:var(--bg-sunken);border-radius:99px;overflow:hidden}
+        .cal-bar-fill{height:100%;border-radius:99px;background:var(--accent);transition:width .4s}
+        .cal-bar-fill.over{background:#ef4444}
+        .macro-chart-wrap{display:flex;gap:24px;align-items:center;margin-bottom:24px}
+        .macro-chart-canvas{width:140px;height:140px;flex-shrink:0}
+        @media(max-width:600px){.macro-chart-wrap{flex-direction:column}}
+        .macro-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+        @media(max-width:700px){.macro-grid{grid-template-columns:repeat(2,1fr)}}
+        .macro-card{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-lg);padding:16px;text-align:center}
+        .macro-val{font-family:var(--font-display);font-size:28px;font-weight:400;color:var(--fg-1)}
+        .macro-lbl{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--stone-400);margin-top:3px}
+        .macro-card.calories{border-color:var(--accent);background:var(--accent-pale)}
+        .macro-card.calories .macro-val{color:var(--accent-deep)}
+        .meal-badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;background:var(--bg-sunken);color:var(--stone-500)}
+        .del-btn{padding:4px 10px;background:none;border:1px solid var(--signal-danger);border-radius:var(--r-sm);color:var(--signal-danger);font-size:11px;font-weight:600;cursor:pointer;transition:.15s}
+        .del-btn:hover{background:var(--signal-danger-bg)}
+        .edit-btn{padding:4px 10px;background:none;border:1px solid var(--line-2);border-radius:var(--r-sm);color:var(--fg-2);font-size:11px;font-weight:600;cursor:pointer;transition:.15s}
+        .edit-btn:hover{background:var(--accent-pale);border-color:var(--accent);color:var(--accent-deep)}
+        .date-nav{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+        .date-nav a{padding:6px 14px;background:var(--bg-sunken);border:1px solid var(--line-1);border-radius:var(--r-md);font-size:13px;color:var(--fg-2);text-decoration:none;transition:.15s}
+        .date-nav a:hover{background:var(--bg-surface);color:var(--fg-1)}
+        .date-nav strong{font-family:var(--font-display);font-size:18px;color:var(--fg-1)}
+        .empty-state{text-align:center;padding:40px 24px;color:var(--stone-400)}
+
+        /* ── Water tracker ── */
+        .water-wrap{display:flex;gap:30px;align-items:center;flex-wrap:wrap}
+        .bottle{position:relative;width:92px;height:172px;border:3px solid var(--accent);border-radius:16px 16px 24px 24px;overflow:hidden;background:var(--bg-sunken);flex-shrink:0;box-shadow:inset 0 2px 8px rgba(0,0,0,.07)}
+        .bottle::before{content:'';position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:36px;height:13px;background:var(--accent);border-radius:5px 5px 0 0;z-index:3}
+        .bottle-water{position:absolute;bottom:0;left:0;right:0;height:0;background:linear-gradient(180deg,#7dd3fc 0%,#3b82f6 100%);transition:height .7s cubic-bezier(.34,1.2,.45,1)}
+        .bottle-water::after{content:'';position:absolute;top:-7px;left:0;width:100%;height:12px;background:#7dd3fc;border-radius:50%/100%;animation:waterBob 2.1s ease-in-out infinite}
+        @keyframes waterBob{0%,100%{transform:translateY(0) scaleX(1)}50%{transform:translateY(-4px) scaleX(1.05)}}
+        .bottle-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;text-shadow:0 1px 2px rgba(255,255,255,.5)}
+        .bottle-ml{font-family:var(--font-display);font-size:26px;font-weight:600;color:var(--fg-1)}
+        .bottle-unit{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone-500)}
+        .water-controls{flex:1;min-width:240px}
+        .water-glasses{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;line-height:1}
+        .glass-dot{width:18px;height:24px;border:2px solid var(--line-2);border-radius:6px 6px 9px 9px;background:transparent;transition:.25s;display:flex;align-items:flex-end;overflow:hidden}
+        .glass-dot::after{content:'';display:block;width:100%;height:0;background:linear-gradient(180deg,#7dd3fc,#3b82f6);transition:height .3s ease}
+        .glass-dot.full{border-color:var(--accent)}
+        .glass-dot.full::after{height:75%}
+        .water-btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+        .wbtn{padding:8px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:.15s}
+        .wbtn:hover{background:var(--accent-deep)}
+        .wbtn.ghost{background:none;color:var(--accent-deep)}
+        .wbtn.ghost:hover{background:var(--accent-pale)}
+        .wbtn.danger{background:none;border-color:var(--signal-danger);color:var(--signal-danger)}
+        .wbtn.danger:hover{background:var(--signal-danger-bg)}
+        .water-custom{display:flex;gap:6px;align-items:center}
+        .water-custom input{width:78px;padding:7px 10px;border:1px solid var(--line-1);border-radius:var(--r-md);font-size:13px;background:var(--bg-surface);color:var(--fg-1)}
+        .water-hint{font-size:12px;color:var(--stone-400);margin-top:12px}
+        .water-done{color:#16a34a;font-weight:600}
+
+        /* ── Edit modal ── */
+        .fmodal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;padding:16px}
+        .fmodal.open{display:flex}
+        .fmodal-box{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-lg);padding:22px 24px;width:100%;max-width:430px}
+        .fmodal-title{font-family:var(--font-display);font-size:20px;color:var(--fg-1);margin-bottom:16px}
+        .fmodal-title em{font-style:italic;color:var(--accent-deep)}
+        .fmodal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: clientSidebar('food')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Food &amp; Water Log')}"></div>
+    <main class="main">
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+        <!-- DATE NAVIGATION -->
+        <div class="date-nav">
+            <a th:href="@{/client/food(date=${prevDate})}">&larr; Prev</a>
+            <strong th:text="${#temporals.format(selectedDate, 'EEEE, d MMMM yyyy')}">Today</strong>
+            <a th:href="@{/client/food(date=${nextDate})}"
+               th:if="${!selectedDate.isEqual(#temporals.createNow().toLocalDate()) and selectedDate.isBefore(#temporals.createNow().toLocalDate())}">Next &rarr;</a>
+            <a href="/client/food" style="margin-left:auto;font-size:12px">Today</a>
+        </div>
+
+        <!-- WATER TRACKER (lives inside the food log) -->
+        <div class="card">
+            <div class="card-title">Water intake
+                <span style="font-size:13px;font-weight:400;color:var(--stone-400)"
+                      th:text="'(' + ${water.mlTotal} + ' / ' + ${waterTargetMl} + ' ml)'">(0 / 2000 ml)</span>
+            </div>
+            <div class="water-wrap">
+                <!-- Animated bottle -->
+                <div class="bottle">
+                    <div class="bottle-water"
+                         th:style="'height:' + ${waterPercent} + '%'"></div>
+                    <div class="bottle-label">
+                        <div class="bottle-ml" th:text="${water.mlTotal}">0</div>
+                        <div class="bottle-unit">ml today</div>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="water-controls">
+                    <div class="water-glasses">
+                        <span th:each="i : ${#numbers.sequence(1,8)}" class="glass-dot"
+                              th:classappend="${water.glasses >= i ? 'full' : ''}"></span>
+                    </div>
+                    <div class="water-btns">
+                        <form autocomplete="off" method="post" action="/client/water/add" style="margin:0">
+                            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                            <input type="hidden" name="date" th:value="${selectedDate}" autocomplete="nope">
+                            <input type="hidden" name="glasses" value="1" autocomplete="nope">
+                            <button class="wbtn" type="submit">+ Glass (250 ml)</button>
+                        </form>
+                        <form autocomplete="off" method="post" action="/client/water/add" style="margin:0">
+                            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                            <input type="hidden" name="date" th:value="${selectedDate}" autocomplete="nope">
+                            <input type="hidden" name="ml" value="500" autocomplete="nope">
+                            <button class="wbtn" type="submit">+ Bottle (500 ml)</button>
+                        </form>
+                        <form autocomplete="off" method="post" action="/client/water/add" class="water-custom" style="margin:0">
+                            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                            <input type="hidden" name="date" th:value="${selectedDate}" autocomplete="nope">
+                            <input type="number" name="ml" min="1" max="5000" placeholder="ml" required autocomplete="nope">
+                            <button class="wbtn ghost" type="submit">Add</button>
+                        </form>
+                        <form autocomplete="off" method="post" action="/client/water/remove" style="margin:0">
+                            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                            <input type="hidden" name="date" th:value="${selectedDate}" autocomplete="nope">
+                            <button class="wbtn ghost" type="submit">&minus; Glass</button>
+                        </form>
+                        <form autocomplete="off" method="post" action="/client/water/reset" style="margin:0"
+                              onsubmit="return confirm('Reset water for this day?')">
+                            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                            <input type="hidden" name="date" th:value="${selectedDate}" autocomplete="nope">
+                            <button class="wbtn danger" type="submit">Reset</button>
+                        </form>
+                    </div>
+                    <div class="water-hint">
+                        Target: 8 glasses (2&nbsp;L) per day.
+                        <span th:if="${water.mlTotal >= waterTargetMl}" class="water-done">Goal reached.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADD FOOD FORM (prominent, at the top) -->
+        <div class="card">
+            <div class="card-title">Log food</div>
+            <form autocomplete="off" method="post" action="/client/food/log">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <input type="hidden" name="date" th:value="${selectedDate}" autocomplete="nope">
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Food name</label>
+                        <input class="form-input" name="foodName" required
+                               placeholder="e.g. Chicken breast, Banana, Rice…"
+                               list="foodSuggestions" autocomplete="nope">
+                        <datalist id="foodSuggestions">
+                            <option value="Chicken Breast"/><option value="Egg"/><option value="Oats"/>
+                            <option value="Banana"/><option value="Apple"/><option value="Rice"/>
+                            <option value="Pasta"/><option value="Salmon"/><option value="Tuna"/>
+                            <option value="Greek Yogurt"/><option value="Broccoli"/><option value="Potato"/>
+                            <option value="Almonds"/><option value="Olive Oil"/><option value="Milk"/>
+                            <option value="Beef"/><option value="Lentils"/><option value="Spinach"/>
+                        </datalist>
+                    </div>
+                    <div>
+                        <label class="form-label">Quantity (grams)</label>
+                        <input class="form-input" type="number" name="quantityG" required min="1" max="5000" placeholder="100" autocomplete="nope">
+                    </div>
+                    <div>
+                        <label class="form-label">Meal</label>
+                        <select class="form-select" name="mealType">
+                            <option value="Breakfast">Breakfast</option>
+                            <option value="Lunch">Lunch</option>
+                            <option value="Dinner">Dinner</option>
+                            <option value="Snack" selected>Snack</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-top:4px">
+                    <button class="btn" type="submit">Add Entry</button>
+                    <span style="font-size:12px;color:var(--stone-400);margin-left:12px">
+                        Calories are calculated automatically from our food database.
+                    </span>
+                </div>
+            </form>
+        </div>
+
+        <!-- MACRO SUMMARY -->
+        <div class="macro-grid">
+            <div class="macro-card calories">
+                <div class="macro-val" th:text="${totalCalories}">0</div>
+                <div class="macro-lbl">Calories (kcal)</div>
+            </div>
+            <div class="macro-card">
+                <div class="macro-val" th:text="${totalProtein + 'g'}">0g</div>
+                <div class="macro-lbl">Protein</div>
+            </div>
+            <div class="macro-card">
+                <div class="macro-val" th:text="${totalCarbs + 'g'}">0g</div>
+                <div class="macro-lbl">Carbs</div>
+            </div>
+            <div class="macro-card">
+                <div class="macro-val" th:text="${totalFat + 'g'}">0g</div>
+                <div class="macro-lbl">Fat</div>
+            </div>
+        </div>
+
+        <!-- CALORIE PROGRESS BAR -->
+        <div class="cal-progress">
+            <div class="cal-progress-header">
+                <div class="cal-progress-title">Daily calorie target</div>
+                <div class="cal-progress-num" th:text="${totalCalories + ' / 2000 kcal'}">0 / 2000 kcal</div>
+            </div>
+            <div class="cal-bar-track">
+                <div class="cal-bar-fill"
+                     th:classappend="${totalCalories > 2000 ? 'over' : ''}"
+                     th:style="'width:' + ${caloriePercent} + '%'"></div>
+            </div>
+        </div>
+
+        <!-- MACRO PIE CHART -->
+        <div class="macro-chart-wrap" th:if="${totalProtein > 0 or totalCarbs > 0 or totalFat > 0}">
+            <canvas class="macro-chart-canvas" id="macroChart"></canvas>
+            <div>
+                <div style="font-family:var(--font-display);font-size:16px;color:var(--fg-1);margin-bottom:8px">Macro breakdown</div>
+                <div style="font-size:13px;color:var(--fg-2);line-height:1.8">
+                    <span style="color:#3b82f6">&#9679;</span> Protein: <strong th:text="${totalProtein + 'g'}">0g</strong><br>
+                    <span style="color:#f59e0b">&#9679;</span> Carbs: <strong th:text="${totalCarbs + 'g'}">0g</strong><br>
+                    <span style="color:#ef4444">&#9679;</span> Fat: <strong th:text="${totalFat + 'g'}">0g</strong>
+                </div>
+            </div>
+        </div>
+        <script th:inline="javascript">
+        /*<![CDATA[*/
+        (function(){
+            var p = /*[[${totalProtein}]]*/ 0, c = /*[[${totalCarbs}]]*/ 0, f = /*[[${totalFat}]]*/ 0;
+            if(p+c+f > 0){
+                new Chart(document.getElementById('macroChart'), {
+                    type:'doughnut',
+                    data:{labels:['Protein','Carbs','Fat'],datasets:[{data:[p,c,f],backgroundColor:['#3b82f6','#f59e0b','#ef4444'],borderWidth:0}]},
+                    options:{responsive:false,plugins:{legend:{display:false}},cutout:'65%'}
+                });
+            }
+        })();
+        /*]]>*/
+        </script>
+
+        <!-- FOOD LIST -->
+        <div class="card">
+            <div class="card-title">
+                Today's entries
+                <span style="font-size:13px;font-weight:400;color:var(--stone-400)"
+                      th:text="'(' + ${#lists.size(logs)} + ' items)'"></span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(logs)}" class="empty-state">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:10px;opacity:.4">
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                </svg>
+                <p style="margin:0;font-size:14px">Nothing logged yet for this day.</p>
+            </div>
+
+            <table th:unless="${#lists.isEmpty(logs)}">
+                <thead>
+                    <tr>
+                        <th>Meal</th>
+                        <th>Food</th>
+                        <th>Amount</th>
+                        <th>Calories</th>
+                        <th>Protein</th>
+                        <th>Carbs</th>
+                        <th>Fat</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr th:each="fl : ${logs}">
+                    <td><span class="meal-badge" th:text="${fl.mealType}">Meal</span></td>
+                    <td style="font-weight:600" th:text="${fl.foodName}">Food</td>
+                    <td style="font-family:var(--font-mono);font-size:12px"
+                        th:text="${fl.quantityG != null ? fl.quantityG.intValue() + 'g' : ''}">100g</td>
+                    <td style="font-weight:600;color:var(--accent-deep)"
+                        th:text="${fl.calories != null ? fl.calories + ' kcal' : ''}"></td>
+                    <td style="font-size:13px;color:var(--stone-500)"
+                        th:text="${fl.proteinG != null ? #numbers.formatDecimal(fl.proteinG,0,1) + 'g' : ''}"></td>
+                    <td style="font-size:13px;color:var(--stone-500)"
+                        th:text="${fl.carbsG != null ? #numbers.formatDecimal(fl.carbsG,0,1) + 'g' : ''}"></td>
+                    <td style="font-size:13px;color:var(--stone-500)"
+                        th:text="${fl.fatG != null ? #numbers.formatDecimal(fl.fatG,0,1) + 'g' : ''}"></td>
+                    <td style="display:flex;gap:6px">
+                        <button type="button" class="edit-btn"
+                                th:attr="data-id=${fl.id},data-name=${fl.foodName},data-qty=${fl.quantityG != null ? fl.quantityG.intValue() : 0},data-meal=${fl.mealType}"
+                                onclick="openFoodEditFromBtn(this)">Edit</button>
+                        <form autocomplete="off" method="post"
+                              th:action="@{'/client/food/delete/' + ${fl.id}(date=${selectedDate})}"
+                              style="margin:0">
+                            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                            <button class="del-btn" type="submit"
+                                    onclick="return confirm('Remove this entry?')">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+
+<!-- EDIT FOOD MODAL -->
+<div class="fmodal" id="editFoodModal" onclick="if(event.target===this)closeFoodEdit()">
+    <div class="fmodal-box">
+        <div class="fmodal-title">Edit <em>entry</em></div>
+        <form autocomplete="off" method="post" id="editFoodForm">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <input type="hidden" name="date" th:value="${selectedDate}" autocomplete="nope">
+            <div style="margin-bottom:12px">
+                <label class="form-label">Food name</label>
+                <input class="form-input" name="foodName" id="ef_name" required list="foodSuggestions" autocomplete="nope">
+            </div>
+            <div class="form-row">
+                <div>
+                    <label class="form-label">Quantity (grams)</label>
+                    <input class="form-input" type="number" name="quantityG" id="ef_qty" required min="1" max="5000" autocomplete="nope">
+                </div>
+                <div>
+                    <label class="form-label">Meal</label>
+                    <select class="form-select" name="mealType" id="ef_meal">
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Lunch">Lunch</option>
+                        <option value="Dinner">Dinner</option>
+                        <option value="Snack">Snack</option>
+                    </select>
+                </div>
+            </div>
+            <div class="fmodal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeFoodEdit()">Cancel</button>
+                <button type="submit" class="btn">Save changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openFoodEditFromBtn(btn){
+    var d = btn.dataset;
+    document.getElementById('editFoodForm').action = '/client/food/edit/' + d.id;
+    document.getElementById('ef_name').value = d.name;
+    document.getElementById('ef_qty').value  = d.qty;
+    document.getElementById('ef_meal').value = d.meal || 'Snack';
+    document.getElementById('editFoodModal').classList.add('open');
+}
+function closeFoodEdit(){ document.getElementById('editFoodModal').classList.remove('open'); }
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeFoodEdit(); });
+</script>
+</body>
+</html>

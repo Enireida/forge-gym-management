@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>Fitness Goals - Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .goal-card{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-lg);padding:20px 22px;margin-bottom:14px}
+        .goal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+        .goal-title{font-family:var(--font-display);font-size:18px;color:var(--fg-1)}
+        .goal-type{display:inline-block;padding:2px 10px;border-radius:999px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:var(--accent-pale);color:var(--accent-deep)}
+        .goal-bar-track{width:100%;height:10px;background:var(--bg-sunken);border-radius:99px;overflow:hidden;margin:10px 0 6px}
+        .goal-bar-fill{height:100%;border-radius:99px;background:var(--accent);transition:width .4s ease}
+        .goal-bar-fill.done{background:#22c55e}
+        .goal-meta{font-size:12px;color:var(--stone-400);display:flex;gap:16px;flex-wrap:wrap}
+        .goal-actions{display:flex;gap:8px;margin-top:12px}
+        .overdue{border-left:3px solid #ef4444}
+        .completed-card{opacity:.7}
+        .completed-card .goal-bar-fill{background:#22c55e}
+        .update-inline{display:flex;gap:8px;align-items:end;margin-top:10px}
+        .goal-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+        .fmodal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;padding:16px}
+        .fmodal.open{display:flex}
+        .fmodal-box{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-lg);padding:22px 24px;width:100%;max-width:460px}
+        .fmodal-title{font-family:var(--font-display);font-size:20px;color:var(--fg-1);margin-bottom:16px}
+        .fmodal-title em{font-style:italic;color:var(--accent-deep)}
+        .fmodal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: clientSidebar('goals')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Fitness Goals')}"></div>
+    <main class="main">
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+        <!-- ADD A GOAL -->
+        <div class="card">
+            <div class="card-title">Set a new goal</div>
+            <form autocomplete="off" method="post" action="/client/goals/add">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <div class="form-row">
+                    <div><label class="form-label">Goal type</label>
+                        <select class="form-select" name="goalType" required>
+                            <option th:each="g : ${goalTypes}" th:value="${g}" th:text="${g.name().replace('_',' ')}"></option>
+                        </select></div>
+                    <div><label class="form-label">Title</label>
+                        <input class="form-input" name="title" required placeholder="e.g. Lose 5kg by summer" maxlength="200" autocomplete="nope"></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Target value</label>
+                        <input class="form-input" type="number" name="targetValue" required step="0.1" min="0.1" placeholder="e.g. 5" autocomplete="nope"></div>
+                    <div><label class="form-label">Unit</label>
+                        <input class="form-input" name="unit" placeholder="e.g. kg, workouts, km" maxlength="30" autocomplete="nope"></div>
+                    <div><label class="form-label">Target date (optional)</label>
+                        <input class="form-input" type="date" name="targetDate" autocomplete="nope"></div>
+                </div>
+                <button class="btn" type="submit">Create Goal</button>
+            </form>
+        </div>
+
+        <!-- ACTIVE GOALS -->
+        <div class="card">
+            <div class="card-title">Active goals
+                <span style="font-size:13px;color:var(--stone-400);font-weight:400"
+                      th:text="'(' + ${#lists.size(activeGoals)} + ')'"></span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(activeGoals)}" style="text-align:center;padding:32px;color:var(--stone-400);font-style:italic">
+                No active goals yet. Set your first goal above!
+            </div>
+
+            <div th:each="g : ${activeGoals}" class="goal-card" th:classappend="${g.overdue ? 'overdue' : ''}">
+                <div class="goal-header">
+                    <div class="goal-title" th:text="${g.title}">Goal</div>
+                    <span class="goal-type" th:text="${g.goalType.name().replace('_',' ')}">TYPE</span>
+                </div>
+                <div class="goal-bar-track">
+                    <div class="goal-bar-fill" th:style="'width:'+${g.progressPercent}+'%'"
+                         th:classappend="${g.progressPercent >= 100 ? 'done' : ''}"></div>
+                </div>
+                <div class="goal-meta">
+                    <span th:text="${g.currentValue + ' / ' + g.targetValue + (g.unit != null ? ' ' + g.unit : '')}"></span>
+                    <span th:text="${g.progressPercent + '% complete'}"></span>
+                    <span th:if="${g.targetDate}" th:text="'Due: ' + ${g.targetDate}"></span>
+                    <span th:if="${g.overdue}" style="color:#ef4444;font-weight:600">OVERDUE</span>
+                </div>
+                <!-- Update progress -->
+                <div class="update-inline">
+                    <form autocomplete="off" method="post" th:action="@{'/client/goals/' + ${g.id} + '/update'}" style="display:flex;gap:8px;align-items:end;flex:1">
+                        <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                        <div style="flex:1"><label class="form-label">Update progress</label>
+                            <input class="form-input" type="number" name="currentValue" step="0.1" th:value="${g.currentValue}" required autocomplete="nope"></div>
+                        <button class="btn" type="submit" style="height:38px">Update</button>
+                    </form>
+                </div>
+                <!-- Manage -->
+                <div class="goal-actions">
+                    <button type="button" class="btn btn-outline" style="height:34px;font-size:12px"
+                            th:attr="data-id=${g.id},data-title=${g.title},data-target=${g.targetValue},data-unit=${g.unit != null ? g.unit : ''},data-date=${g.targetDate != null ? g.targetDate : ''}"
+                            onclick="openGoalEdit(this)">Edit</button>
+                    <form autocomplete="off" method="post" th:action="@{'/client/goals/' + ${g.id} + '/complete'}" style="margin:0"
+                          onsubmit="return confirm('Mark this goal as complete?')">
+                        <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                        <button class="btn btn-outline" type="submit" style="height:34px;font-size:12px;color:#16a34a;border-color:#16a34a">&#10003; Complete</button>
+                    </form>
+                    <form autocomplete="off" method="post" th:action="@{'/client/goals/' + ${g.id} + '/abandon'}" style="margin:0"
+                          onsubmit="return confirm('Archive this goal?')">
+                        <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                        <button class="btn btn-outline" type="submit" style="height:34px;font-size:12px;color:var(--stone-400)">Archive</button>
+                    </form>
+                    <form autocomplete="off" method="post" th:action="@{'/client/goals/' + ${g.id} + '/delete'}" style="margin:0"
+                          onsubmit="return confirm('Delete this goal permanently?')">
+                        <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                        <button class="btn btn-outline" type="submit" style="height:34px;font-size:12px;color:var(--signal-danger);border-color:var(--signal-danger)">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMPLETED GOALS -->
+        <div class="card" th:unless="${#lists.isEmpty(completedGoals)}">
+            <div class="card-title">Completed goals</div>
+            <div th:each="g : ${completedGoals}" class="goal-card completed-card">
+                <div class="goal-header">
+                    <div class="goal-title" th:text="${g.title}">Goal</div>
+                    <span style="padding:2px 10px;border-radius:999px;font-size:10px;font-weight:600;background:#dcfce7;color:#16a34a">DONE</span>
+                </div>
+                <div class="goal-bar-track">
+                    <div class="goal-bar-fill done" style="width:100%"></div>
+                </div>
+                <div class="goal-meta">
+                    <span th:text="${g.targetValue + (g.unit != null ? ' ' + g.unit : '') + ' achieved'}"></span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- EDIT GOAL MODAL -->
+<div class="fmodal" id="editGoalModal" onclick="if(event.target===this)closeGoalEdit()">
+    <div class="fmodal-box">
+        <div class="fmodal-title">Edit <em>goal</em></div>
+        <form autocomplete="off" method="post" id="editGoalForm">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div style="margin-bottom:12px">
+                <label class="form-label">Title</label>
+                <input class="form-input" name="title" id="eg_title" required maxlength="200" autocomplete="nope">
+            </div>
+            <div class="form-row">
+                <div>
+                    <label class="form-label">Target value</label>
+                    <input class="form-input" type="number" name="targetValue" id="eg_target" step="0.1" min="0.1" required autocomplete="nope">
+                </div>
+                <div>
+                    <label class="form-label">Unit</label>
+                    <input class="form-input" name="unit" id="eg_unit" maxlength="30" placeholder="kg, workouts, km" autocomplete="nope">
+                </div>
+                <div>
+                    <label class="form-label">Target date</label>
+                    <input class="form-input" type="date" name="targetDate" id="eg_date" autocomplete="nope">
+                </div>
+            </div>
+            <div class="fmodal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeGoalEdit()">Cancel</button>
+                <button type="submit" class="btn">Save changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openGoalEdit(btn){
+    var d = btn.dataset;
+    document.getElementById('editGoalForm').action = '/client/goals/' + d.id + '/edit';
+    document.getElementById('eg_title').value  = d.title;
+    document.getElementById('eg_target').value = d.target;
+    document.getElementById('eg_unit').value   = d.unit || '';
+    document.getElementById('eg_date').value   = d.date || '';
+    document.getElementById('editGoalModal').classList.add('open');
+}
+function closeGoalEdit(){ document.getElementById('editGoalModal').classList.remove('open'); }
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeGoalEdit(); });
+</script>
+</body>
+</html>

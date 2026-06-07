@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>Message Clients - Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .hint{font-size:12px;color:var(--stone-400);margin-top:6px}
+        .preview{margin-top:18px;background:var(--bg-sunken);border:1px solid var(--line-1);border-radius:var(--r-md);padding:14px 16px}
+        .preview .p-title{font-weight:600;font-size:14px;color:var(--fg-1)}
+        .preview .p-msg{font-size:13px;color:var(--fg-2);margin-top:3px;line-height:1.4}
+        .preview .p-tag{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--stone-400)}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: trainerSidebar('notifications')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Message Clients')}"></div>
+    <main class="main">
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+        <div class="card">
+            <div class="card-title">Send a message to your clients</div>
+            <p style="font-size:13px;color:var(--stone-500);margin-bottom:16px">
+                This shows up in your client's in-app notification center. Leave the recipient as
+                <strong>All my clients</strong> to message everyone assigned to you, or pick one.
+            </p>
+
+            <div th:if="${#lists.isEmpty(members)}" style="color:var(--stone-400);font-style:italic;padding:8px 0">
+                You don't have any assigned clients yet.
+            </div>
+
+            <form autocomplete="off" method="post" action="/trainer/notifications/send" th:unless="${#lists.isEmpty(members)}">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Recipient</label>
+                        <select class="form-select" name="memberId">
+                            <option value="">All my clients</option>
+                            <option th:each="m : ${members}" th:value="${m.id}"
+                                    th:text="${m.name + ' (' + m.email + ')'}"></option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Title</label>
+                        <input class="form-input" name="title" id="nt_title" required maxlength="120"
+                               placeholder="e.g. Great session today!" oninput="syncPreview()" autocomplete="nope">
+                    </div>
+                </div>
+                <div style="margin-top:12px">
+                    <label class="form-label">Message</label>
+                    <textarea class="form-input" name="message" id="nt_msg" required maxlength="500" rows="4"
+                              placeholder="Write your message…" oninput="syncPreview()"></textarea>
+                    <div class="hint">Up to 500 characters.</div>
+                </div>
+
+                <div class="preview">
+                    <div class="p-tag">Message &middot; Preview</div>
+                    <div class="p-title" id="pv_title">Your title…</div>
+                    <div class="p-msg" id="pv_msg">Your message…</div>
+                </div>
+
+                <div style="margin-top:16px">
+                    <button class="btn" type="submit">Send</button>
+                </div>
+            </form>
+        </div>
+
+    </main>
+</div>
+<script>
+function syncPreview(){
+    var t = document.getElementById('nt_title').value;
+    var m = document.getElementById('nt_msg').value;
+    document.getElementById('pv_title').textContent = t || 'Your title…';
+    document.getElementById('pv_msg').textContent   = m || 'Your message…';
+}
+</script>
+</body>
+</html>

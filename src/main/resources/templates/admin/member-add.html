@@ -1,0 +1,246 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>New Member — Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        /* Photo upload area */
+        .photo-upload-area {
+            display: flex; align-items: center; gap: 24px;
+            padding: 20px; background: var(--bg-sunken);
+            border: 1.5px dashed var(--line-1); border-radius: var(--r-xl);
+        }
+        .photo-circle {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: var(--paper); border: 2px dashed var(--stone-200);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; flex-shrink: 0;
+        }
+        .upload-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 9px 18px; border-radius: var(--r-pill);
+            border: 1px solid var(--line-1); background: var(--paper);
+            font-size: 13px; font-weight: 500; color: var(--fg-2);
+            cursor: pointer; font-family: var(--font-sans);
+            transition: background .15s, border-color .15s;
+        }
+        .upload-btn:hover { background: var(--bg-sunken); border-color: var(--stone-300); }
+
+        /* Info note */
+        .reg-note {
+            background: #faf6ee; border: 1px solid #e8d9b8;
+            border-radius: var(--r-lg); padding: 14px 16px;
+            display: flex; gap: 10px; align-items: flex-start;
+            font-size: 13px; color: var(--stone-600); line-height: 1.55;
+            margin-top: 4px;
+        }
+
+</style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('members')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('')}"></div>
+    <main class="main">
+        <div class="add-wrap">
+
+            <!-- Page header -->
+            <div style="margin-bottom:28px">
+                <div class="pg-breadcrumb">People / Registration</div>
+                <h1 class="pg-heading" style="margin-bottom:0">New member</h1>
+            </div>
+
+            <!-- Error -->
+            <div th:if="${error}"
+                 style="background:var(--signal-error-bg);border:1px solid var(--signal-error);
+                        color:var(--signal-error);padding:10px 14px;border-radius:var(--r-md);
+                        font-size:13px;margin-bottom:18px"
+                 th:text="${error}"></div>
+
+            <form autocomplete="off" method="post" action="/admin/members" id="addMemberForm">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <input type="hidden" name="photoData" id="photoDataInput" autocomplete="nope">
+                <canvas id="photoCanvas" style="display:none"></canvas>
+
+                <!-- ── 01 RECEPTION PHOTO ── -->
+                <div class="reg-section">
+                    <div class="sec-header">
+                        <div class="sec-num">01</div>
+                        <div class="sec-header-text">
+                            <h3>Reception photo</h3>
+                            <p>Taken at the desk — optional but recommended.</p>
+                        </div>
+                    </div>
+
+                    <div class="photo-upload-area">
+                        <div id="photoCircle" class="photo-circle">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--stone-300)" stroke-width="1.5">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+
+                        <!-- Camera live view -->
+                        <div id="cameraView" style="display:none;flex-direction:column;gap:8px;align-items:flex-start">
+                            <video id="cameraVideo" autoplay playsinline muted
+                                   style="width:240px;height:180px;border-radius:var(--r-lg);object-fit:cover;border:1px solid var(--line-1);background:#000"></video>
+                            <div style="display:flex;gap:8px">
+                                <button type="button" class="btn" onclick="capturePhoto()" style="font-size:13px">Capture</button>
+                                <button type="button" class="upload-btn" onclick="stopCamera()" style="font-size:13px">Cancel</button>
+                            </div>
+                        </div>
+
+                        <div id="photoButtons" style="display:flex;flex-direction:column;gap:8px">
+                            <button type="button" class="upload-btn" onclick="startCamera()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                    <circle cx="12" cy="13" r="4"/>
+                                </svg>
+                                Take photo
+                            </button>
+                            <button type="button" class="upload-btn" onclick="document.getElementById('photoFileInput').click()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                                Upload file
+                            </button>
+                            <button type="button" class="upload-btn" id="retakeBtn" onclick="resetPhoto()" style="display:none">
+                                ↺ Retake
+                            </button>
+                            <input type="file" id="photoFileInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)" autocomplete="nope">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── 02 IDENTITY ── -->
+                <div class="reg-section">
+                    <div class="sec-header">
+                        <div class="sec-num">02</div>
+                        <div class="sec-header-text">
+                            <h3>Identity</h3>
+                            <p>Recorded by reception · the member cannot edit this.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="field">
+                            <label>First Name <span class="req">*</span></label>
+                            <input class="form-input" name="name" placeholder="e.g. Arta" required autocomplete="nope">
+                        </div>
+                        <div class="field">
+                            <label>Last Name / Surname</label>
+                            <input class="form-input" name="surname" placeholder="e.g. Kelmendi" autocomplete="nope">
+                        </div>
+                    </div>
+                    <div class="form-grid-3">
+                        <div class="field">
+                            <label>Date of Birth</label>
+                            <input class="form-input" type="date" name="birthDate" autocomplete="nope">
+                        </div>
+                        <div class="field">
+                            <label>Phone Number</label>
+                            <input class="form-input" name="phone" placeholder="+355 69 …" autocomplete="nope">
+                        </div>
+                        <div class="field">
+                            <label>Email <span class="req">*</span></label>
+                            <input class="form-input" type="email" name="email" required placeholder="member@email.com" autocomplete="nope">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── 03 MEMBERSHIP & ACCESS ── -->
+                <div class="reg-section">
+                    <div class="sec-header">
+                        <div class="sec-num">03</div>
+                        <div class="sec-header-text">
+                            <h3>Membership &amp; access</h3>
+                            <p>A 4-digit door PIN is generated automatically.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="field">
+                            <label>Membership Plan <span class="req">*</span></label>
+                            <select class="form-select" name="planId" required>
+                                <option value="">Select a plan</option>
+                                <option th:each="p : ${plans}" th:value="${p.id}"
+                                        th:text="${p.name + '  —  $' + p.price}">Plan</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>RFID Card Code <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+                            <input class="form-input" name="rfidCode" placeholder="Scan card or type 10 digits" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="reg-note">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B8956A" stroke-width="2" style="flex-shrink:0;margin-top:1px">
+                            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        <span>Registration details (name, date of birth, email, photo) are recorded by reception staff and
+                              <strong>cannot be modified by the member</strong>. The door PIN is auto-generated on save.</span>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="reg-actions">
+                    <a href="/admin/members" class="btn btn-secondary" style="text-decoration:none">Cancel</a>
+                    <button type="submit" class="btn" style="display:flex;align-items:center;gap:8px;min-width:160px;justify-content:center">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Register member
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+let stream = null;
+function startCamera() {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+        .then(s => {
+            stream = s;
+            document.getElementById('cameraVideo').srcObject = s;
+            document.getElementById('cameraView').style.display = 'flex';
+            document.getElementById('photoButtons').style.display = 'none';
+        }).catch(() => alert('Camera access denied.'));
+}
+function stopCamera() {
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    document.getElementById('cameraView').style.display = 'none';
+    document.getElementById('photoButtons').style.display = 'flex';
+}
+function capturePhoto() {
+    const video = document.getElementById('cameraVideo');
+    const canvas = document.getElementById('photoCanvas');
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    setPhoto(canvas.toDataURL('image/jpeg', 0.85));
+    stopCamera();
+}
+function handlePhotoUpload(input) {
+    const file = input.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => setPhoto(e.target.result);
+    reader.readAsDataURL(file);
+}
+function setPhoto(dataUrl) {
+    document.getElementById('photoDataInput').value = dataUrl;
+    const circle = document.getElementById('photoCircle');
+    circle.innerHTML = '<img src="' + dataUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    document.getElementById('retakeBtn').style.display = 'inline-flex';
+}
+function resetPhoto() {
+    document.getElementById('photoDataInput').value = '';
+    document.getElementById('photoCircle').innerHTML =
+        '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--stone-300)" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+    document.getElementById('retakeBtn').style.display = 'none';
+    document.getElementById('photoFileInput').value = '';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>My Members - Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: trainerSidebar('members')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('My Members')}"></div>
+    <main class="main">
+        <div class="card">
+            <div class="card-title">My clients</div>
+
+            <!-- Empty state — trainer has no PT subscriptions yet -->
+            <div th:if="${members.empty}"
+                 style="text-align:center;padding:48px 24px;color:var(--stone-400)">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.2" style="margin-bottom:12px;opacity:.4">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <div style="font-family:var(--font-display);font-size:18px;font-weight:400;
+                            color:var(--stone-500);margin-bottom:6px">No clients yet</div>
+                <div style="font-size:13px">You'll see your members here once a PT subscription is assigned to you.</div>
+            </div>
+
+            <table th:unless="${members.empty}">
+                <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Plan</th>
+                    <th>Status</th><th>BMI</th></tr></thead>
+                <tbody>
+                <tr th:each="m : ${members}">
+                    <td th:text="${m.name}"></td>
+                    <td th:text="${m.email}"></td>
+                    <td th:text="${m.phone}"></td>
+                    <td th:text="${m.plan!=null ? m.plan.name : '-'}"></td>
+                    <td><span class="badge badge-success" th:text="${m.status}"></span></td>
+                    <td th:if="${m.weightKg!=null and m.heightCm!=null}"
+                        th:text="${#numbers.formatDecimal(m.weightKg/((m.heightCm/100)*(m.heightCm/100)),1,1)}">-</td>
+                    <td th:unless="${m.weightKg!=null and m.heightCm!=null}">-</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+</body></html>

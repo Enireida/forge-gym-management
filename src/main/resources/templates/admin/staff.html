@@ -1,0 +1,239 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>Staff, Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}">
+<style>
+    .modal-overlay{position:fixed;inset:0;background:rgba(6,15,26,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+    .modal-overlay.open{display:flex}
+    .modal-box{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-xl);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-3)}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:22px 24px 0}
+    .modal-title{font-family:var(--font-display);font-size:22px;font-weight:400;letter-spacing:-.01em;color:var(--fg-1)}
+    .modal-title em{font-style:italic;color:var(--accent-deep)}
+    .modal-close{background:none;border:none;cursor:pointer;color:var(--stone-400);font-size:26px;line-height:1;padding:4px 8px;border-radius:var(--r-sm)}
+    .modal-close:hover{background:var(--bg-sunken);color:var(--fg-1)}
+    .modal-body{padding:18px 24px 0}
+    .modal-footer{padding:16px 24px 22px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line-1);margin-top:18px}
+    /* ── Compact icon-form ── */
+    .iform-wrap{background:var(--bg-sunken);border:1px solid var(--line-1);border-radius:var(--r-lg);padding:16px 18px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+    .ifield{position:relative;flex:1;min-width:120px}
+    .ifield-label{display:flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--stone-400);margin-bottom:6px}
+    .ifield-label svg{color:var(--stone-400)}
+    .ifield .form-input,.ifield .form-select{width:100%;background:var(--paper)}
+
+    .badge-inactive{background:var(--stone-100);color:var(--stone-500)}
+
+    /* ── 3-dot menu ── */
+    .dot-wrap{position:relative;display:inline-block}
+    .dot-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:none;border:1px solid var(--line-1);border-radius:var(--r-sm);cursor:pointer;color:var(--stone-400);transition:all var(--dur-fast) var(--ease-out)}
+    .dot-btn:hover{background:var(--bg-sunken);border-color:var(--stone-200);color:var(--fg-1)}
+    .dot-btn.active{background:var(--accent-pale);border-color:var(--accent);color:var(--accent-deep)}
+    .dot-menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-lg);box-shadow:var(--shadow-3);min-width:168px;padding:5px;z-index:200;display:none;animation:dotIn .14s var(--ease-out)}
+    .dot-menu.open{display:block}
+    @keyframes dotIn{from{opacity:0;transform:translateY(4px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .dot-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r-sm);font-size:13px;font-weight:500;color:var(--fg-2);cursor:pointer;width:100%;text-align:left;background:none;border:none;text-decoration:none;transition:background var(--dur-fast);font-family:var(--font-sans)}
+    .dot-item:hover{background:var(--bg-sunken);color:var(--fg-1)}
+    .dot-item svg{color:var(--stone-400);flex-shrink:0}
+    .dot-sep{height:1px;background:var(--line-1);margin:4px 6px}
+    .dot-item.danger{color:var(--signal-danger)}
+    .dot-item.danger svg{color:var(--signal-danger)}
+    .dot-item.danger:hover{background:var(--signal-danger-bg)}
+</style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('staff')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Staff &amp; Trainers')}"></div>
+    <main class="main">
+
+        <!-- STAFF TABLE -->
+        <div class="card">
+            <div class="card-title">Staff List
+                <span style="display:flex;align-items:center;gap:10px">
+                    <span class="badge badge-info" style="font-size:12px" th:text="${#lists.size(staff)} + ' members'">0</span>
+                    <a href="/admin/staff/new" class="btn"
+                       style="white-space:nowrap;gap:7px;display:flex;align-items:center;text-decoration:none">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Hire Staff
+                    </a>
+                </span>
+            </div>
+            <table>
+                <thead><tr>
+                    <th>Name</th><th>Email</th><th>Phone</th>
+                    <th>Role</th><th>Specialty</th><th>Status</th>
+                    <th style="width:48px;text-align:center"></th>
+                </tr></thead>
+                <tbody>
+                <tr th:each="s : ${staff}">
+                    <td style="font-weight:600" th:text="${s.name}"></td>
+                    <td style="color:var(--stone-500);font-size:13px" th:text="${s.email}"></td>
+                    <td th:text="${s.phone != null ? s.phone : ''}"></td>
+                    <td><span class="badge badge-info" th:text="${s.role}"></span></td>
+                    <td th:text="${s.specialty != null ? s.specialty : ''}"></td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${s.status=='Active'}?'badge-success':'badge-inactive'"
+                              th:text="${s.status}"></span>
+                    </td>
+                    <td style="text-align:center">
+                        <div class="dot-wrap">
+                            <button class="dot-btn" type="button" onclick="toggleDotMenu(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+                                </svg>
+                            </button>
+                            <div class="dot-menu">
+                                <!-- Edit -->
+                                <button class="dot-item" type="button"
+                                        th:data-id="${s.id}" th:data-name="${s.name}"
+                                        th:data-email="${s.email}" th:data-phone="${s.phone}"
+                                        th:data-role="${s.role}" th:data-specialty="${s.specialty}"
+                                        onclick="openEditStaff(this); closeDotMenus()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    Edit Staff
+                                </button>
+                                <!-- Toggle Active/Inactive -->
+                                <form autocomplete="off" method="post" th:action="@{'/admin/staff/'+${s.id}+'/toggle'}" style="margin:0">
+                                    <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                                    <button class="dot-item" type="submit">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+                                        <span th:text="${s.status=='Active'} ? 'Deactivate' : 'Activate'">Toggle</span>
+                                    </button>
+                                </form>
+                                <div class="dot-sep"></div>
+                                <!-- Delete -->
+                                <form autocomplete="off" method="post" th:action="@{'/admin/staff/'+${s.id}+'/delete'}" style="margin:0">
+                                    <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                                    <button class="dot-item danger" type="submit"
+                                            onclick="return confirm('Remove this staff member?')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                        Remove
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+
+<!-- ===== ADD STAFF MODAL ===== -->
+<div id="addStaffModal" class="modal-overlay" onclick="if(event.target===this)closeModal('addStaffModal')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Hire <em>New Staff</em></span>
+            <button class="modal-close" onclick="closeModal('addStaffModal')">×</button>
+        </div>
+        <form autocomplete="off" method="post" action="/admin/staff">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div><label class="form-label">Full Name <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" name="name" placeholder="e.g. Arta Kelmendi" required autocomplete="nope"></div>
+                    <div><label class="form-label">Email <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" type="email" name="email" placeholder="staff@forge.al" required autocomplete="nope"></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Phone</label>
+                        <input class="form-input" name="phone" placeholder="+355 69 …" autocomplete="nope"></div>
+                    <div><label class="form-label">Role <span style="color:var(--signal-danger)">*</span></label>
+                        <select class="form-select" name="role" required>
+                            <option>Trainer</option><option>Receptionist</option>
+                            <option>Manager</option><option>Cleaning</option>
+                        </select></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Specialty <span style="font-weight:400;color:var(--stone-400)">(optional)</span></label>
+                        <input class="form-input" name="specialty" placeholder="e.g. CrossFit, Yoga" autocomplete="nope"></div>
+                    <div></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addStaffModal')">Cancel</button>
+                <button type="submit" class="btn" style="display:flex;align-items:center;gap:7px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Staff Member
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== EDIT STAFF MODAL ===== -->
+<div id="editStaffModal" class="modal-overlay" onclick="if(event.target===this)closeModal('editStaffModal')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Edit <em>Staff</em></span>
+            <button class="modal-close" onclick="closeModal('editStaffModal')">×</button>
+        </div>
+        <form autocomplete="off" method="post" id="editStaffForm">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div><label class="form-label">Name</label>
+                        <input class="form-input" id="es-name" name="name" required autocomplete="nope"></div>
+                    <div><label class="form-label">Email</label>
+                        <input class="form-input" id="es-email" name="email" type="email" required autocomplete="nope"></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Phone</label>
+                        <input class="form-input" id="es-phone" name="phone" autocomplete="nope"></div>
+                    <div><label class="form-label">Role</label>
+                        <select class="form-select" id="es-role" name="role" required>
+                            <option>Trainer</option><option>Receptionist</option>
+                            <option>Manager</option><option>Cleaning</option>
+                        </select></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Specialty</label>
+                        <input class="form-input" id="es-specialty" name="specialty" autocomplete="nope"></div>
+                    <div></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editStaffModal')">Cancel</button>
+                <button type="submit" class="btn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal(id)  { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open')); } });
+
+    function openEditStaff(btn) {
+        const d = btn.dataset;
+        document.getElementById('editStaffForm').action = '/admin/staff/' + d.id + '/edit';
+        document.getElementById('es-name').value      = d.name      || '';
+        document.getElementById('es-email').value     = d.email     || '';
+        document.getElementById('es-phone').value     = d.phone     || '';
+        document.getElementById('es-specialty').value = d.specialty || '';
+        const sel = document.getElementById('es-role');
+        for (let o of sel.options) o.selected = o.value === d.role;
+        openModal('editStaffModal');
+    }
+
+    function toggleDotMenu(btn) {
+        const menu = btn.closest('.dot-wrap').querySelector('.dot-menu');
+        const isOpen = menu.classList.contains('open');
+        closeDotMenus();
+        if (!isOpen) { menu.classList.add('open'); btn.classList.add('active'); }
+    }
+    function closeDotMenus() {
+        document.querySelectorAll('.dot-menu.open').forEach(m => {
+            m.classList.remove('open');
+            const b = m.closest('.dot-wrap')?.querySelector('.dot-btn');
+            if (b) b.classList.remove('active');
+        });
+    }
+    document.addEventListener('click', e => { if (!e.target.closest('.dot-wrap')) closeDotMenus(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDotMenus(); });
+</script>
+</body>
+</html>

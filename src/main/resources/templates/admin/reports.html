@@ -1,0 +1,342 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+<meta charset="UTF-8">
+<title>Reports &amp; Analytics - Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  .filter-bar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .filter-btn {
+    padding: 7px 16px; border-radius: 999px; border: 1px solid var(--line-1);
+    background: var(--bg-surface); color: var(--fg-2); font-size: 13px;
+    font-family: var(--font-sans); cursor: pointer; font-weight: 500;
+    transition: all .15s;
+  }
+  .filter-btn:hover { border-color: var(--ink); color: var(--fg-1); }
+  .filter-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .custom-range {
+    display: none; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--fg-2);
+  }
+  .custom-range.show { display: flex; }
+  .custom-range input[type=date] {
+    padding: 6px 10px; border: 1px solid var(--line-1);
+    border-radius: 6px; font-size: 13px; font-family: var(--font-mono);
+    background: var(--bg-surface); color: var(--fg-1);
+  }
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+  .charts-grid .card { margin: 0; }
+  .chart-container { position: relative; height: 200px; }
+  .kpi-range {
+    display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .kpi-range .kpi-box {
+    flex: 1; min-width: 140px;
+    background: var(--bg-surface); border: 1px solid var(--line-1);
+    border-radius: var(--r-lg); padding: 16px 18px;
+  }
+  .kpi-box .kpi-lbl { font-size: 11px; color: var(--stone-400); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+  .kpi-box .kpi-val { font-size: 26px; font-weight: 700; color: var(--fg-1); font-family: var(--font-display); }
+  .kpi-box .kpi-sub { font-size: 12px; color: var(--stone-400); margin-top: 2px; }
+  @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .charts-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="dashboard">
+  <div th:replace="~{fragments/layout :: adminSidebar('reports')}"></div>
+  <div th:replace="~{fragments/layout :: topbar('Reports &amp; Analytics')}"></div>
+  <main class="main">
+
+    <!-- ── Header ── -->
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div>
+        <h2 style="margin:0;font-size:20px">Analytics Dashboard</h2>
+        <p style="color:var(--stone-400);margin:4px 0 0;font-size:13px">All charts update automatically based on the selected period.</p>
+      </div>
+      <a class="btn btn-secondary" href="/admin/reports/download" download style="display:flex;align-items:center;gap:7px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Download Report
+      </a>
+    </div>
+
+    <!-- ── Date Filter ── -->
+    <div class="card">
+      <div class="filter-bar">
+        <span style="font-size:12px;font-weight:600;color:var(--stone-400);letter-spacing:.06em;text-transform:uppercase">Period:</span>
+        <button class="filter-btn" onclick="setRange('today')">Today</button>
+        <button class="filter-btn" onclick="setRange('7d')">Last 7 days</button>
+        <button class="filter-btn active" onclick="setRange('30d')">Last 30 days</button>
+        <button class="filter-btn" onclick="setRange('3m')">Last 3 months</button>
+        <button class="filter-btn" onclick="setRange('1y')">This year</button>
+        <button class="filter-btn" onclick="setRange('custom')">Custom range</button>
+        <div class="custom-range" id="customRange">
+          <input type="date" id="dateFrom" autocomplete="nope">
+          <span>→</span>
+          <input type="date" id="dateTo" autocomplete="nope">
+          <button class="btn" style="padding:6px 14px;font-size:13px" onclick="applyCustom()">Apply</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── KPI Summary ── -->
+    <div class="kpi-range">
+      <div class="kpi-box">
+        <div class="kpi-lbl">Revenue (period)</div>
+        <div class="kpi-val">$<span id="kpiRevPeriod">…</span></div>
+        <div class="kpi-sub" id="kpiRevPeriodSub"></div>
+      </div>
+      <div class="kpi-box" style="border-color:rgba(43,183,119,.3)">
+        <div class="kpi-lbl">Active Members</div>
+        <div class="kpi-val" id="kpiActive">…</div>
+        <div class="kpi-sub">currently</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-lbl">Check-ins (period)</div>
+        <div class="kpi-val" id="kpiCheckins">…</div>
+        <div class="kpi-sub">total visits</div>
+      </div>
+      <div class="kpi-box" style="border-color:rgba(184,149,106,.3)">
+        <div class="kpi-lbl">Total Revenue (all time)</div>
+        <div class="kpi-val">$<span id="kpiTotalRev">…</span></div>
+        <div class="kpi-sub">all payments</div>
+      </div>
+    </div>
+
+    <!-- ── Charts 3-column grid ── -->
+    <div class="charts-grid">
+
+      <!-- 1. Revenue over time -->
+      <div class="card" style="grid-column: span 2">
+        <div class="card-title" style="font-size:14px;margin-bottom:12px">Revenue over time</div>
+        <div class="chart-container" style="height:190px">
+          <canvas id="revenueChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 2. Members by status -->
+      <div class="card">
+        <div class="card-title" style="font-size:14px;margin-bottom:12px">Members by status</div>
+        <div class="chart-container" style="height:190px">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 3. Check-ins per day -->
+      <div class="card">
+        <div class="card-title" style="font-size:14px;margin-bottom:12px">Check-ins per day</div>
+        <div class="chart-container" style="height:160px">
+          <canvas id="checkinsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 4. New members by month -->
+      <div class="card">
+        <div class="card-title" style="font-size:14px;margin-bottom:12px">New members by month</div>
+        <div class="chart-container" style="height:160px">
+          <canvas id="newMembersChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 5. Plan distribution -->
+      <div class="card">
+        <div class="card-title" style="font-size:14px;margin-bottom:12px">Plan distribution</div>
+        <div class="chart-container" style="height:160px">
+          <canvas id="planChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 6. Top spenders (full width) -->
+    <div class="card">
+      <div class="card-title" style="font-size:14px;margin-bottom:4px">
+        Top spenders
+        <span id="topSpendersLabel" style="font-weight:400;color:var(--stone-400);font-size:12px;margin-left:8px"></span>
+      </div>
+      <div id="topSpendersEmpty" style="display:none;text-align:center;padding:24px;color:var(--stone-400);font-size:13px">
+        No payment data for this period.
+      </div>
+      <div class="chart-container" id="topSpendersWrap" style="height:220px">
+        <canvas id="spenderChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Audit log -->
+    <div class="card">
+      <div class="card-title" style="font-size:14px">Recent audit log</div>
+      <table>
+        <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr th:each="row : ${recentAudit}">
+            <td th:text="${row['at']}"></td>
+            <td th:text="${row['actor']}"></td>
+            <td><span class="badge badge-info" th:text="${row['action']}"></span></td>
+            <td th:text="${row['detail']}"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── Chart instances (kept for destroy/recreate on filter change) ──
+let charts = {};
+let currentFrom, currentTo;
+
+// ── Date helpers ──
+function fmt(d) { return d.toISOString().split('T')[0]; }
+function today()  { return new Date(); }
+function daysAgo(n) { const d = new Date(); d.setDate(d.getDate() - n); return d; }
+function startOfYear() { const d = new Date(); d.setMonth(0, 1); return d; }
+
+function setRange(key) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const cr = document.getElementById('customRange');
+  cr.classList.remove('show');
+
+  const now = today();
+  switch (key) {
+    case 'today': currentFrom = fmt(now);            currentTo = fmt(now);  break;
+    case '7d':    currentFrom = fmt(daysAgo(7));     currentTo = fmt(now);  break;
+    case '30d':   currentFrom = fmt(daysAgo(30));    currentTo = fmt(now);  break;
+    case '3m':    currentFrom = fmt(daysAgo(90));    currentTo = fmt(now);  break;
+    case '1y':    currentFrom = fmt(startOfYear());  currentTo = fmt(now);  break;
+    case 'custom':
+      cr.classList.add('show');
+      document.getElementById('dateFrom').value = fmt(daysAgo(30));
+      document.getElementById('dateTo').value   = fmt(now);
+      return;
+  }
+  loadAll();
+}
+
+function applyCustom() {
+  currentFrom = document.getElementById('dateFrom').value;
+  currentTo   = document.getElementById('dateTo').value;
+  if (!currentFrom || !currentTo) return;
+  loadAll();
+}
+
+// ── Chart helpers ──
+const COLORS = ['#0B1B2E','#B8956A','#8C6E47','#A8413A','#2B7747','#4A7CB5','#7B5EA7'];
+
+function mk(id, type, labels, data, opts = {}) {
+  if (charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  charts[id] = new Chart(ctx, {
+    type,
+    data: { labels, datasets: [{ data, ...opts }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: !!opts.showLegend, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+      scales: (type === 'doughnut' || type === 'pie') ? {} : {
+        x: { ticks: { font: { size: 11 } } },
+        y: { ticks: { font: { size: 11 } }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+// ── Load all charts ──
+async function loadAll() {
+  // Static KPIs
+  const s = await fetch('/api/stats/summary').then(r => r.json());
+  document.getElementById('kpiActive').textContent   = s.activeMembers;
+  document.getElementById('kpiTotalRev').textContent = Number(s.totalRevenue).toFixed(2);
+
+  // Date-range data
+  const [range, checkins, newM, plans] = await Promise.all([
+    fetch(`/api/stats/revenue-range?from=${currentFrom}&to=${currentTo}`).then(r => r.json()),
+    fetch(`/api/stats/checkins-by-day?days=${daysBetween(currentFrom, currentTo)}`).then(r => r.json()),
+    fetch('/api/stats/new-members-by-month').then(r => r.json()),
+    fetch('/api/stats/members-by-plan').then(r => r.json())
+  ]);
+
+  // KPIs for period
+  document.getElementById('kpiRevPeriod').textContent   = Number(range.total).toFixed(2);
+  document.getElementById('kpiRevPeriodSub').textContent = currentFrom + ' → ' + currentTo;
+  const totalCheckins = Object.values(checkins).reduce((a, b) => a + b, 0);
+  document.getElementById('kpiCheckins').textContent = totalCheckins;
+
+  // 1. Revenue line chart
+  const revLabels = Object.keys(range.byDay);
+  const revData   = Object.values(range.byDay).map(Number);
+  mk('revenueChart', 'line', revLabels, revData, {
+    label: 'Revenue ($)', fill: true,
+    borderColor: '#8C6E47', backgroundColor: 'rgba(184,149,106,0.1)',
+    tension: 0.3, pointRadius: 3, borderWidth: 2
+  });
+
+  // 2. Members by status doughnut
+  const sb = s.statusBreakdown;
+  mk('statusChart', 'doughnut', Object.keys(sb), Object.values(sb), {
+    backgroundColor: COLORS, showLegend: true
+  });
+
+  // 3. Check-ins bar
+  mk('checkinsChart', 'bar', Object.keys(checkins), Object.values(checkins), {
+    label: 'Check-ins', backgroundColor: 'rgba(11,27,46,0.75)', borderRadius: 4,
+    borderSkipped: false
+  });
+
+  // 4. New members bar
+  mk('newMembersChart', 'bar', Object.keys(newM), Object.values(newM), {
+    label: 'New members', backgroundColor: 'rgba(43,183,119,0.7)', borderRadius: 4,
+    borderSkipped: false
+  });
+
+  // 5. Plan distribution doughnut
+  mk('planChart', 'doughnut', Object.keys(plans), Object.values(plans), {
+    backgroundColor: COLORS, showLegend: true
+  });
+
+  // 6. Top spenders horizontal bar
+  const ts = range.topSpenders;
+  const tsKeys = Object.keys(ts);
+  const tsVals = Object.values(ts).map(Number);
+  const emptyEl = document.getElementById('topSpendersEmpty');
+  const wrapEl  = document.getElementById('topSpendersWrap');
+  document.getElementById('topSpendersLabel').textContent = '(' + currentFrom + ' → ' + currentTo + ')';
+  if (tsKeys.length === 0) {
+    emptyEl.style.display = 'block';
+    wrapEl.style.display  = 'none';
+  } else {
+    emptyEl.style.display = 'none';
+    wrapEl.style.display  = 'block';
+    if (charts['spenderChart']) charts['spenderChart'].destroy();
+    charts['spenderChart'] = new Chart(document.getElementById('spenderChart'), {
+      type: 'bar',
+      data: { labels: tsKeys, datasets: [{ label: 'USD spent', data: tsVals, backgroundColor: '#B8956A', borderRadius: 4 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: { x: { ticks: { font: { size: 11 } }, beginAtZero: true }, y: { ticks: { font: { size: 11 } } } }
+      }
+    });
+  }
+}
+
+function daysBetween(from, to) {
+  const ms = new Date(to) - new Date(from);
+  return Math.max(1, Math.ceil(ms / 86400000));
+}
+
+// ── Init with last 30 days ──
+currentFrom = fmt(daysAgo(30));
+currentTo   = fmt(today());
+loadAll();
+</script>
+</body>
+</html>

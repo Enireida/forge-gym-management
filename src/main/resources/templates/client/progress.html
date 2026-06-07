@@ -1,0 +1,218 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>My Progress - Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <style>
+        .chart-wrap{position:relative;height:260px;margin-top:12px}
+        .stat-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:0}
+        .stat-chip{background:var(--bg-sunken);border-radius:var(--r-md);padding:10px 16px;min-width:100px}
+        .stat-chip .v{font-family:var(--font-display);font-size:20px;color:var(--fg-1)}
+        .stat-chip .l{font-size:11px;color:var(--stone-400);margin-top:2px}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: clientSidebar('progress')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('My Progress')}"></div>
+    <main class="main">
+
+        <!-- CHART CARD (only when there is data) -->
+        <div class="card" th:unless="${#lists.isEmpty(measurements)}">
+            <div class="card-title">Weight trend</div>
+
+            <!-- Latest stats row -->
+            <div class="stat-row">
+                <div class="stat-chip" th:with="latest=${measurements[0]}">
+                    <div class="v" th:text="${latest.weightKg + ' kg'}"></div>
+                    <div class="l">Latest weight</div>
+                </div>
+                <div class="stat-chip" th:with="latest=${measurements[0]}">
+                    <div class="v"
+                         th:text="${#numbers.formatDecimal(latest.weightKg/((latest.heightCm/100)*(latest.heightCm/100)),1,1)}">
+                    </div>
+                    <div class="l">Current BMI</div>
+                </div>
+                <div class="stat-chip" th:with="latest=${measurements[0]}">
+                    <div class="v" th:text="${latest.bodyFatPct != null ? latest.bodyFatPct + '%' : ''}"></div>
+                    <div class="l">Body fat</div>
+                </div>
+                <div class="stat-chip">
+                    <div class="v" th:text="${#lists.size(measurements)}"></div>
+                    <div class="l">Measurements</div>
+                </div>
+            </div>
+
+            <div class="chart-wrap">
+                <canvas id="weightChart"></canvas>
+            </div>
+
+            <!-- Pass data as JSON arrays to JS -->
+            <script th:inline="javascript">
+                /*<![CDATA[*/
+                const labels  = /*[[${measurements.![date.toString()]}]]*/   [];
+                const weights = /*[[${measurements.![weightKg]}]]*/          [];
+                const bmis    = /*[[${measurements.![weightKg/((heightCm/100)*(heightCm/100))]}]]*/ [];
+
+                // Reverse so oldest is on the left
+                labels.reverse();
+                weights.reverse();
+                bmis.reverse();
+
+                const ctx = document.getElementById('weightChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            {
+                                label: 'Weight (kg)',
+                                data: weights,
+                                borderColor: '#B8956A',
+                                backgroundColor: 'rgba(184,149,106,.1)',
+                                tension: 0.35,
+                                fill: true,
+                                pointRadius: 4,
+                                pointBackgroundColor: '#B8956A'
+                            },
+                            {
+                                label: 'BMI',
+                                data: bmis.map(v => +v.toFixed(1)),
+                                borderColor: '#0B1B2E',
+                                backgroundColor: 'transparent',
+                                tension: 0.35,
+                                borderDash: [5,4],
+                                pointRadius: 3,
+                                yAxisID: 'bmi'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: {
+                            x: { grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { size: 11 } } },
+                            y: { grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { size: 11 } }, title: { display: true, text: 'kg', font: { size: 11 } } },
+                            bmi: { position: 'right', grid: { drawOnChartArea: false }, ticks: { font: { size: 11 } }, title: { display: true, text: 'BMI', font: { size: 11 } } }
+                        },
+                        plugins: {
+                            legend: { labels: { font: { size: 12 } } },
+                            tooltip: { bodyFont: { size: 12 } }
+                        }
+                    }
+                });
+                /*]]>*/
+            </script>
+        </div>
+
+        <!-- BODY FAT & MUSCLE CHART -->
+        <div class="card" th:unless="${#lists.isEmpty(measurements)}">
+            <div class="card-title">Body composition</div>
+            <div class="chart-wrap">
+                <canvas id="compChart"></canvas>
+            </div>
+            <script th:inline="javascript">
+                /*<![CDATA[*/
+                const compLabels = /*[[${chartLabels}]]*/ [];
+                const fatData    = /*[[${chartBodyFat}]]*/ [];
+                const muscleData = /*[[${chartMuscle}]]*/ [];
+                new Chart(document.getElementById('compChart').getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: compLabels,
+                        datasets: [
+                            { label: 'Body Fat %', data: fatData, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.08)', tension: 0.3, fill: true, pointRadius: 3 },
+                            { label: 'Muscle Mass (kg)', data: muscleData, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,.08)', tension: 0.3, fill: true, pointRadius: 3 }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: {
+                            x: { grid: { color: 'rgba(0,0,0,.05)' } },
+                            y: { grid: { color: 'rgba(0,0,0,.05)' } }
+                        },
+                        plugins: { legend: { labels: { font: { size: 12 } } } }
+                    }
+                });
+                /*]]>*/
+            </script>
+        </div>
+
+        <!-- MEASUREMENTS TABLE -->
+        <div class="card">
+            <div class="card-title">Body measurements over time</div>
+
+            <div th:if="${#lists.isEmpty(measurements)}"
+                 style="text-align:center;padding:36px;color:var(--stone-400);font-size:13px">
+                No measurements recorded yet. Ask your trainer to log your first measurement!
+            </div>
+
+            <table th:unless="${#lists.isEmpty(measurements)}">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Weight</th>
+                        <th>Height</th>
+                        <th>BMI</th>
+                        <th>Body fat %</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr th:each="x : ${measurements}">
+                    <td th:text="${x.date}"></td>
+                    <td th:text="${x.weightKg + ' kg'}"></td>
+                    <td th:text="${x.heightCm + ' cm'}"></td>
+                    <td>
+                        <strong th:text="${#numbers.formatDecimal(x.weightKg/((x.heightCm/100)*(x.heightCm/100)),1,1)}"></strong>
+                    </td>
+                    <td th:text="${x.bodyFatPct != null ? x.bodyFatPct + '%' : ''}"></td>
+                    <td th:text="${x.notes}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- BMI CALCULATOR -->
+        <div class="card">
+            <div class="card-title">BMI calculator</div>
+            <p class="form-label" style="margin-bottom:14px">
+                Quick BMI check, calls <code>POST /api/bmi</code> and shows the result instantly.
+            </p>
+            <div class="form-row">
+                <div>
+                    <label class="form-label">Weight (kg)</label>
+                    <input id="w" class="form-input" type="number" step="0.1" value="70" autocomplete="nope">
+                </div>
+                <div>
+                    <label class="form-label">Height (cm)</label>
+                    <input id="h" class="form-input" type="number" step="0.1" value="175" autocomplete="nope">
+                </div>
+            </div>
+            <button class="btn" onclick="calcBmi()">Calculate BMI</button>
+            <div id="out" style="margin-top:16px"></div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+    async function calcBmi() {
+        const w = +document.getElementById('w').value;
+        const h = +document.getElementById('h').value;
+        const r = await fetch('/api/bmi', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ weightKg: w, heightCm: h })
+        });
+        const j = await r.json();
+        document.getElementById('out').innerHTML =
+            `<div class="alert alert-info">BMI <strong>${j.bmi}</strong> &mdash; ${j.category}. ${j.advice}</div>`;
+    }
+</script>
+</body>
+</html>

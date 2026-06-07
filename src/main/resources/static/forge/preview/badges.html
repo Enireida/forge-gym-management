@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Badges</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:24px;background:var(--bg-canvas);font-family:var(--font-sans);}
+  .row{display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:wrap;}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:0.02em;}
+  .b-success{background:#E8EFE5;color:#4A7A4F;}
+  .b-warning{background:#F4E7CC;color:#8A6428;}
+  .b-danger{background:#F1D8D4;color:#7A2E29;}
+  .b-info{background:#DCE6EA;color:#385360;}
+  .b-neutral{background:var(--bone-100);color:var(--bone-700);}
+  .b-brand{background:var(--sage-100);color:var(--sage-800);}
+  .b-accent{background:var(--copper-100);color:var(--copper-700);}
+  .dot{width:6px;height:6px;border-radius:999px;background:currentColor;}
+  .lbl{font-family:var(--font-mono);font-size:10px;color:var(--fg-3);text-transform:uppercase;letter-spacing:.1em;width:64px;}
+</style></head>
+<body>
+<div class="row"><div class="lbl">Status</div>
+  <span class="badge b-success"><span class="dot"></span>Active</span>
+  <span class="badge b-warning"><span class="dot"></span>Expiring</span>
+  <span class="badge b-danger"><span class="dot"></span>Expired</span>
+  <span class="badge b-info">Frozen</span>
+</div>
+<div class="row"><div class="lbl">Tags</div>
+  <span class="badge b-neutral">Chest</span>
+  <span class="badge b-neutral">Back</span>
+  <span class="badge b-neutral">Legs</span>
+  <span class="badge b-brand">Beginner</span>
+  <span class="badge b-accent">Premium</span>
+</div>
+<div class="row"><div class="lbl">Numeric</div>
+  <span class="badge b-success">Paid · €45</span>
+  <span class="badge b-warning">7 days left</span>
+  <span class="badge b-info">3 / 12 sessions</span>
+</div>
+</body></html>

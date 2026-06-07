@@ -1,0 +1,356 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>Wearable, Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .page-title {
+            font-family: var(--font-display); font-weight: 300;
+            font-size: 36px; line-height: 1; letter-spacing: -0.03em;
+            color: var(--ink); margin-bottom: 6px;
+        }
+        .page-title em { font-style: italic; color: var(--accent-deep); }
+        .page-sub {
+            font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+            letter-spacing: 0.14em; text-transform: uppercase; color: var(--stone-400);
+            margin-bottom: 28px;
+        }
+
+        .watch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        @media (max-width: 900px) { .watch-grid { grid-template-columns: 1fr; } }
+
+        .wcard {
+            background: var(--paper); border: 1px solid var(--line-1);
+            border-radius: var(--r-lg); padding: 22px 24px;
+        }
+        .wcard-header {
+            display: flex; align-items: center; gap: 12px;
+            padding-bottom: 16px; border-bottom: 1px solid var(--line-1); margin-bottom: 18px;
+        }
+        .wcard-ico {
+            width: 38px; height: 38px; background: var(--accent-pale);
+            border-radius: var(--r-md); display: flex; align-items: center;
+            justify-content: center; color: var(--accent-deep);
+        }
+        .wcard-title { font-family: var(--font-display); font-weight: 400; font-size: 18px; color: var(--ink); }
+        .wcard-sub   { font-size: 11px; color: var(--stone-400); margin-top: 2px; }
+
+        .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .stat-box {
+            padding: 14px; background: var(--paper-soft);
+            border: 1px solid var(--line-1); border-radius: var(--r-md); text-align: center;
+        }
+        .stat-box .val {
+            font-family: var(--font-display); font-size: 32px; font-weight: 300;
+            color: var(--ink); letter-spacing: -0.03em; line-height: 1;
+        }
+        .stat-box .val .unit { font-size: 12px; color: var(--stone-400); font-family: var(--font-sans); }
+        .stat-box .lbl { font-size: 11px; color: var(--stone-400); margin-top: 5px; }
+
+        .ring-container { display: flex; justify-content: center; align-items: center; gap: 32px; padding: 12px 0; }
+        .ring-item { text-align: center; }
+        .ring-item .ring-val { font-family: var(--font-display); font-size: 22px; font-weight: 400; color: var(--ink); }
+        .ring-item .ring-lbl { font-size: 11px; color: var(--stone-400); margin-top: 4px; }
+
+        .workout-list { display: flex; flex-direction: column; gap: 0; }
+        .workout-row {
+            display: grid; grid-template-columns: 1fr auto auto auto;
+            gap: 16px; align-items: center; padding: 12px 0;
+            border-bottom: 1px solid var(--line-1);
+        }
+        .workout-row:last-child { border-bottom: 0; }
+        .workout-type { font-size: 13px; font-weight: 600; color: var(--ink); }
+        .workout-date { font-size: 11px; color: var(--stone-500); margin-top: 2px; }
+        .workout-val  { font-family: var(--font-mono); font-size: 12px; color: var(--stone-600); }
+        .workout-kcal { font-family: var(--font-mono); font-size: 12px; color: var(--accent-deep); font-weight: 700; }
+
+        .pin-display {
+            display: flex; gap: 10px; justify-content: center; margin: 8px 0 16px;
+        }
+        .pin-digit {
+            width: 52px; height: 64px;
+            background: var(--accent-pale); border: 1.5px solid var(--accent);
+            border-radius: var(--r-md); display: flex; align-items: center;
+            justify-content: center; font-family: var(--font-display);
+            font-size: 32px; font-weight: 400; color: var(--ink);
+        }
+
+        .api-info {
+            background: var(--stone-50); border: 1px solid var(--line-1);
+            border-radius: var(--r-lg); padding: 20px 24px; margin-bottom: 20px;
+        }
+        .api-info h4 { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 12px; }
+        .api-endpoint {
+            display: flex; align-items: center; gap: 12px; padding: 8px 0;
+            border-bottom: 1px solid var(--line-1); font-size: 13px;
+        }
+        .api-endpoint:last-child { border-bottom: 0; }
+        .method {
+            font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+            padding: 2px 8px; border-radius: var(--r-xs); min-width: 42px; text-align: center;
+        }
+        .method.get  { background: var(--signal-success-bg); color: var(--signal-success); }
+        .method.post { background: var(--signal-info-bg);    color: var(--signal-info); }
+        .api-path { font-family: var(--font-mono); font-size: 12px; color: var(--ink); flex: 1; }
+        .api-desc { font-size: 12px; color: var(--stone-500); }
+
+        .empty-state {
+            padding: 32px; text-align: center; color: var(--stone-400);
+        }
+        .empty-state .ico { font-size: 36px; margin-bottom: 8px; }
+        .empty-state p { font-size: 14px; }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: clientSidebar('watch')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Wearable')}"></div>
+
+    <main class="main">
+
+        <div class="page-title">Apple <em>Watch</em></div>
+        <p class="page-sub">Manual log · CSV import · REST API</p>
+
+        <div class="watch-grid">
+
+            <!-- Today's activity -->
+            <div class="wcard">
+                <div class="wcard-header">
+                    <div class="wcard-ico">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="wcard-title">Today's activity</div>
+                        <div class="wcard-sub" id="today-date">Loading…</div>
+                    </div>
+                </div>
+                <div class="stat-row" id="stats-row">
+                    <div class="stat-box">
+                        <div class="val" id="stat-kcal"><span class="unit">kcal</span></div>
+                        <div class="lbl">Calories</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="val" id="stat-min"><span class="unit">min</span></div>
+                        <div class="lbl">Exercise</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="val" id="stat-checkins"></div>
+                        <div class="lbl">Check-ins</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Door PIN glance -->
+            <div class="wcard">
+                <div class="wcard-header">
+                    <div class="wcard-ico">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="wcard-title">Door PIN</div>
+                        <div class="wcard-sub">Show at reception or tap RFID card</div>
+                    </div>
+                </div>
+                <div class="pin-display" id="pin-display">
+                    <div class="pin-digit" th:each="ch : ${#strings.listSplit(me != null && me.pin != null ? me.pin : '????', '')}">
+                        <span th:text="${ch}">·</span>
+                    </div>
+                </div>
+                <p style="text-align:center; font-size:12px; color:var(--stone-400); font-family:var(--font-mono);">
+                    PIN: <strong th:text="${me != null ? me.pin : ''}" style="color:var(--ink); font-size:16px; letter-spacing:0.12em;"></strong>
+                </p>
+            </div>
+
+        </div>
+
+        <!-- LOG A WORKOUT (manual entry, data feeds into Watch stats + AI coach) -->
+        <div class="wcard" style="margin-bottom:20px;">
+            <div class="wcard-header">
+                <div class="wcard-ico">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="wcard-title">Log a workout</div>
+                    <div class="wcard-sub">Manual entry · updates today's stats &amp; AI coach context</div>
+                </div>
+            </div>
+            <!-- Flash messages for this form -->
+            <div th:if="${success}" class="alert alert-success" th:text="${success}" style="margin-bottom:14px"></div>
+            <div th:if="${error}"   class="alert alert-error"   th:text="${error}"   style="margin-bottom:14px"></div>
+            <form autocomplete="off" method="post" action="/client/workouts/log">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <input type="hidden" name="returnTo" value="/client/watch" autocomplete="nope">
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Workout type</label>
+                        <select class="form-select" name="workoutType" required>
+                            <option th:each="t : ${workoutTypes}" th:value="${t}" th:text="${t}">Type</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Duration (min)</label>
+                        <input class="form-input" type="number" name="durationMinutes" min="1" max="600" placeholder="e.g. 45" autocomplete="nope">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Calories burned (kcal)</label>
+                        <input class="form-input" type="number" name="calories" min="0" step="0.1" placeholder="e.g. 350" autocomplete="nope">
+                    </div>
+                    <div>
+                        <label class="form-label">Avg heart rate (bpm)</label>
+                        <input class="form-input" type="number" name="avgHeartRate" min="40" max="220" placeholder="e.g. 145" autocomplete="nope">
+                    </div>
+                </div>
+                <div style="margin-bottom:14px">
+                    <label class="form-label">Notes <span style="font-weight:400;color:var(--stone-400)">(optional)</span></label>
+                    <input class="form-input" type="text" name="notes" placeholder="e.g. Push day, felt great" maxlength="500" autocomplete="nope">
+                </div>
+                <button class="btn" type="submit" style="display:flex;align-items:center;gap:7px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Save Workout
+                </button>
+            </form>
+        </div>
+
+        <!-- RECENT WORKOUTS (server-side rendered, all sources: manual + CSV import + REST API) -->
+        <div class="wcard" style="margin-bottom:20px;">
+            <div class="wcard-header">
+                <div class="wcard-ico">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                        <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="wcard-title">Recent workouts</div>
+                    <div class="wcard-sub">Last 30 days · manual, CSV &amp; API</div>
+                </div>
+            </div>
+
+            <!-- Empty state -->
+            <div th:if="${#lists.isEmpty(recentWorkouts)}" class="empty-state">
+                <div class="ico">🏋️</div>
+                <p>No workouts logged yet.<br/>Use the form above to log your first workout, or they will sync automatically once the Forge iOS app is available.</p>
+            </div>
+
+            <!-- Workout rows -->
+            <div class="workout-list" th:unless="${#lists.isEmpty(recentWorkouts)}">
+                <div class="workout-row" th:each="w : ${recentWorkouts}">
+                    <div>
+                        <div class="workout-type">
+                            <span th:text="${w.workoutType}"></span>
+                            <span th:if="${'apple_watch'.equals(w.source)}"
+                                  style="font-size:10px;margin-left:6px;background:var(--signal-info-bg);color:var(--signal-info);padding:1px 7px;border-radius:999px;font-weight:600">⌚ Watch</span>
+                            <span th:unless="${'apple_watch'.equals(w.source)}"
+                                  style="font-size:10px;margin-left:6px;background:var(--bg-sunken);color:var(--stone-400);padding:1px 7px;border-radius:999px">Manual</span>
+                        </div>
+                        <div class="workout-date" th:text="${w.startTime != null ? #temporals.format(w.startTime, 'dd MMM yyyy') : ''}"></div>
+                    </div>
+                    <span class="workout-val" th:text="${w.durationSeconds != null ? (w.durationSeconds / 60) + ' min' : ''}"></span>
+                    <span class="workout-val" th:text="${w.avgHeartRate != null ? w.avgHeartRate + ' bpm' : ''}"></span>
+                    <span class="workout-kcal" th:text="${w.activeCalories != null ? #numbers.formatDecimal(w.activeCalories, 0, 0) + ' kcal' : ''}"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- API documentation for developers / iOS app -->
+        <div class="api-info">
+            <h4>Wearable REST API, endpoints for a future mobile companion app</h4>
+            <div th:with="mid=${user != null ? user.id : '{memberId}'}">
+                <div class="api-endpoint">
+                    <span class="method get">GET</span>
+                    <span class="api-path" th:text="'/api/watch/' + ${mid} + '/profile'"></span>
+                    <span class="api-desc">Member profile for watch face</span>
+                </div>
+                <div class="api-endpoint">
+                    <span class="method get">GET</span>
+                    <span class="api-path" th:text="'/api/watch/' + ${mid} + '/stats'"></span>
+                    <span class="api-desc">Today's activity (calories, duration, checkins)</span>
+                </div>
+                <div class="api-endpoint">
+                    <span class="method get">GET</span>
+                    <span class="api-path" th:text="'/api/watch/' + ${mid} + '/workouts'"></span>
+                    <span class="api-desc">Recent workout history</span>
+                </div>
+                <div class="api-endpoint">
+                    <span class="method post">POST</span>
+                    <span class="api-path" th:text="'/api/watch/' + ${mid} + '/workout'"></span>
+                    <span class="api-desc">Sync workout from any wearable (JSON body)</span>
+                </div>
+                <div class="api-endpoint">
+                    <span class="method get">GET</span>
+                    <span class="api-path" th:text="'/api/watch/' + ${mid} + '/checkins'"></span>
+                    <span class="api-desc">Recent gym check-ins</span>
+                </div>
+                <div class="api-endpoint">
+                    <span class="method get">GET</span>
+                    <span class="api-path" th:text="'/api/watch/' + ${mid} + '/pin'"></span>
+                    <span class="api-desc">Door PIN for watch glance</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Example POST body -->
+        <div class="wcard">
+            <div class="wcard-header">
+                <div class="wcard-ico">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="wcard-title">Example: POST workout from Watch</div>
+                    <div class="wcard-sub">JSON body for /api/watch/{id}/workout</div>
+                </div>
+            </div>
+            <pre style="background:var(--stone-50); border:1px solid var(--line-1); border-radius:var(--r-md); padding:16px; font-family:var(--font-mono); font-size:12px; color:var(--ink); overflow-x:auto; line-height:1.6;">{
+  "workoutType":     "STRENGTH",
+  "startTime":       "2026-05-20T09:15:00",
+  "endTime":         "2026-05-20T10:00:00",
+  "durationSeconds": 2700,
+  "activeCalories":  320.5,
+  "totalCalories":   380.0,
+  "avgHeartRate":    142,
+  "maxHeartRate":    168,
+  "minHeartRate":    98,
+  "distanceMeters":  null,
+  "stepCount":       null,
+  "healthKitUUID":   "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
+  "notes":           "Push day, bench, OHP, rows"
+}</pre>
+        </div>
+
+    </main>
+</div>
+
+<script th:inline="javascript">
+    const memberId = /*[[${memberId}]]*/ 0;
+
+    // Load today's activity stats live from the Watch API
+    async function loadStats() {
+        if (!memberId) return;
+        try {
+            const r = await fetch('/api/watch/' + memberId + '/stats');
+            if (!r.ok) return;
+            const d = await r.json();
+            document.getElementById('today-date').textContent = 'Today · ' + d.date;
+            document.getElementById('stat-kcal').innerHTML = d.calories + '<span class="unit">kcal</span>';
+            document.getElementById('stat-min').innerHTML  = d.durationMin + '<span class="unit">min</span>';
+            document.getElementById('stat-checkins').textContent = d.checkinsToday;
+        } catch (e) {
+            console.warn('Stats load failed:', e);
+        }
+    }
+
+    loadStats();
+</script>
+</body>
+</html>

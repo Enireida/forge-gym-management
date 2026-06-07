@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>Error - Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div class="error-wrap">
+    <div class="error-code" th:text="${status}?:'500'">500</div>
+    <div class="error-msg"  th:text="${message}?:'Something went wrong.'"></div>
+    <a class="error-link" href="/">&larr; Back to home</a>
+</div>
+</body>
+</html>

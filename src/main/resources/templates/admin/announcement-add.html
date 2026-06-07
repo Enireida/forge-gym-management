@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>Post Announcement — Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('announcements')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('')}"></div>
+    <main class="main">
+        <div class="add-wrap">
+
+            <div style="margin-bottom:28px">
+                <div class="pg-breadcrumb">Announcements / New</div>
+                <h1 class="pg-heading" style="margin-bottom:0">Post announcement</h1>
+            </div>
+
+            <form autocomplete="off" method="post" action="/admin/announcements">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+
+                <div class="reg-section">
+                    <div class="sec-header">
+                        <div class="sec-num">01</div>
+                        <div class="sec-header-text">
+                            <h3>Content</h3>
+                            <p>Published immediately to the selected audience.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="field">
+                            <label>Title <span class="req">*</span></label>
+                            <input class="form-input" name="title" placeholder="e.g. Gym closed on Sunday" required autocomplete="nope">
+                        </div>
+                        <div class="field">
+                            <label>Audience <span class="req">*</span></label>
+                            <select class="form-select" name="audience">
+                                <option value="all">Everyone</option>
+                                <option value="members">Members only</option>
+                                <option value="staff">Staff only</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field" style="margin-bottom:0">
+                        <label>Message <span class="req">*</span></label>
+                        <textarea class="form-input" name="message" rows="6"
+                                  placeholder="Write your announcement here…" required
+                                  style="resize:vertical"></textarea>
+                    </div>
+                </div>
+
+                <div class="reg-actions">
+                    <a href="/admin/announcements" class="btn btn-secondary" style="text-decoration:none">Cancel</a>
+                    <button type="submit" class="btn" style="display:flex;align-items:center;gap:7px;min-width:140px;justify-content:center">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+                        Publish
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+</body></html>

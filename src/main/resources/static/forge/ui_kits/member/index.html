@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Forge — Member Portal</title>
+<link rel="stylesheet" href="../../colors_and_type.css" />
+<style>
+  body{margin:0;font-family:var(--font-sans, 'Geist', system-ui, sans-serif); color:#0E1A11; background:#FAFAFA}
+  .app{display:flex;height:100vh;background:#FAFAFA;overflow:hidden}
+  .main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{padding:18px 32px;border-bottom:1px solid #EEEEEA;background:#fff;display:flex;align-items:center;gap:16px;flex-shrink:0}
+  .content{flex:1;overflow-y:auto;background:#FAFAFA}
+  input::placeholder, textarea::placeholder { color: #8A8A85; }
+  button { font-family: inherit; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script type="text/babel" src="MemberParts.jsx"></script>
+<script type="text/babel" src="MemberScreens.jsx"></script>
+<script type="text/babel" src="MemberFoodExercises.jsx"></script>
+<script type="text/babel" src="MemberMisc.jsx"></script>
+<script type="text/babel">
+function App() {
+  const [screen, setScreen] = React.useState('home');
+  const [notifOpen, setNotifOpen] = React.useState(false);
+  const [refreshTick, setRefreshTick] = React.useState(0);   // bump to recompute notif state on open
+
+  React.useEffect(() => {
+    const id = setTimeout(() => window.lucide && window.lucide.createIcons(), 80);
+    return () => clearTimeout(id);
+  }, [screen, notifOpen, refreshTick]);
+
+  React.useEffect(() => {
+    const handler = (e) => setScreen(e.detail);
+    window.addEventListener('forge:nav', handler);
+    return () => window.removeEventListener('forge:nav', handler);
+  }, []);
+
+  const titles = {
+    home:'Home', progress:'Progress', workouts:'Workouts', exercises:'Exercises',
+    food:'Food log', coach:'AI Coach', trainer:'Trainer chat', membership:'Membership', settings:'Settings',
+  };
+  const subs = {
+    home:       'Welcome back',
+    progress:   'Weight, body composition, plateau detection',
+    workouts:   'Your weekly plan · log the sets you actually performed',
+    exercises:  'Library · free weights, bodyweight, and machines',
+    food:       'Daily macros estimated with AI · seen by your trainer',
+    coach:      'Grounded in your real meals, workouts and measurements',
+    trainer:    'Chat with Rea, your assigned trainer',
+    membership: 'Plans, add-ons, pause and renewal requests',
+    settings:   'Profile, language, daily targets, notifications',
+  };
+
+  // Notifications derived from real local state.
+  const buildNotifs = () => {
+    const out = [];
+    const meals = window.readLocal('meals', []);
+    const todayKey = window.M_HELPERS.ymd(window.M_HELPERS.today());
+    const todaysMeals = meals.filter(m => m.date === todayKey);
+    const settings = window.readLocal('settings', { goalKcal:1800, daysLeft:23 });
+    const memReqs = window.readLocal('membershipReq', []);
+    const measReqs = window.readLocal('measurementReq', []);
+    const pauseReq = window.readLocal('pauseReq', null);
+    const log = window.readLocal('workoutLog', {});
+    const todayWorkout = log[todayKey] || [];
+    const doneToday = todayWorkout.filter(x => x.done).length;
+
+    if (memReqs.some(r => r.status === 'pending')) {
+      const r = memReqs.find(r => r.status === 'pending');
+      out.push({ ic:'clock', t:'Plan request pending', b:`${r.plan} · waiting for admin to confirm payment`, go:'membership' });
+    }
+    if (pauseReq && pauseReq.status === 'pending') {
+      out.push({ ic:'pause', t:'Pause request pending', b:`${pauseReq.weeks} weeks · waiting for admin approval`, go:'membership' });
+    }
+    if (measReqs.length > 0) {
+      out.push({ ic:'ruler', t:'Measurement request open', b:'Rea will record it at your next session', go:'progress' });
+    }
+    if (settings.daysLeft && settings.daysLeft <= 25) {
+      out.push({ ic:'id-card', t:`Renewal in ${settings.daysLeft} days`, b:'Submit a renewal request before expiry', go:'membership' });
+    }
+    if (todaysMeals.length === 0) {
+      out.push({ ic:'utensils', t:'No meals logged today', b:'Open the food log when you next eat', go:'food' });
+    }
+    if (todayWorkout.length && doneToday < todayWorkout.length) {
+      out.push({ ic:'dumbbell', t:`Today's workout in progress`, b:`${doneToday}/${todayWorkout.length} done · log the rest`, go:'workouts' });
+    }
+    out.push({ ic:'sparkles', t:'Coach has a new insight', b:'Plateau detected at 78.4 kg — open coach', go:'coach' });
+    return out.slice(0, 5);
+  };
+  const notifs = notifOpen ? buildNotifs() : [];
+  const hasNotifs = notifs.length > 0;
+
+  let body;
+  if      (screen === 'home')       body = <MemberHome onNavigate={setScreen}/>;
+  else if (screen === 'progress')   body = <MemberProgress/>;
+  else if (screen === 'membership') body = <MemberMembership/>;
+  else if (screen === 'workouts')   body = <MemberWorkouts/>;
+  else if (screen === 'exercises')  body = <MemberExercises/>;
+  else if (screen === 'food')       body = <MemberFood/>;
+  else if (screen === 'coach')      body = <MemberCoach/>;
+  else if (screen === 'trainer')    body = <MemberTrainer/>;
+  else if (screen === 'settings')   body = <MemberSettings/>;
+  else body = <div style={{padding:'80px 32px', textAlign:'center', color:'#8FB286', fontFamily:'Instrument Serif, serif', fontStyle:'italic', fontSize:24}}>Screen in progress.</div>;
+
+  return (
+    <div className="app" data-screen-label={`Member · ${screen}`}>
+      <MemberSidebar active={screen} onSelect={(s)=>{ setScreen(s); setRefreshTick(t=>t+1); }}/>
+      <div className="main">
+        <div className="topbar">
+          <div style={{flex:1, minWidth:0}}>
+            <div style={{fontSize:11, color:'#8FB286', letterSpacing:'0.10em', marginBottom:2, fontFamily:'Geist Mono, monospace', textTransform:'uppercase'}}>{subs[screen]}</div>
+            <h1 style={{fontFamily:'Instrument Serif, serif', fontWeight:400, fontSize:26, lineHeight:1, margin:0, color:'#0E1A11', letterSpacing:'-0.02em'}}>{titles[screen]}</h1>
+          </div>
+          <div style={{position:'relative'}}>
+            <button onClick={()=>{setNotifOpen(o => !o); setRefreshTick(t=>t+1);}}
+                    style={{width:36, height:36, borderRadius:8, background:'#fff', border:'1px solid #EEEEEA', cursor:'pointer', position:'relative', display:'flex', alignItems:'center', justifyContent:'center'}}>
+              <i data-lucide="bell" style={{width:15, height:15, color:'#4A4A45'}}></i>
+              <span style={{position:'absolute', top:6, right:6, width:6, height:6, borderRadius:'50%', background:'#4A7A4F'}}></span>
+            </button>
+            {notifOpen && (
+              <div style={{position:'absolute', top:46, right:0, width:340, background:'#fff', border:'1px solid #EEEEEA', borderRadius:12, boxShadow:'0 18px 40px rgba(14,26,17,0.12)', zIndex:90, overflow:'hidden'}}>
+                <div style={{padding:'14px 16px', borderBottom:'1px solid #F0F0EC', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                  <span style={{fontFamily:'Instrument Serif, serif', fontSize:18, color:'#0E1A11'}}>Notifications</span>
+                  <button onClick={()=>setNotifOpen(false)} style={{background:'transparent', border:0, fontSize:11, color:'#8FB286', cursor:'pointer', fontFamily:'Geist Mono, monospace', letterSpacing:'0.08em', textTransform:'uppercase'}}>Close</button>
+                </div>
+                {!hasNotifs && (
+                  <div style={{padding:'40px 16px', textAlign:'center', color:'#8FB286', fontStyle:'italic', fontFamily:'Instrument Serif, serif', fontSize:16}}>Nothing new — you're up to date.</div>
+                )}
+                {notifs.map((n,i)=>(
+                  <button key={i} onClick={()=>{ setScreen(n.go); setNotifOpen(false); }}
+                          style={{width:'100%', padding:'12px 16px', background:'transparent', border:0, borderBottom: i<notifs.length-1 ? '1px solid #F0F0EC' : 0, display:'flex', gap:10, alignItems:'flex-start', cursor:'pointer', textAlign:'left'}}>
+                    <div style={{width:28, height:28, borderRadius:8, background:'#E8EFE5', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0}}>
+                      <i data-lucide={n.ic} style={{width:13, height:13, color:'#2E5535'}}></i>
+                    </div>
+                    <div style={{flex:1, minWidth:0}}>
+                      <div style={{fontSize:13, fontWeight:600, color:'#0E1A11'}}>{n.t}</div>
+                      <div style={{fontSize:11.5, color:'#4A4A45', marginTop:2, lineHeight:1.45}}>{n.b}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="content">{body}</div>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

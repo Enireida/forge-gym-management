@@ -1,0 +1,810 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>Members, Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .modal-overlay{position:fixed;inset:0;background:rgba(6,15,26,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+        .modal-overlay.open{display:flex}
+        .modal-box{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-xl);width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-3)}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;padding:22px 24px 0}
+        .modal-title{font-family:var(--font-display);font-size:22px;font-weight:400;letter-spacing:-.01em;color:var(--fg-1)}
+        .modal-title em{font-style:italic;color:var(--accent-deep)}
+        .modal-close{background:none;border:none;cursor:pointer;color:var(--stone-400);font-size:26px;line-height:1;padding:4px 8px;border-radius:var(--r-sm)}
+        .modal-close:hover{background:var(--bg-sunken);color:var(--fg-1)}
+        .modal-body{padding:18px 24px 0}
+        .modal-footer{padding:16px 24px 22px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line-1);margin-top:18px}
+
+        /* ── Compact icon-form ── */
+        .iform-wrap{background:var(--bg-sunken);border:1px solid var(--line-1);border-radius:var(--r-lg);padding:16px 18px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+        .ifield{position:relative;flex:1;min-width:130px}
+        .ifield-label{display:flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--stone-400);margin-bottom:6px}
+        .ifield-label svg{color:var(--stone-400)}
+        .ifield .form-input,.ifield .form-select{width:100%;background:var(--paper)}
+        .iform-divider{width:100%;height:1px;background:var(--line-1);margin:2px 0}
+
+        /* ── Note tooltip ── */
+        .note-wrap { position: relative; display: inline-flex; align-items: center; }
+        .note-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; border-radius: 4px; cursor: pointer;
+            background: var(--accent-pale); border: 1px solid var(--accent);
+            color: var(--accent-deep); flex-shrink: 0; margin-left: 6px;
+            transition: background .15s;
+        }
+        .note-icon:hover { background: var(--accent); color: #fff; }
+        .note-bubble {
+            display: none; position: absolute; left: 28px; top: 50%;
+            transform: translateY(-50%);
+            background: var(--ink); color: #fff;
+            font-size: 12px; line-height: 1.5;
+            padding: 8px 12px; border-radius: 8px;
+            min-width: 180px; max-width: 280px;
+            white-space: pre-wrap; word-break: break-word;
+            box-shadow: 0 4px 16px rgba(0,0,0,.25);
+            z-index: 500;
+        }
+        .note-bubble::before {
+            content: ''; position: absolute; right: 100%; top: 50%;
+            transform: translateY(-50%);
+            border: 6px solid transparent;
+            border-right-color: var(--ink);
+        }
+        .note-wrap:hover .note-bubble,
+        .note-icon:focus + .note-bubble { display: block; }
+
+        /* ── 3-dot action menu ─────────────────────────── */
+        .dot-wrap {
+            position: relative;
+            display: inline-block;
+        }
+        .dot-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px;
+            background: none; border: 1px solid var(--line-1);
+            border-radius: var(--r-sm); cursor: pointer;
+            color: var(--stone-400);
+            transition: all var(--dur-fast) var(--ease-out);
+        }
+        .dot-btn:hover {
+            background: var(--bg-sunken); border-color: var(--stone-200); color: var(--fg-1);
+        }
+        .dot-btn.active {
+            background: var(--accent-pale); border-color: var(--accent); color: var(--accent-deep);
+        }
+
+        .dot-menu {
+            position: absolute; right: 0; top: calc(100% + 6px);
+            background: var(--bg-surface); border: 1px solid var(--line-1);
+            border-radius: var(--r-lg); box-shadow: var(--shadow-3);
+            min-width: 168px; padding: 5px;
+            z-index: 200; display: none;
+            animation: dotIn .14s var(--ease-out);
+        }
+        .dot-menu.open { display: block; }
+        @keyframes dotIn {
+            from { opacity: 0; transform: translateY(4px) scale(.98); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .dot-item {
+            display: flex; align-items: center; gap: 9px;
+            padding: 8px 10px; border-radius: var(--r-sm);
+            font-size: 13px; font-weight: 500; color: var(--fg-2);
+            cursor: pointer; width: 100%; text-align: left;
+            background: none; border: none; text-decoration: none;
+            transition: background var(--dur-fast);
+            font-family: var(--font-sans);
+        }
+        .dot-item:hover { background: var(--bg-sunken); color: var(--fg-1); }
+        .dot-item svg { color: var(--stone-400); flex-shrink: 0; }
+        .dot-item:hover svg { color: var(--fg-2); }
+
+        .dot-sep { height: 1px; background: var(--line-1); margin: 4px 6px; }
+
+        .dot-item.danger { color: var(--signal-danger); }
+        .dot-item.danger svg { color: var(--signal-danger); }
+        .dot-item.danger:hover { background: var(--signal-danger-bg); }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('members')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('')}"></div>
+    <main class="main">
+
+        <!-- SUCCESS FLASH -->
+        <div th:if="${success}"
+             style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px 16px;
+                    font-size:14px;color:#166534;margin-bottom:16px;display:flex;align-items:center;gap:8px">
+            <span>&#10003;</span> <span th:text="${success}"></span>
+        </div>
+
+        <!-- PAGE HEADER -->
+        <div class="pg-header">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+                <div>
+                    <div class="pg-breadcrumb">People / Directory</div>
+                    <h1 class="pg-heading">Members</h1>
+                    <div class="pg-chips">
+                        <span class="pg-chip active">
+                            <span class="dot"></span>
+                            <span th:text="${activeCount} + ' active'">0 active</span>
+                        </span>
+                        <span class="pg-chip expiring">
+                            <span class="dot"></span>
+                            <span th:text="${expiringCount} + ' expiring'">0 expiring</span>
+                        </span>
+                        <span class="pg-chip expired">
+                            <span class="dot"></span>
+                            <span th:text="${expiredCount} + ' expired'">0 expired</span>
+                        </span>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:center;padding-top:4px">
+                    <a href="/kiosk" target="_blank" class="btn btn-secondary"
+                       style="display:flex;align-items:center;gap:7px;text-decoration:none">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Open Door Kiosk
+                    </a>
+                    <a href="/admin/members/new" class="btn"
+                       style="display:flex;align-items:center;gap:7px;text-decoration:none">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        New member
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PENDING MEMBERS SECTION -->
+        <div th:if="${#lists.size(pendingMembers) > 0}" class="card" style="margin-bottom:20px;border:1px solid #ffe082">
+            <div class="card-title" style="color:#5d4037">
+                <span style="display:flex;align-items:center;gap:8px">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Members pending confirmation
+                </span>
+                <span class="badge" style="background:#fff8e1;color:#f57f17;border:1px solid #ffe082"
+                      th:text="${#lists.size(pendingMembers)}"></span>
+            </div>
+            <table>
+                <thead><tr>
+                    <th>Name</th><th>Email</th><th>Plan</th><th>Registered</th>
+                    <th style="text-align:center">Action</th>
+                </tr></thead>
+                <tbody>
+                <tr th:each="m : ${pendingMembers}">
+                    <td><strong th:text="${m.name}"></strong></td>
+                    <td th:text="${m.email}"></td>
+                    <td th:text="${m.plan != null ? m.plan.name : '—'}"></td>
+                    <td th:text="${m.createdAt != null ? #temporals.format(m.createdAt, 'dd/MM/yyyy') : '—'}"></td>
+                    <td style="text-align:center">
+                        <form autocomplete="off" th:action="@{'/admin/members/' + ${m.id} + '/activate'}" method="post" style="display:inline">
+                            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                            <button type="submit" class="btn" style="background:#2e7d32;color:#fff;font-size:13px;padding:6px 16px"
+                                    onclick="return confirm('Activate this member?')">Activate</button>
+                        </form>
+                        <form autocomplete="off" th:action="@{'/admin/members/' + ${m.id} + '/delete'}" method="post" style="display:inline;margin-left:6px">
+                            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                            <button type="submit" class="btn btn-secondary" style="font-size:13px;padding:6px 12px;color:var(--signal-danger)"
+                                    onclick="return confirm('Reject this registration?')">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- MEMBER TABLE CARD -->
+        <div class="card">
+
+            <!-- SEARCH + FILTERS -->
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+                <form autocomplete="off" method="get" action="/admin/members" style="flex:1;min-width:260px;display:flex;align-items:center;
+                            border:1px solid var(--line-1);border-radius:var(--r-pill);
+                            background:var(--bg-sunken);overflow:hidden;margin:0">
+                    <span style="padding:0 14px;color:var(--stone-400);display:flex;align-items:center">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                    </span>
+                    <input type="text" name="q" th:value="${query}"
+                           placeholder="Search by name, email, PIN or RFID…"
+                           style="flex:1;border:none;outline:none;padding:11px 12px 11px 0;
+                                  font-size:14px;background:transparent;color:var(--fg-1)" autocomplete="nope">
+                    <a th:if="${query != null and !query.isEmpty()}" href="/admin/members"
+                       style="padding:0 14px;color:var(--stone-400);text-decoration:none;font-size:18px;line-height:1;display:flex;align-items:center">&times;</a>
+                </form>
+                <!-- Filter tabs -->
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="filterMembers('all',this)">All</button>
+                    <button class="filter-tab" onclick="filterMembers('ACTIVE',this)">Active</button>
+                    <button class="filter-tab" onclick="filterMembers('EXPIRING',this)">Expiring</button>
+                    <button class="filter-tab" onclick="filterMembers('EXPIRED',this)">Expired</button>
+                </div>
+                <button type="button" class="btn btn-secondary" style="display:flex;align-items:center;gap:6px;font-size:13px"
+                        onclick="document.querySelector('form[action=\'/admin/members\']').submit()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                    </svg>
+                    Filters
+                </button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Member</th>
+                        <th>Phone</th>
+                        <th>PIN</th>
+                        <th>RFID</th>
+                        <th>Plan</th>
+                        <th>Status / Expiry</th>
+                        <th style="width:48px;text-align:center"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr th:each="m : ${members}"
+                    th:data-status="${m.status != null ? m.status.name() : 'ACTIVE'}"
+                    th:data-expiry="${m.expiryDate}">
+                    <!-- MEMBER column: avatar + name + email -->
+                    <td>
+                        <div style="display:flex;align-items:center;gap:12px">
+                            <!-- Avatar initials -->
+                            <div class="member-avatar"
+                                 th:id="'av_' + ${m.id}"
+                                 th:data-name="${m.name + (m.surname != null ? ' ' + m.surname : '')}">
+                            </div>
+                            <div>
+                                <div style="font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px">
+                                    <span th:text="${m.name + (m.surname != null ? ' ' + m.surname : '')}">Name</span>
+                                    <span th:if="${birthdayMemberIds != null and birthdayMemberIds.contains(m.id)}"
+                                          title="Birthday this month!" style="font-size:13px">🎂</span>
+                                    <span th:if="${m.adminNote != null and !m.adminNote.isEmpty()}" class="note-wrap">
+                                        <span class="note-icon" tabindex="0" title="Admin note">
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                                <polyline points="14 2 14 8 20 8"/>
+                                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                            </svg>
+                                        </span>
+                                        <span class="note-bubble" th:text="${m.adminNote}"></span>
+                                    </span>
+                                </div>
+                                <div style="font-size:12px;color:var(--stone-400);margin-top:1px" th:text="${m.email}"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="font-size:13px;color:var(--stone-500)" th:text="${m.phone != null ? m.phone : '—'}"></td>
+                    <td><code style="font-family:var(--font-mono);font-size:12px;background:var(--bg-sunken);padding:2px 7px;border-radius:4px;font-weight:700" th:text="${m.pin}"></code></td>
+                    <td>
+                        <span th:if="${m.rfidCode!=null}" class="badge badge-info" th:text="${m.rfidCode}"></span>
+                        <span th:unless="${m.rfidCode!=null}" style="color:var(--stone-300)">—</span>
+                    </td>
+                    <td style="font-size:13px" th:text="${m.plan!=null ? m.plan.name : '—'}"></td>
+                    <!-- Status + Expiry combined -->
+                    <td>
+                        <div>
+                            <span class="badge"
+                                  th:classappend="${m.status != null and m.status.name() == 'ACTIVE'} ? 'badge-success' :
+                                                 (${m.status != null and m.status.name() == 'EXPIRED'} ? 'badge-warn' : 'badge-danger')"
+                                  th:text="${m.status}"></span>
+                            <div style="font-size:11px;color:var(--stone-400);font-family:var(--font-mono);margin-top:3px"
+                                 th:if="${m.expiryDate != null}" th:text="${m.expiryDate}"></div>
+                        </div>
+                    </td>
+                    <td style="text-align:center">
+                        <!-- 3-DOT ACTION MENU -->
+                        <div class="dot-wrap">
+                            <button class="dot-btn" type="button"
+                                    th:data-id="${m.id}"
+                                    onclick="toggleDotMenu(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+                                </svg>
+                            </button>
+
+                            <div class="dot-menu">
+                                <!-- View Profile -->
+                                <a class="dot-item" th:href="@{'/admin/members/' + ${m.id}}">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    View Profile
+                                </a>
+                                <!-- Edit -->
+                                <button class="dot-item" type="button"
+                                        th:data-id="${m.id}"
+                                        th:data-name="${m.name}"
+                                        th:data-phone="${m.phone}"
+                                        th:data-plan="${m.plan!=null ? m.plan.id : ''}"
+                                        th:data-expiry="${m.expiryDate}"
+                                        th:data-status="${m.status}"
+                                        onclick="openEditMember(this); closeDotMenus()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    Edit Member
+                                </button>
+                                <!-- Renew -->
+                                <button class="dot-item" type="button"
+                                        th:data-id="${m.id}"
+                                        th:data-name="${m.name}"
+                                        onclick="openRenewModal(this.dataset.id, this.dataset.name); closeDotMenus()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                    Renew Membership
+                                </button>
+                                <!-- Assign Card -->
+                                <button class="dot-item" type="button"
+                                        th:data-id="${m.id}"
+                                        th:data-name="${m.name}"
+                                        onclick="assignCard(this.dataset.id, this.dataset.name); closeDotMenus()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                                    Assign RFID Card
+                                </button>
+
+                                <div class="dot-sep"></div>
+
+                                <!-- Delete -->
+                                <form autocomplete="off" method="post" th:action="@{'/admin/members/'+${m.id}+'/delete'}" style="margin:0">
+                                    <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                                    <button class="dot-item danger" type="submit"
+                                            onclick="return confirm('Permanently delete this member and all their data?')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                        Delete Member
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <!-- Pagination controls -->
+            <div id="pagination-bar" style="display:flex;align-items:center;justify-content:space-between;padding:14px 0 2px;flex-wrap:wrap;gap:8px">
+                <span id="page-info" style="font-size:13px;color:var(--stone-400)"></span>
+                <div style="display:flex;gap:6px" id="page-btns"></div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- ===== ADD MEMBER MODAL ===== -->
+<div id="addMemberModal" class="modal-overlay" onclick="if(event.target===this)closeModal('addMemberModal')">
+    <div class="modal-box" style="max-width:620px">
+        <div class="modal-header">
+            <span class="modal-title">Register <em>New Member</em></span>
+            <button class="modal-close" onclick="closeModal('addMemberModal')">×</button>
+        </div>
+        <form autocomplete="off" method="post" action="/admin/members" id="addMemberForm">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <!-- Reception photo -->
+                <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:22px">
+
+                    <!-- Preview circle -->
+                    <div style="position:relative;width:96px;height:96px">
+                        <div id="photoPreview"
+                             style="width:96px;height:96px;border-radius:50%;background:var(--bg-sunken);border:2px dashed var(--line-1);display:flex;align-items:center;justify-content:center;overflow:hidden">
+                            <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="var(--stone-300)" stroke-width="1.5">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <!-- Retake badge, shown after a photo is captured/uploaded -->
+                        <div id="photoRetakeBadge"
+                             onclick="resetPhoto()"
+                             title="Retake / change photo"
+                             style="display:none;position:absolute;bottom:2px;right:2px;background:var(--accent);border-radius:50%;width:26px;height:26px;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3)">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
+                                <polyline points="23 4 23 10 17 10"/>
+                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Live camera view (hidden by default) -->
+                    <div id="cameraView" style="display:none;flex-direction:column;align-items:center;gap:8px;width:100%">
+                        <video id="cameraVideo" autoplay playsinline muted
+                               style="width:220px;height:165px;border-radius:var(--r-lg);object-fit:cover;border:1px solid var(--line-1);background:#000"></video>
+                        <div style="display:flex;gap:8px">
+                            <button type="button" class="btn" onclick="capturePhoto()"
+                                    style="display:flex;align-items:center;gap:6px;font-size:13px">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="4"/><path d="M3 9a2 2 0 0 1 2-2h.93a2 2 0 0 0 1.664-.89l.812-1.22A2 2 0 0 1 10.07 4h3.86a2 2 0 0 1 1.664.89l.812 1.22A2 2 0 0 0 18.07 7H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                </svg>
+                                Capture
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="stopCamera()"
+                                    style="font-size:13px">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Photo action buttons (visible when camera is off) -->
+                    <div id="photoButtons" style="display:flex;gap:8px">
+                        <button type="button" onclick="startCamera()"
+                                style="display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--bg-sunken);border:1px solid var(--line-1);border-radius:var(--r-md);font-size:12px;font-weight:600;color:var(--fg-2);cursor:pointer;font-family:var(--font-sans);transition:all .15s">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                <circle cx="12" cy="13" r="4"/>
+                            </svg>
+                            Bej Foto
+                        </button>
+                        <button type="button" onclick="document.getElementById('photoFileInput').click()"
+                                style="display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--bg-sunken);border:1px solid var(--line-1);border-radius:var(--r-md);font-size:12px;font-weight:600;color:var(--fg-2);cursor:pointer;font-family:var(--font-sans);transition:all .15s">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            Gjej Foto
+                        </button>
+                    </div>
+
+                    <input type="file" id="photoFileInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)" autocomplete="nope">
+                    <input type="hidden" name="photoData" id="photoDataInput" autocomplete="nope">
+                    <canvas id="photoCanvas" style="display:none"></canvas>
+                </div>
+                <!-- Name row -->
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">First Name <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" name="name" placeholder="e.g. Arta" required autocomplete="nope">
+                    </div>
+                    <div>
+                        <label class="form-label">Last Name / Surname</label>
+                        <input class="form-input" name="surname" placeholder="e.g. Kelmendi" autocomplete="nope">
+                    </div>
+                </div>
+                <!-- Birth + Phone row -->
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Date of Birth</label>
+                        <input class="form-input" type="date" name="birthDate" autocomplete="nope">
+                    </div>
+                    <div>
+                        <label class="form-label">Phone Number</label>
+                        <input class="form-input" name="phone" placeholder="+355 69 …" autocomplete="nope">
+                    </div>
+                </div>
+                <!-- Email + RFID row -->
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Email <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" type="email" name="email" required placeholder="member@email.com" autocomplete="nope">
+                    </div>
+                    <div>
+                        <label class="form-label">RFID Card Code <span style="font-weight:400;color:var(--stone-400)">(optional)</span></label>
+                        <input class="form-input" name="rfidCode" placeholder="Scan card or type digits" autocomplete="off">
+                    </div>
+                </div>
+                <!-- Plan -->
+                <div style="margin-bottom:16px">
+                    <label class="form-label">Membership Plan <span style="color:var(--signal-danger)">*</span></label>
+                    <select class="form-select" name="planId" required>
+                        <option value=""> select a plan </option>
+                        <option th:each="p : ${plans}" th:value="${p.id}" th:text="${p.name + ', $' + p.price}">Plan</option>
+                    </select>
+                </div>
+                <!-- Info note -->
+                <div style="background:var(--bg-sunken);border:1px solid var(--line-1);border-radius:var(--r-md);padding:10px 14px;display:flex;gap:10px;align-items:flex-start">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--stone-400)" stroke-width="2" style="flex-shrink:0;margin-top:2px">
+                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span style="font-size:12px;color:var(--stone-400);line-height:1.55">
+                        Registration details (name, surname, date of birth, email, photo) are recorded by
+                        reception staff and <strong style="color:var(--stone-500)">cannot be modified by the member</strong>.
+                    </span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addMemberModal')">Cancel</button>
+                <button type="submit" class="btn" style="display:flex;align-items:center;gap:7px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Register Member
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== RENEW MODAL ===== -->
+<div id="renewModal" class="modal-overlay" onclick="if(event.target===this)closeModal('renewModal')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Renew <em>Membership</em></span>
+            <button class="modal-close" onclick="closeModal('renewModal')">×</button>
+        </div>
+        <form autocomplete="off" method="post" id="renewForm">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <p style="color:var(--stone-500);font-size:13px;margin-bottom:14px">
+                    Renewing membership for: <strong id="renewMemberName"></strong>
+                </p>
+                <div style="margin-bottom:14px">
+                    <label class="form-label">Extend by (months)</label>
+                    <select class="form-select" name="months" required>
+                        <option value="1">1 month</option>
+                        <option value="3" selected>3 months</option>
+                        <option value="6">6 months</option>
+                        <option value="12">12 months (1 year)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Change plan <span style="font-weight:400;color:var(--stone-400)">(optional)</span></label>
+                    <select class="form-select" name="planId">
+                        <option value=""> keep current plan </option>
+                        <option th:each="p : ${plans}" th:value="${p.id}" th:text="${p.name + ', $' + p.price}">Plan</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('renewModal')">Cancel</button>
+                <button type="submit" class="btn">Renew</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== EDIT MEMBER MODAL ===== -->
+<div id="editMemberModal" class="modal-overlay" onclick="if(event.target===this)closeModal('editMemberModal')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Edit <em>Member</em></span>
+            <button class="modal-close" onclick="closeModal('editMemberModal')">×</button>
+        </div>
+        <form autocomplete="off" method="post" id="editMemberForm">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div><label class="form-label">Full name</label>
+                        <input class="form-input" id="em-name" name="name" required autocomplete="nope"></div>
+                    <div><label class="form-label">Phone</label>
+                        <input class="form-input" id="em-phone" name="phone" autocomplete="nope"></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Plan</label>
+                        <select class="form-select" id="em-plan" name="planId" required>
+                            <option th:each="p : ${plans}" th:value="${p.id}" th:text="${p.name}">Plan</option>
+                        </select></div>
+                    <div><label class="form-label">Expiry date</label>
+                        <input class="form-input" id="em-expiry" name="expiryDate" type="date" required autocomplete="nope"></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Status</label>
+                        <select class="form-select" id="em-status" name="status" required>
+                            <option value="ACTIVE">Active</option>
+                            <option value="INACTIVE">Inactive</option>
+                            <option value="SUSPENDED">Suspended</option>
+                            <option value="EXPIRED">Expired</option>
+                        </select></div>
+                    <div></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editMemberModal')">Cancel</button>
+                <button type="submit" class="btn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== ASSIGN RFID MODAL ===== -->
+<div id="cardModal" class="modal-overlay" onclick="if(event.target===this)closeModal('cardModal')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Assign <em>RFID Card</em></span>
+            <button class="modal-close" onclick="closeModal('cardModal')">×</button>
+        </div>
+        <form autocomplete="off" method="post" id="cardModalForm">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <p style="color:var(--stone-500);font-size:13px;margin-bottom:12px">
+                    Assigning card to: <strong id="cardModalName"></strong>
+                </p>
+                <label class="form-label">RFID card code</label>
+                <input class="form-input" type="text" name="rfidCode" id="cardModalInput"
+                       placeholder="Scan card now or type digits" autocomplete="off" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('cardModal')">Cancel</button>
+                <button type="submit" class="btn">Save Card</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    /* ── Avatar initials ── */
+    const AVATAR_COLORS = ['#2C3E50','#8B6914','#3D6B5A','#6B4F8E','#3D6B8E','#8E3D4A','#4A6741','#5D4037'];
+    function getAvatarColor(name) {
+        let h = 0;
+        for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+        return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+    }
+    function getInitials(name) {
+        return name.split(' ').filter(Boolean).slice(0, 2).map(n => n[0].toUpperCase()).join('');
+    }
+    document.querySelectorAll('.member-avatar[data-name]').forEach(el => {
+        const name = el.dataset.name || '?';
+        el.textContent = getInitials(name);
+        el.style.background = getAvatarColor(name);
+    });
+
+    /* ── Filter tabs ── */
+    function filterMembers(status, btn) {
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        const today = new Date(); today.setHours(0,0,0,0);
+        const in30  = new Date(today); in30.setDate(today.getDate() + 30);
+        document.querySelectorAll('tbody tr[data-status]').forEach(row => {
+            const s = row.dataset.status;
+            const exp = row.dataset.expiry ? new Date(row.dataset.expiry) : null;
+            let show = false;
+            if (status === 'all') show = true;
+            else if (status === 'ACTIVE')   show = s === 'ACTIVE' && (!exp || exp > in30);
+            else if (status === 'EXPIRING') show = s === 'ACTIVE' && exp && exp >= today && exp <= in30;
+            else if (status === 'EXPIRED')  show = s === 'EXPIRED';
+            row.style.display = show ? '' : 'none';
+        });
+    }
+
+    /* ── Modals ── */
+    function openModal(id)  { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+        if (id === 'addMemberModal') stopCamera();
+    }
+
+    function openRenewModal(id, name) {
+        document.getElementById('renewMemberName').textContent = name;
+        document.getElementById('renewForm').action = '/admin/members/' + id + '/renew';
+        openModal('renewModal');
+    }
+
+    function openEditMember(btn) {
+        const d = btn.dataset;
+        document.getElementById('editMemberForm').action = '/admin/members/' + d.id + '/edit';
+        document.getElementById('em-name').value   = d.name   || '';
+        document.getElementById('em-phone').value  = d.phone  || '';
+        document.getElementById('em-expiry').value = d.expiry || '';
+        document.getElementById('em-status').value = d.status || 'ACTIVE';
+        const sel = document.getElementById('em-plan');
+        for (let o of sel.options) o.selected = o.value === d.plan;
+        openModal('editMemberModal');
+    }
+
+    function assignCard(id, name) {
+        document.getElementById('cardModalName').textContent = name;
+        document.getElementById('cardModalForm').action = '/admin/members/' + id + '/rfid';
+        document.getElementById('cardModalInput').value = '';
+        openModal('cardModal');
+        document.getElementById('cardModalInput').focus();
+    }
+
+    /* ── Photo: camera + file upload ── */
+    let _camStream = null;
+
+    function startCamera() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('Camera not supported in this browser.'); return;
+        }
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } })
+            .then(function(stream) {
+                _camStream = stream;
+                const vid = document.getElementById('cameraVideo');
+                vid.srcObject = stream;
+                document.getElementById('cameraView').style.display   = 'flex';
+                document.getElementById('photoButtons').style.display = 'none';
+            })
+            .catch(function(err) {
+                alert('Nu u hap kamera: ' + err.message);
+            });
+    }
+
+    function capturePhoto() {
+        const vid    = document.getElementById('cameraVideo');
+        const canvas = document.getElementById('photoCanvas');
+        canvas.width  = vid.videoWidth  || 640;
+        canvas.height = vid.videoHeight || 480;
+        canvas.getContext('2d').drawImage(vid, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        _setPhoto(dataUrl);
+        stopCamera();
+    }
+
+    function stopCamera() {
+        if (_camStream) {
+            _camStream.getTracks().forEach(function(t) { t.stop(); });
+            _camStream = null;
+        }
+        document.getElementById('cameraVideo').srcObject = null;
+        document.getElementById('cameraView').style.display   = 'none';
+        document.getElementById('photoButtons').style.display = 'flex';
+    }
+
+    function handlePhotoUpload(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) { _setPhoto(e.target.result); };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function _setPhoto(dataUrl) {
+        document.getElementById('photoPreview').innerHTML =
+            '<img src="' + dataUrl + '" style="width:100%;height:100%;object-fit:cover;">';
+        document.getElementById('photoDataInput').value = dataUrl;
+        const badge = document.getElementById('photoRetakeBadge');
+        badge.style.display = 'flex';
+    }
+
+    function resetPhoto() {
+        document.getElementById('photoPreview').innerHTML =
+            '<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="var(--stone-300)" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+        document.getElementById('photoDataInput').value = '';
+        document.getElementById('photoRetakeBadge').style.display = 'none';
+        document.getElementById('photoFileInput').value = '';
+        stopCamera();
+    }
+
+    /* ── 3-dot dropdown ── */
+    function toggleDotMenu(btn) {
+        const wrap = btn.closest('.dot-wrap');
+        const menu = wrap.querySelector('.dot-menu');
+        const isOpen = menu.classList.contains('open');
+
+        closeDotMenus(); // close any other open menus
+
+        if (!isOpen) {
+            menu.classList.add('open');
+            btn.classList.add('active');
+        }
+    }
+
+    function closeDotMenus() {
+        document.querySelectorAll('.dot-menu.open').forEach(m => {
+            m.classList.remove('open');
+            const btn = m.closest('.dot-wrap')?.querySelector('.dot-btn');
+            if (btn) btn.classList.remove('active');
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dot-wrap')) closeDotMenus();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeDotMenus();
+    });
+
+    /* ── Pagination ── */
+    (function() {
+        const PAGE_SIZE = 15;
+        const tbody = document.querySelector('#pagination-bar').closest('.card').querySelector('tbody');
+        if (!tbody) return;
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        if (rows.length <= PAGE_SIZE) {
+            document.getElementById('pagination-bar').style.display = 'none';
+            return;
+        }
+        let current = 1;
+        const totalPages = Math.ceil(rows.length / PAGE_SIZE);
+
+        function render(page) {
+            current = page;
+            const start = (page - 1) * PAGE_SIZE;
+            rows.forEach((r, i) => r.style.display = (i >= start && i < start + PAGE_SIZE) ? '' : 'none');
+            document.getElementById('page-info').textContent =
+                'Showing ' + (start + 1) + '–' + Math.min(start + PAGE_SIZE, rows.length) + ' of ' + rows.length + ' members';
+            const btns = document.getElementById('page-btns');
+            btns.innerHTML = '';
+            for (let p = 1; p <= totalPages; p++) {
+                const b = document.createElement('button');
+                b.textContent = p;
+                b.className = 'btn' + (p === current ? '' : ' btn-secondary');
+                b.style.cssText = 'min-width:32px;padding:4px 10px;font-size:12px';
+                b.onclick = () => render(p);
+                btns.appendChild(b);
+            }
+        }
+        render(1);
+    })();
+</script>
+</body>
+</html>

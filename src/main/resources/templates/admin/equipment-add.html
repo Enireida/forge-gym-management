@@ -1,0 +1,68 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>Add Equipment — Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('equipment')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('')}"></div>
+    <main class="main">
+        <div class="add-wrap">
+
+            <div style="margin-bottom:28px">
+                <div class="pg-breadcrumb">Equipment / New item</div>
+                <h1 class="pg-heading" style="margin-bottom:0">Add equipment</h1>
+            </div>
+
+            <form autocomplete="off" method="post" action="/admin/equipment">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+
+                <div class="reg-section">
+                    <div class="sec-header">
+                        <div class="sec-num">01</div>
+                        <div class="sec-header-text">
+                            <h3>Equipment details</h3>
+                            <p>Added to the gym inventory immediately on save.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="field">
+                            <label>Name <span class="req">*</span></label>
+                            <input class="form-input" name="name" placeholder="e.g. Treadmill Pro" required autocomplete="nope">
+                        </div>
+                        <div class="field">
+                            <label>Category <span class="req">*</span></label>
+                            <select class="form-select" name="category" required>
+                                <option>Cardio</option>
+                                <option>Strength</option>
+                                <option>Free Weights</option>
+                                <option>Functional</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="field">
+                            <label>Quantity <span class="req">*</span></label>
+                            <input class="form-input" type="number" name="quantity" min="1" value="1" required autocomplete="nope">
+                        </div>
+                        <div class="field">
+                            <label>Notes <span style="font-weight:400;color:var(--stone-400)">(optional)</span></label>
+                            <input class="form-input" name="notes" placeholder="Serial no., location, condition…" autocomplete="nope">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reg-actions">
+                    <a href="/admin/equipment" class="btn btn-secondary" style="text-decoration:none">Cancel</a>
+                    <button type="submit" class="btn" style="display:flex;align-items:center;gap:7px;min-width:160px;justify-content:center">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add to inventory
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+</body></html>

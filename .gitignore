@@ -1,0 +1,28 @@
+# Local credentials — never commit
+src/main/resources/application-local.properties
+
+# Maven build output
+target/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# H2 database files
+*.mv.db
+*.trace.db
+
+# Uploaded images (runtime data, not source)
+data/uploads/
+
+# Forge runtime data & logs
+.forge/
+
+# Claude Code config inside project
+.claude/

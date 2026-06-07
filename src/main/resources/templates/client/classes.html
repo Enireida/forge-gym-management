@@ -1,0 +1,246 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>Group Classes, Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .class-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin-bottom:28px}
+        .class-card{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-xl);padding:20px 22px;display:flex;flex-direction:column;gap:10px;transition:box-shadow .15s}
+        .class-card:hover{box-shadow:var(--shadow-2)}
+        .class-card.booked{border-color:var(--accent);background:var(--accent-pale)}
+        .class-name{font-family:var(--font-display);font-size:20px;font-weight:400;color:var(--fg-1)}
+        .class-name em{font-style:italic;color:var(--accent-deep)}
+        .class-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--stone-500)}
+        .class-meta span{display:flex;align-items:center;gap:4px}
+        .class-cat{display:inline-block;padding:2px 10px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--bg-sunken);color:var(--stone-500)}
+        .spots-bar{height:4px;background:var(--line-1);border-radius:999px;overflow:hidden;margin-top:4px}
+        .spots-fill{height:100%;background:var(--accent);border-radius:999px;transition:width .3s}
+        .spots-fill.full{background:var(--signal-danger)}
+        .class-desc{font-size:13px;color:var(--stone-500);line-height:1.5}
+        .book-btn{padding:9px 20px;border-radius:var(--r-pill);font-size:13px;font-weight:600;border:none;cursor:pointer;transition:.15s;align-self:flex-start}
+        .book-btn.book{background:var(--accent);color:#fff}
+        .book-btn.book:hover{background:var(--accent-deep)}
+        .book-btn.cancel{background:none;border:1px solid var(--signal-danger);color:var(--signal-danger)}
+        .book-btn.cancel:hover{background:var(--signal-danger-bg)}
+        .book-btn.full{background:var(--bg-sunken);color:var(--stone-400);cursor:default}
+        .past-tag{padding:2px 8px;background:var(--bg-sunken);color:var(--stone-400);border-radius:999px;font-size:11px;font-weight:600}
+        .section-title{font-family:var(--font-display);font-size:22px;font-weight:400;color:var(--fg-1);margin:0 0 16px}
+        .section-title em{font-style:italic;color:var(--accent-deep)}
+        .empty-state{text-align:center;padding:40px;color:var(--stone-400);font-style:italic}
+        .waitlist-btn{padding:8px 16px;border-radius:var(--r-pill);font-size:12px;font-weight:600;background:var(--bg-sunken);color:var(--fg-2);border:1px solid var(--line-1);cursor:pointer;transition:.15s}
+        .waitlist-btn:hover{background:var(--accent-pale);color:var(--accent-deep);border-color:var(--accent)}
+        .rating-section{margin-top:8px;padding-top:8px;border-top:1px solid var(--line-1)}
+        .stars{display:inline-flex;gap:2px}
+        .star{color:var(--line-2);font-size:14px;cursor:pointer}
+        .star.filled{color:#f59e0b}
+        .avg-rating{font-size:12px;color:var(--stone-400);margin-left:6px}
+
+        /* Week calendar */
+        .week-cal{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-xl);padding:20px 22px;margin-bottom:28px}
+        .week-cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+        .week-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+        .day-col{background:var(--bg-sunken);border-radius:var(--r-md);padding:10px 8px;min-height:130px;display:flex;flex-direction:column;gap:8px}
+        .day-col.is-today{background:var(--accent-pale);border:1px solid var(--accent)}
+        .day-head{text-align:center;border-bottom:1px solid var(--line-1);padding-bottom:6px}
+        .day-dow{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--stone-500)}
+        .day-num{font-family:var(--font-display);font-size:22px;font-weight:400;color:var(--fg-1);line-height:1}
+        .day-mon{font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--stone-400)}
+        .day-col.is-today .day-num{color:var(--accent-deep)}
+        .day-list{display:flex;flex-direction:column;gap:4px}
+        .day-chip{display:flex;flex-direction:column;gap:1px;padding:6px 8px;background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-sm);text-decoration:none;color:var(--fg-2);transition:.15s;font-size:11px}
+        .day-chip:hover{border-color:var(--accent);background:var(--accent-pale);color:var(--accent-deep)}
+        .day-chip.is-booked{background:var(--accent);color:#fff;border-color:var(--accent)}
+        .day-chip.is-booked:hover{background:var(--accent-deep);color:#fff}
+        .chip-time{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.04em}
+        .chip-name{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .day-empty{font-size:11px;color:var(--stone-400);text-align:center;padding:8px 0}
+        @media(max-width:900px){.week-cal-grid{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:500px){.week-cal-grid{grid-template-columns:1fr}}
+        .class-card{scroll-margin-top:90px}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: clientSidebar('classes')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Group Classes')}"></div>
+    <main class="main">
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+        <!-- WEEK CALENDAR -->
+        <div class="week-cal" th:unless="${#lists.isEmpty(classes)}">
+            <div class="week-cal-header">
+                <div class="section-title" style="margin:0">This <em>week</em></div>
+                <div style="font-size:12px;color:var(--stone-400)">Click any class to jump to it ↓</div>
+            </div>
+            <div class="week-cal-grid">
+                <div class="day-col" th:each="d : ${weekDays}"
+                     th:classappend="${d.isEqual(today) ? 'is-today' : ''}">
+                    <div class="day-head">
+                        <div class="day-dow" th:text="${#temporals.format(d,'EEE')}">Mon</div>
+                        <div class="day-num" th:text="${#temporals.format(d,'d')}">1</div>
+                        <div class="day-mon" th:text="${#temporals.format(d,'MMM')}">Jun</div>
+                    </div>
+                    <div class="day-list">
+                        <a th:each="c : ${classesByDay.get(d)}"
+                           class="day-chip"
+                           th:href="'#class-' + ${c.id}"
+                           th:classappend="${bookedIds.contains(c.id)} ? 'is-booked' : ''">
+                            <span class="chip-time" th:text="${#temporals.format(c.dateTime,'HH:mm')}">09:00</span>
+                            <span class="chip-name" th:text="${c.name}">Yoga</span>
+                        </a>
+                        <div th:if="${#lists.isEmpty(classesByDay.get(d))}" class="day-empty">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- UPCOMING CLASSES -->
+        <div style="margin-bottom:32px">
+            <div class="section-title">Upcoming <em>classes</em></div>
+
+            <div th:if="${#lists.isEmpty(classes)}" class="empty-state">
+                No classes scheduled yet, check back soon!
+            </div>
+
+            <div class="class-grid" th:unless="${#lists.isEmpty(classes)}">
+                <div th:each="c : ${classes}"
+                     th:id="'class-' + ${c.id}"
+                     th:classappend="${bookedIds.contains(c.id)} ? 'class-card booked' : 'class-card'">
+
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                        <div class="class-name" th:text="${c.name}">Yoga</div>
+                        <span class="class-cat" th:text="${c.category != null ? c.category : 'General'}">Category</span>
+                    </div>
+
+                    <div class="class-meta">
+                        <span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span th:text="${#temporals.format(c.dateTime,'EEE d MMM, HH:mm')}">Mon 1 Jun, 09:00</span>
+                        </span>
+                        <span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <span th:text="${c.durationMinutes + ' min'}">60 min</span>
+                        </span>
+                        <span th:if="${c.trainer != null}">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <span th:text="${c.trainer.name}">Trainer</span>
+                        </span>
+                    </div>
+
+                    <div class="class-desc" th:if="${c.description != null and !c.description.isEmpty()}"
+                         th:text="${c.description}">Description</div>
+
+                    <!-- Spots bar -->
+                    <div>
+                        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--stone-400);margin-bottom:4px">
+                            <span th:text="${c.enrolledCount + ' / ' + c.capacity + ' spots filled'}">0/20</span>
+                            <span th:if="${c.enrolledCount >= c.capacity}" style="color:var(--signal-danger);font-weight:600">FULL</span>
+                        </div>
+                        <div class="spots-bar">
+                            <div class="spots-fill"
+                                 th:classappend="${c.enrolledCount >= c.capacity} ? 'full' : ''"
+                                 th:style="'width:' + ${c.capacity > 0 ? (c.enrolledCount * 100 / c.capacity) : 0} + '%'"></div>
+                        </div>
+                    </div>
+
+                    <!-- Action button -->
+                    <div th:if="${bookedIds.contains(c.id)}">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                            <span style="font-size:12px;color:var(--accent-deep);font-weight:600">&#x2713; Booked</span>
+                            <form autocomplete="off" method="post" th:action="@{'/client/classes/' + ${c.id} + '/cancel'}" style="margin:0">
+                                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                                <button class="book-btn cancel" type="submit"
+                                        onclick="return confirm('Cancel your booking?')">Cancel</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div th:unless="${bookedIds.contains(c.id)}">
+                        <!-- Book or Waitlist -->
+                        <div th:if="${c.enrolledCount >= c.capacity}">
+                            <div th:if="${onWaitlist[c.id]}" style="display:flex;gap:8px;align-items:center">
+                                <span style="font-size:12px;color:var(--stone-500)">On waitlist</span>
+                                <form autocomplete="off" method="post" th:action="@{'/client/classes/' + ${c.id} + '/waitlist/cancel'}" style="margin:0">
+                                    <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                                    <button class="waitlist-btn" type="submit">Leave Waitlist</button>
+                                </form>
+                            </div>
+                            <div th:unless="${onWaitlist[c.id]}" style="display:flex;gap:8px;align-items:center">
+                                <span class="book-btn full">Class Full</span>
+                                <form autocomplete="off" method="post" th:action="@{'/client/classes/' + ${c.id} + '/waitlist'}" style="margin:0">
+                                    <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                                    <button class="waitlist-btn" type="submit">Join Waitlist</button>
+                                </form>
+                            </div>
+                        </div>
+                        <form autocomplete="off" th:unless="${c.enrolledCount >= c.capacity}"
+                              method="post" th:action="@{'/client/classes/' + ${c.id} + '/book'}" style="margin:0">
+                            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                            <button class="book-btn book" type="submit">Book Now</button>
+                        </form>
+                    </div>
+
+                    <!-- Rating -->
+                    <div class="rating-section">
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <div class="stars">
+                                <span th:each="i : ${#numbers.sequence(1,5)}" class="star"
+                                      th:classappend="${avgRatings[c.id] >= i} ? 'filled' : ''"
+                                      th:text="'&#9733;'"></span>
+                            </div>
+                            <span class="avg-rating"
+                                  th:text="${ratingCounts[c.id] > 0 ? #numbers.formatDecimal(avgRatings[c.id],1,1) + ' (' + ratingCounts[c.id] + ')' : 'No ratings yet'}"></span>
+                        </div>
+                        <div th:if="${bookedIds.contains(c.id) and !hasRated[c.id]}" style="margin-top:6px">
+                            <form autocomplete="off" method="post" th:action="@{'/client/classes/' + ${c.id} + '/rate'}"
+                                  style="display:flex;gap:6px;align-items:center">
+                                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                                <select name="rating" class="form-select" style="width:auto;font-size:12px;padding:4px 8px">
+                                    <option value="5">5 stars</option><option value="4">4 stars</option>
+                                    <option value="3">3 stars</option><option value="2">2 stars</option><option value="1">1 star</option>
+                                </select>
+                                <input name="comment" class="form-input" style="font-size:12px;padding:4px 8px;flex:1" placeholder="Feedback (optional)" maxlength="500" autocomplete="nope">
+                                <button class="btn" type="submit" style="font-size:12px;padding:5px 12px">Rate</button>
+                            </form>
+                        </div>
+                        <div th:if="${hasRated[c.id]}" style="font-size:11px;color:var(--stone-400);margin-top:4px">&#x2713; You rated this class</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MY BOOKINGS -->
+        <div class="card" th:unless="${#lists.isEmpty(myBookings)}">
+            <div class="card-title">My bookings</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Date &amp; Time</th>
+                        <th>Duration</th>
+                        <th>Trainer</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr th:each="b : ${myBookings}">
+                    <td style="font-weight:600" th:text="${b.gymClass.name}">Class</td>
+                    <td th:text="${#temporals.format(b.gymClass.dateTime,'dd MMM yyyy, HH:mm')}">Date</td>
+                    <td th:text="${b.gymClass.durationMinutes + ' min'}">60 min</td>
+                    <td th:text="${b.gymClass.trainer != null ? b.gymClass.trainer.name : ''}">Trainer</td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${b.status == 'CONFIRMED'} ? 'badge-success' : 'badge-danger'"
+                              th:text="${b.status}">CONFIRMED</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+</body>
+</html>

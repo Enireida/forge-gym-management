@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>Workout Plan - Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: clientSidebar('exercises')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Workout Plan')}"></div>
+    <main class="main">
+        <a class="btn btn-secondary" href="/client/exercises">&larr; Back to library</a>
+
+        <div class="card">
+            <div class="plan-hero" style="border-radius:14px;padding:32px"
+                 th:classappend="${plan.level == 'Beginner' ? 'beginner' : (plan.level == 'Advanced' ? 'advanced' : 'intermediate')}">
+                <div style="font-size:32px;font-weight:800" th:text="${plan.name}"></div>
+                <div style="font-size:16px;opacity:0.9">
+                    <span th:text="${plan.level}"></span> &middot;
+                    <span th:text="${plan.goal}"></span>
+                </div>
+            </div>
+            <p style="margin-top:20px" th:text="${plan.description}"></p>
+            <div class="stats-grid" style="margin-top:24px">
+                <div class="stat-card">
+                    <div class="stat-label">Duration</div>
+                    <div class="stat-value" style="font-size:22px">
+                        <span th:text="${plan.durationWeeks}">0</span> weeks
+                    </div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-label">Sessions / week</div>
+                    <div class="stat-value" style="font-size:22px" th:text="${plan.sessionsPerWeek}">0</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-label">Total exercises</div>
+                    <div class="stat-value" style="font-size:22px" th:text="${#sets.size(plan.exercises)}">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Exercises in this plan</div>
+            <div class="exercise-grid">
+                <div th:each="e : ${plan.exercises}" class="exercise-card">
+                    <div class="exercise-img"
+                         th:style="${e.imageUrl}!=null ? 'background-image:url(' + ${e.imageUrl} + ')':''">
+                        <span th:if="${e.imageUrl}==null">💪</span>
+                    </div>
+                    <div class="exercise-body">
+                        <div class="exercise-name" th:text="${e.name}"></div>
+                        <div class="exercise-meta">
+                            <span class="badge badge-info" th:text="${e.muscleGroup}"></span>
+                            <span class="badge badge-purple" th:text="${e.difficulty}"></span>
+                            <span class="badge" th:if="${e.setsReps}" th:text="${e.setsReps}"></span>
+                        </div>
+                        <div class="exercise-instructions" th:text="${e.instructions}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body></html>

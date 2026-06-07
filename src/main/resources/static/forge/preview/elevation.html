@@ -1,0 +1,23 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Elevation</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:32px;background:var(--bg-canvas);font-family:var(--font-sans);}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;}
+  .item{display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .card{width:120px;height:80px;background:#fff;border-radius:14px;}
+  .s1{box-shadow:0 1px 2px rgba(14,26,17,.04),0 1px 1px rgba(14,26,17,.03);}
+  .s2{box-shadow:0 2px 8px rgba(14,26,17,.05),0 1px 2px rgba(14,26,17,.04);}
+  .s3{box-shadow:0 12px 32px -8px rgba(14,26,17,.10),0 2px 6px rgba(14,26,17,.04);}
+  .s4{box-shadow:0 24px 48px -12px rgba(14,26,17,.16),0 4px 8px rgba(14,26,17,.05);}
+  .lbl{font-family:var(--font-mono);font-size:11px;color:var(--fg-2);}
+  .val{font-family:var(--font-mono);font-size:10px;color:var(--fg-3);text-align:center;max-width:130px;line-height:1.3;}
+</style></head>
+<body>
+<div class="grid">
+  <div class="item"><div class="card s1"></div><div class="lbl">--shadow-1</div><div class="val">subtle borders, list items</div></div>
+  <div class="item"><div class="card s2"></div><div class="lbl">--shadow-2</div><div class="val">cards at rest</div></div>
+  <div class="item"><div class="card s3"></div><div class="lbl">--shadow-3</div><div class="val">popovers, hover</div></div>
+  <div class="item"><div class="card s4"></div><div class="lbl">--shadow-4</div><div class="val">modals, focus overlay</div></div>
+</div>
+</body></html>

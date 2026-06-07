@@ -1,0 +1,1098 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<body>
+
+<!-- ====================== ADMIN SIDEBAR ====================== -->
+<aside class="sidebar" th:fragment="adminSidebar(active)">
+    <div class="sidebar-logo">Forge<span class="dot"></span></div>
+
+    <div class="sidebar-section">Overview</div>
+    <a href="/admin"          class="sidebar-link" th:classappend="${active=='home'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+    </a>
+    <a href="/admin/reports"  class="sidebar-link" th:classappend="${active=='reports'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Reports
+    </a>
+
+    <div class="sidebar-section">People</div>
+    <a href="/admin/members" class="sidebar-link" th:classappend="${active=='members'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Members
+    </a>
+    <a href="/admin/staff"   class="sidebar-link" th:classappend="${active=='staff'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        Staff &amp; Trainers
+    </a>
+
+    <div class="sidebar-section">Operations</div>
+    <a href="/admin/plans"         class="sidebar-link" th:classappend="${active=='plans'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        Plans
+    </a>
+    <a href="/admin/payments"      class="sidebar-link" th:classappend="${active=='payments'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Payments
+    </a>
+    <a href="/admin/equipment"     class="sidebar-link" th:classappend="${active=='equipment'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        Equipment
+    </a>
+    <a href="/admin/announcements" class="sidebar-link" th:classappend="${active=='announcements'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Announcements
+    </a>
+    <a href="/admin/notifications" class="sidebar-link" th:classappend="${active=='notifications'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
+        Send Notification
+    </a>
+    <a href="/admin/exercises"     class="sidebar-link" th:classappend="${active=='exercises'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        Exercise Library
+    </a>
+
+    <div class="sidebar-section">Attendance &amp; PT</div>
+    <a href="/admin/classes"     class="sidebar-link" th:classappend="${active=='classes'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Group Classes
+    </a>
+    <a href="/admin/attendance"  class="sidebar-link" th:classappend="${active=='attendance'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+        Attendance
+    </a>
+    <a href="/admin/pt-packages" class="sidebar-link" th:classappend="${active=='pt-packages'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        PT Packages
+    </a>
+
+    <div class="sidebar-section">Tools</div>
+    <a href="/kiosk" class="sidebar-link" th:classappend="${active=='kiosk'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Door Kiosk
+    </a>
+    <a href="/h2-console" class="sidebar-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        Database (H2)
+    </a>
+
+    <!-- ── SETTINGS USER CARD ── -->
+    <div class="sidebar-user-card">
+        <!-- Popup (renders above the card) -->
+        <div class="settings-popup" id="settingsPopup">
+            <div class="sp-header">
+                <div class="sp-big-avatar" id="spAvatar" onclick="document.getElementById('photoInput').click()" title="Change photo">
+                    <img id="spAvatarImg" src="" style="display:none" alt="">
+                    <span id="spAvatarInitial" th:text="${user!=null ? #strings.substring(user.name,0,1).toUpperCase() : '?'}">A</span>
+                    <div class="sp-camera">📷</div>
+                </div>
+                <div>
+                    <div class="sp-hd-name"  th:text="${user!=null ? user.name  : ''}">Name</div>
+                    <div class="sp-hd-email" th:text="${user!=null ? user.email : ''}">email</div>
+                </div>
+            </div>
+            <div class="sp-body">
+                <button class="sp-item" onclick="openSpModal('editProfileModal')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Edit Profile
+                </button>
+                <a class="sp-item" href="/admin/change-password">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Change Password
+                </a>
+                <div class="sp-divider"></div>
+                <button class="sp-item" id="darkModeItem" onclick="toggleDarkMode()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    Dark mode
+                    <div class="sp-end"><span class="sp-toggle-pill" id="darkToggle" onclick="event.stopPropagation();toggleDarkMode()"></span></div>
+                </button>
+                <button class="sp-item" id="langItem" onclick="toggleLang()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    Language
+                    <span class="sp-end" id="langLabel" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--accent-deep)">EN</span>
+                </button>
+                <div class="sp-divider"></div>
+                <button class="sp-item" onclick="openSpModal('helpModal')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17"/></svg>
+                    Help &amp; Support
+                </button>
+                <button class="sp-item" onclick="openSpModal('termsModal')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Terms &amp; Conditions
+                </button>
+                <div class="sp-divider"></div>
+                <a class="sp-item sp-danger" href="/logout">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Trigger button -->
+        <button class="sidebar-user-btn" id="settingsBtn" onclick="toggleSettingsPopup()" type="button" aria-expanded="false">
+            <div class="sidebar-u-avatar" id="sidebarAvatar">
+                <img id="sidebarAvatarImg" src="" style="display:none" alt="">
+                <span id="sidebarAvatarInitial" th:text="${user!=null ? #strings.substring(user.name,0,1).toUpperCase() : '?'}">A</span>
+            </div>
+            <div class="sidebar-u-info">
+                <div class="sidebar-u-name" th:text="${user!=null ? user.name : ''}">Name</div>
+                <div class="sidebar-u-role">Admin</div>
+            </div>
+            <svg class="sidebar-u-cog" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Hidden photo input -->
+    <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)" autocomplete="nope">
+
+    <!-- EDIT PROFILE MODAL -->
+    <div id="editProfileModal" class="sp-modal-overlay" onclick="if(event.target===this)closeSpModal('editProfileModal')">
+        <div class="sp-modal-box">
+            <div class="sp-modal-header">
+                <span class="sp-modal-title">Edit <em>Profile</em></span>
+                <button class="sp-modal-close" onclick="closeSpModal('editProfileModal')">×</button>
+            </div>
+            <form autocomplete="off" method="post" action="/admin/profile">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <div class="sp-modal-body">
+                    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+                        <div class="sp-big-avatar" style="width:60px;height:60px;font-size:22px;cursor:pointer" onclick="document.getElementById('photoInput').click()" title="Change photo">
+                            <img id="modalAvatarImg" src="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%" alt="">
+                            <span id="modalAvatarInitial" th:text="${user!=null ? #strings.substring(user.name,0,1).toUpperCase() : '?'}">A</span>
+                            <div class="sp-camera">📷</div>
+                        </div>
+                        <div style="font-size:12px;color:var(--stone-400);line-height:1.5">
+                            Click photo to change it.<br>Stored locally on this device.
+                        </div>
+                    </div>
+                    <div style="margin-bottom:12px">
+                        <label class="form-label">Full name</label>
+                        <input class="form-input" name="name" id="profileNameInput"
+                               th:value="${user!=null ? user.name : ''}" required autocomplete="nope">
+                    </div>
+                    <div style="margin-bottom:12px">
+                        <label class="form-label">Phone number</label>
+                        <input class="form-input" name="phone" placeholder="e.g. +355 69 123 4567" autocomplete="nope">
+                    </div>
+                </div>
+                <div class="sp-modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeSpModal('editProfileModal')">Cancel</button>
+                    <button type="submit" class="btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- HELP MODAL -->
+    <div id="helpModal" class="sp-modal-overlay" onclick="if(event.target===this)closeSpModal('helpModal')">
+        <div class="sp-modal-box">
+            <div class="sp-modal-header">
+                <span class="sp-modal-title">Help <em>&amp; Support</em></span>
+                <button class="sp-modal-close" onclick="closeSpModal('helpModal')">×</button>
+            </div>
+            <div class="sp-modal-body" style="padding-bottom:24px">
+                <p style="font-size:13px;color:var(--stone-500);margin-bottom:16px">
+                    Welcome to <strong>Forge</strong>, the gym management platform. Here are some quick tips:
+                </p>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                    <div style="background:var(--bg-sunken);border-radius:var(--r-md);padding:12px 14px">
+                        <div style="font-weight:600;font-size:13px;margin-bottom:3px">📋 Members</div>
+                        <div style="font-size:12px;color:var(--stone-500)">Add, edit, renew memberships and assign RFID cards from the Members page.</div>
+                    </div>
+                    <div style="background:var(--bg-sunken);border-radius:var(--r-md);padding:12px 14px">
+                        <div style="font-weight:600;font-size:13px;margin-bottom:3px">🚪 Door Kiosk</div>
+                        <div style="font-size:12px;color:var(--stone-500)">Open the kiosk on a tablet at the entrance. Members tap their card or enter their PIN to check in.</div>
+                    </div>
+                    <div style="background:var(--bg-sunken);border-radius:var(--r-md);padding:12px 14px">
+                        <div style="font-weight:600;font-size:13px;margin-bottom:3px">📊 Reports</div>
+                        <div style="font-size:12px;color:var(--stone-500)">View revenue trends, top spenders, and member status breakdowns in the Reports section.</div>
+                    </div>
+                    <div style="background:var(--bg-sunken);border-radius:var(--r-md);padding:12px 14px">
+                        <div style="font-weight:600;font-size:13px;margin-bottom:3px">✉️ Contact support</div>
+                        <div style="font-size:12px;color:var(--stone-500)">Email: <a href="mailto:support@forge.al" style="color:var(--accent-deep)">support@forge.al</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TERMS MODAL -->
+    <div id="termsModal" class="sp-modal-overlay" onclick="if(event.target===this)closeSpModal('termsModal')">
+        <div class="sp-modal-box">
+            <div class="sp-modal-header">
+                <span class="sp-modal-title">Terms <em>&amp; Conditions</em></span>
+                <button class="sp-modal-close" onclick="closeSpModal('termsModal')">×</button>
+            </div>
+            <div class="sp-modal-body" style="padding-bottom:24px;font-size:13px;color:var(--stone-600);line-height:1.7">
+                <p style="margin-bottom:10px"><strong style="color:var(--fg-1)">Last updated: January 2026</strong></p>
+                <p style="margin-bottom:10px">By using Forge Gym Management System, you agree to the following terms:</p>
+                <p style="margin-bottom:8px"><strong style="color:var(--fg-1)">1. Data &amp; Privacy</strong><br>All member data is stored securely and used solely for gym operations. Data is never sold or shared with third parties.</p>
+                <p style="margin-bottom:8px"><strong style="color:var(--fg-1)">2. Account Security</strong><br>You are responsible for keeping your login credentials secure. Report any suspicious activity to your system administrator immediately.</p>
+                <p style="margin-bottom:8px"><strong style="color:var(--fg-1)">3. Usage</strong><br>This system is for authorised Forge staff and members only. Unauthorised access is prohibited.</p>
+                <p style="margin-bottom:8px"><strong style="color:var(--fg-1)">4. Payments</strong><br>All payment records are for tracking purposes. Forge is not a payment processor.</p>
+                <p style="margin-bottom:0"><strong style="color:var(--fg-1)">5. Contact</strong><br>Questions? Reach us at <a href="mailto:support@forge.al" style="color:var(--accent-deep)">support@forge.al</a> or visit Forge · Tiranë, Albania.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS SCRIPT (shared, runs once per page) -->
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+    (function() {
+        var PORTAL = 'admin';
+
+        /* ── Dark mode ── */
+        function applyDark(on) {
+            document.documentElement.setAttribute('data-theme', on ? 'dark' : '');
+            var t = document.getElementById('darkToggle');
+            if (t) { t.classList.toggle('on', on); }
+        }
+        function toggleDarkMode() {
+            var on = document.documentElement.getAttribute('data-theme') === 'dark';
+            localStorage.setItem('forgeDark', on ? '0' : '1');
+            applyDark(!on);
+        }
+        applyDark(localStorage.getItem('forgeDark') === '1');
+        window.toggleDarkMode = toggleDarkMode;
+
+        /* ── Language ── */
+        var TRANSLATIONS = {
+            sq: {
+                'Dashboard': 'Paneli', 'Reports': 'Raportet', 'Members': 'Anëtarët',
+                'Staff & Trainers': 'Stafi & Trajnerët', 'Plans': 'Planet',
+                'Payments': 'Pagesat', 'Equipment': 'Pajisjet',
+                'Announcements': 'Njoftimet', 'Send Notification': 'Dërgo Njoftim',
+                'Exercise Library': 'Libraria e Ushtrimeve',
+                'Group Classes': 'Klasat Grupore',
+                'Attendance': 'Prania', 'PT Packages': 'Paketat PT',
+                'Door Kiosk ↗': 'Kiosku i Derës ↗', 'Database (H2) ↗': 'Baza e të Dhënave ↗',
+                'Edit Profile': 'Ndrysho Profilin', 'Change Password': 'Ndrysho Fjalëkalimin',
+                'Dark mode': 'Modaliteti i errët', 'Language': 'Gjuha',
+                'Help & Support': 'Ndihmë & Mbështetje', 'Terms & Conditions': 'Termat & Kushtet',
+                'Logout': 'Dilni', 'My Members': 'Anëtarët e Mi',
+                'Measurements': 'Matjet', 'PT Sessions': 'Seancat PT',
+                'Home': 'Kreu', 'My Membership': 'Anëtarësia Ime',
+                'My Progress': 'Progresi Im', 'My PT': 'PT-ja Ime',
+                'Exercises & Plans': 'Ushtrime & Plane', 'Workout Log': 'Regjistri i Stërvitjeve',
+                'Wearable': 'Pajisja', 'AI Coach': 'Trajneri AI',
+                'AI Coaching Assistant': 'Asistenti AI i Trajnimit'
+            }
+        };
+        function applyLang(lang) {
+            var lbl = document.getElementById('langLabel');
+            if (lbl) lbl.textContent = lang === 'sq' ? 'SQ' : 'EN';
+            document.querySelectorAll('.sidebar-link, .sp-item').forEach(function(el) {
+                var nodes = el.childNodes;
+                for (var i = 0; i < nodes.length; i++) {
+                    var n = nodes[i];
+                    if (n.nodeType !== 3) continue;
+                    var key = 'origText' + i;
+                    var orig = el.dataset[key] || n.textContent.trim();
+                    if (!orig) continue; // skip pure-whitespace nodes
+                    el.dataset[key] = orig;
+                    n.textContent = (lang === 'sq' && TRANSLATIONS.sq[orig]) ? ' ' + TRANSLATIONS.sq[orig] + ' ' : ' ' + orig + ' ';
+                }
+            });
+        }
+        function toggleLang() {
+            var cur = localStorage.getItem('forgeLang') || 'en';
+            var next = cur === 'sq' ? 'en' : 'sq';
+            localStorage.setItem('forgeLang', next);
+            applyLang(next);
+        }
+        applyLang(localStorage.getItem('forgeLang') || 'en');
+        window.toggleLang = toggleLang;
+
+        /* ── Photo upload ── */
+        var PHOTO_KEY = 'forgePhoto_' + /*[[${user!=null ? user.email : 'guest'}]]*/ 'guest';
+        function loadPhoto() {
+            var p = localStorage.getItem(PHOTO_KEY);
+            ['sidebarAvatarImg','spAvatarImg','modalAvatarImg'].forEach(function(id) {
+                var img = document.getElementById(id);
+                var initial = document.getElementById(id.replace('Img','Initial'));
+                if (img) { img.src = p || ''; img.style.display = p ? 'block' : 'none'; }
+                if (initial) initial.style.display = p ? 'none' : 'inline';
+            });
+        }
+        function handlePhotoUpload(input) {
+            var file = input.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = new Image();
+                img.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    var size = 120;
+                    canvas.width = canvas.height = size;
+                    var ctx = canvas.getContext('2d');
+                    var ratio = Math.min(size/img.width, size/img.height);
+                    var w = img.width*ratio, h = img.height*ratio;
+                    ctx.drawImage(img, (size-w)/2, (size-h)/2, w, h);
+                    var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                    localStorage.setItem(PHOTO_KEY, dataUrl);
+                    loadPhoto();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            input.value = '';
+        }
+        loadPhoto();
+        window.handlePhotoUpload = handlePhotoUpload;
+
+        /* ── Popup toggle ── */
+        function toggleSettingsPopup() {
+            var popup = document.getElementById('settingsPopup');
+            var btn   = document.getElementById('settingsBtn');
+            var open  = popup.classList.toggle('open');
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+        document.addEventListener('click', function(e) {
+            var card = document.querySelector('.sidebar-user-card');
+            if (card && !card.contains(e.target)) {
+                var popup = document.getElementById('settingsPopup');
+                var btn   = document.getElementById('settingsBtn');
+                if (popup) popup.classList.remove('open');
+                if (btn)   btn.setAttribute('aria-expanded','false');
+            }
+        });
+        window.toggleSettingsPopup = toggleSettingsPopup;
+
+        /* ── Modals ── */
+        function openSpModal(id) {
+            var popup = document.getElementById('settingsPopup');
+            var btn   = document.getElementById('settingsBtn');
+            if (popup) popup.classList.remove('open');
+            if (btn)   btn.setAttribute('aria-expanded','false');
+            var m = document.getElementById(id);
+            if (m) m.classList.add('open');
+        }
+        function closeSpModal(id) {
+            var m = document.getElementById(id);
+            if (m) m.classList.remove('open');
+        }
+        window.openSpModal  = openSpModal;
+        window.closeSpModal = closeSpModal;
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.sp-modal-overlay.open').forEach(function(m) { m.classList.remove('open'); });
+                var popup = document.getElementById('settingsPopup');
+                var btn   = document.getElementById('settingsBtn');
+                if (popup) popup.classList.remove('open');
+                if (btn)   btn.setAttribute('aria-expanded','false');
+            }
+        });
+    })();
+    /*]]>*/
+    </script>
+</aside>
+
+<!-- ====================== ADMIN CHECK-IN TOAST ====================== -->
+<!--
+     Shown ONLY on admin pages. Polls /admin/api/checkin-events every 4 s.
+     When a member checks in at the kiosk (PIN or RFID) a green card pops
+     in the top-right corner for 3 seconds showing name, plan and expiry.
+-->
+<style>
+  #checkin-toast-wrap{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+  .ci-toast{display:flex;align-items:center;gap:14px;background:#16a34a;color:#fff;
+    border-radius:14px;padding:14px 18px;min-width:280px;max-width:340px;
+    box-shadow:0 8px 32px rgba(22,163,74,.35);pointer-events:auto;
+    animation:ciSlideIn .35s cubic-bezier(.34,1.56,.64,1) both}
+  .ci-toast.removing{animation:ciSlideOut .3s ease-in both}
+  @keyframes ciSlideIn{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:none}}
+  @keyframes ciSlideOut{to{opacity:0;transform:translateX(60px)}}
+  .ci-avatar{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.25);
+    display:grid;place-items:center;font-weight:700;font-size:17px;flex-shrink:0;overflow:hidden}
+  .ci-avatar img{width:100%;height:100%;object-fit:cover}
+  .ci-body{flex:1;min-width:0}
+  .ci-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.8;margin-bottom:2px}
+  .ci-name{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ci-meta{font-size:11px;opacity:.85;margin-top:2px}
+</style>
+<div id="checkin-toast-wrap" aria-live="polite"></div>
+
+<script>
+(function(){
+  /* Only run on admin pages */
+  if (!window.location.pathname.startsWith('/admin')) return;
+
+  var lastTs = Date.now();
+  var wrap   = document.getElementById('checkin-toast-wrap');
+  if (!wrap) return;
+
+  function showToast(ev) {
+    var t = document.createElement('div');
+    t.className = 'ci-toast';
+
+    var avatar = '<div class="ci-avatar">';
+    if (ev.photoData) {
+      avatar += '<img src="' + ev.photoData + '" alt="">';
+    } else {
+      avatar += (ev.memberName || '?').charAt(0).toUpperCase();
+    }
+    avatar += '</div>';
+
+    var expiry = ev.expiryDate ? 'Expires: ' + ev.expiryDate : '';
+
+    t.innerHTML = avatar +
+      '<div class="ci-body">' +
+        '<div class="ci-label">Check-in</div>' +
+        '<div class="ci-name">' + (ev.memberName || '') + '</div>' +
+        '<div class="ci-meta">' + (ev.planName || '') + (expiry ? ' &middot; ' + expiry : '') + '</div>' +
+      '</div>';
+
+    wrap.appendChild(t);
+
+    /* Remove after 3 s */
+    setTimeout(function() {
+      t.classList.add('removing');
+      t.addEventListener('animationend', function() { t.remove(); }, { once: true });
+    }, 3000);
+  }
+
+  function poll() {
+    fetch('/admin/api/checkin-events?since=' + lastTs, { credentials: 'same-origin' })
+      .then(function(r) { return r.ok ? r.json() : []; })
+      .then(function(events) {
+        if (events && events.length) {
+          events.forEach(function(ev) {
+            if (ev.timestamp > lastTs) showToast(ev);
+          });
+          lastTs = Math.max.apply(null, events.map(function(e){ return e.timestamp; }));
+        }
+      })
+      .catch(function(){});  /* silent on network error */
+  }
+
+  /* Start polling every 4 s once the page is fully loaded */
+  window.addEventListener('load', function() {
+    setInterval(poll, 4000);
+  });
+})();
+</script>
+
+<!-- ====================== TRAINER SIDEBAR ====================== -->
+<aside class="sidebar" th:fragment="trainerSidebar(active)">
+    <div class="sidebar-logo">Forge<span class="dot"></span></div>
+
+    <div class="sidebar-section">Trainer</div>
+    <a href="/trainer"              class="sidebar-link" th:classappend="${active=='home'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+    </a>
+    <a href="/trainer/members"      class="sidebar-link" th:classappend="${active=='members'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        My Members
+    </a>
+    <a href="/trainer/measurements" class="sidebar-link" th:classappend="${active=='measurements'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+        Measurements
+    </a>
+    <a href="/trainer/pt"           class="sidebar-link" th:classappend="${active=='pt'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        PT Sessions
+    </a>
+    <a href="/trainer/exercises"    class="sidebar-link" th:classappend="${active=='exercises'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        Exercise Library
+    </a>
+
+    <a href="/trainer/availability"  class="sidebar-link" th:classappend="${active=='availability'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        My Availability
+    </a>
+    <a href="/trainer/notifications"  class="sidebar-link" th:classappend="${active=='notifications'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
+        Message Clients
+    </a>
+
+    <div class="sidebar-section">AI Tools</div>
+    <a href="/trainer/ai"           class="sidebar-link" th:classappend="${active=='ai'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg>
+        AI Coaching Assistant
+        <span style="margin-left:auto;font-family:var(--font-mono);font-size:9px;padding:2px 6px;background:var(--accent-pale);color:var(--accent-deep);border-radius:999px;font-weight:600;letter-spacing:.06em">NEW</span>
+    </a>
+
+    <!-- ── SETTINGS USER CARD ── -->
+    <div class="sidebar-user-card">
+        <div class="settings-popup" id="settingsPopup">
+            <div class="sp-header">
+                <div class="sp-big-avatar" id="spAvatar" onclick="document.getElementById('photoInput').click()" title="Change photo">
+                    <img id="spAvatarImg" src="" style="display:none" alt="">
+                    <span id="spAvatarInitial" th:text="${user!=null ? #strings.substring(user.name,0,1).toUpperCase() : '?'}">A</span>
+                    <div class="sp-camera">📷</div>
+                </div>
+                <div>
+                    <div class="sp-hd-name"  th:text="${user!=null ? user.name  : ''}">Name</div>
+                    <div class="sp-hd-email" th:text="${user!=null ? user.email : ''}">email</div>
+                </div>
+            </div>
+            <div class="sp-body">
+                <button class="sp-item" onclick="openSpModal('editProfileModal')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Edit Profile
+                </button>
+                <a class="sp-item" href="/trainer/change-password">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Change Password
+                </a>
+                <div class="sp-divider"></div>
+                <button class="sp-item" onclick="toggleDarkMode()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    Dark mode
+                    <div class="sp-end"><span class="sp-toggle-pill" id="darkToggle" onclick="event.stopPropagation();toggleDarkMode()"></span></div>
+                </button>
+                <button class="sp-item" onclick="toggleLang()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    Language
+                    <span class="sp-end" id="langLabel" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--accent-deep)">EN</span>
+                </button>
+                <div class="sp-divider"></div>
+                <button class="sp-item" onclick="openSpModal('helpModal')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17"/></svg>
+                    Help &amp; Support
+                </button>
+                <button class="sp-item" onclick="openSpModal('termsModal')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    Terms &amp; Conditions
+                </button>
+                <div class="sp-divider"></div>
+                <a class="sp-item sp-danger" href="/logout">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Logout
+                </a>
+            </div>
+        </div>
+        <button class="sidebar-user-btn" id="settingsBtn" onclick="toggleSettingsPopup()" type="button" aria-expanded="false">
+            <div class="sidebar-u-avatar" id="sidebarAvatar">
+                <img id="sidebarAvatarImg" src="" style="display:none" alt="">
+                <span id="sidebarAvatarInitial" th:text="${user!=null ? #strings.substring(user.name,0,1).toUpperCase() : '?'}">A</span>
+            </div>
+            <div class="sidebar-u-info">
+                <div class="sidebar-u-name" th:text="${user!=null ? user.name : ''}">Name</div>
+                <div class="sidebar-u-role">Trainer</div>
+            </div>
+            <svg class="sidebar-u-cog" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+        </button>
+    </div>
+    <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)" autocomplete="nope">
+
+    <!-- EDIT PROFILE MODAL -->
+    <div id="editProfileModal" class="sp-modal-overlay" onclick="if(event.target===this)closeSpModal('editProfileModal')">
+        <div class="sp-modal-box">
+            <div class="sp-modal-header">
+                <span class="sp-modal-title">Edit <em>Profile</em></span>
+                <button class="sp-modal-close" onclick="closeSpModal('editProfileModal')">×</button>
+            </div>
+            <form autocomplete="off" method="post" action="/trainer/profile">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <div class="sp-modal-body">
+                    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+                        <div class="sp-big-avatar" style="width:60px;height:60px;font-size:22px;cursor:pointer" onclick="document.getElementById('photoInput').click()">
+                            <img id="modalAvatarImg" src="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%" alt="">
+                            <span id="modalAvatarInitial" th:text="${user!=null ? #strings.substring(user.name,0,1).toUpperCase() : '?'}">A</span>
+                            <div class="sp-camera">📷</div>
+                        </div>
+                        <div style="font-size:12px;color:var(--stone-400);line-height:1.5">Click photo to change it.<br>Stored locally on this device.</div>
+                    </div>
+                    <div style="margin-bottom:12px">
+                        <label class="form-label">Full name</label>
+                        <input class="form-input" name="name" th:value="${user!=null ? user.name : ''}" required autocomplete="nope">
+                    </div>
+                    <div style="margin-bottom:12px">
+                        <label class="form-label">Phone number</label>
+                        <input class="form-input" name="phone" placeholder="+355 69 123 4567" autocomplete="nope">
+                    </div>
+                </div>
+                <div class="sp-modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeSpModal('editProfileModal')">Cancel</button>
+                    <button type="submit" class="btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- HELP MODAL (same content) -->
+    <div id="helpModal" class="sp-modal-overlay" onclick="if(event.target===this)closeSpModal('helpModal')">
+        <div class="sp-modal-box">
+            <div class="sp-modal-header">
+                <span class="sp-modal-title">Help <em>&amp; Support</em></span>
+                <button class="sp-modal-close" onclick="closeSpModal('helpModal')">×</button>
+            </div>
+            <div class="sp-modal-body" style="padding-bottom:24px">
+                <p style="font-size:13px;color:var(--stone-500);margin-bottom:16px">Quick guide for trainers using <strong>Forge</strong>:</p>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                    <div style="background:var(--bg-sunken);border-radius:var(--r-md);padding:12px 14px">
+                        <div style="font-weight:600;font-size:13px;margin-bottom:3px">📏 Measurements</div>
+                        <div style="font-size:12px;color:var(--stone-500)">Log body measurements for your clients from the Measurements page.</div>
+                    </div>
+                    <div style="background:var(--bg-sunken);border-radius:var(--r-md);padding:12px 14px">
+                        <div style="font-weight:600;font-size:13px;margin-bottom:3px">⏱ PT Sessions</div>
+                        <div style="font-size:12px;color:var(--stone-500)">Record completed sessions, assign clients, and track remaining sessions.</div>
+                    </div>
+                    <div style="background:var(--bg-sunken);border-radius:var(--r-md);padding:12px 14px">
+                        <div style="font-weight:600;font-size:13px;margin-bottom:3px">✉️ Support</div>
+                        <div style="font-size:12px;color:var(--stone-500)"><a href="mailto:support@forge.al" style="color:var(--accent-deep)">support@forge.al</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TERMS MODAL -->
+    <div id="termsModal" class="sp-modal-overlay" onclick="if(event.target===this)closeSpModal('termsModal')">
+        <div class="sp-modal-box">
+            <div class="sp-modal-header">
+                <span class="sp-modal-title">Terms <em>&amp; Conditions</em></span>
+                <button class="sp-modal-close" onclick="closeSpModal('termsModal')">×</button>
+            </div>
+            <div class="sp-modal-body" style="padding-bottom:24px;font-size:13px;color:var(--stone-600);line-height:1.7">
+                <p style="margin-bottom:8px"><strong style="color:var(--fg-1)">1. Data &amp; Privacy</strong><br>All member data is stored securely and used solely for gym operations.</p>
+                <p style="margin-bottom:8px"><strong style="color:var(--fg-1)">2. Account Security</strong><br>Keep your credentials secure and report suspicious activity immediately.</p>
+                <p style="margin-bottom:8px"><strong style="color:var(--fg-1)">3. Usage</strong><br>This system is for authorised Forge staff and members only.</p>
+                <p><strong style="color:var(--fg-1)">4. Contact</strong><br><a href="mailto:support@forge.al" style="color:var(--accent-deep)">support@forge.al</a> · Forge, Tiranë, Albania.</p>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+    (function() {
+        function applyDark(on) {
+            document.documentElement.setAttribute('data-theme', on ? 'dark' : '');
+            var t = document.getElementById('darkToggle');
+            if (t) t.classList.toggle('on', on);
+        }
+        function toggleDarkMode() {
+            var on = document.documentElement.getAttribute('data-theme') === 'dark';
+            localStorage.setItem('forgeDark', on ? '0' : '1');
+            applyDark(!on);
+        }
+        applyDark(localStorage.getItem('forgeDark') === '1');
+        window.toggleDarkMode = toggleDarkMode;
+
+        var TRANSLATIONS_SQ = {
+            'Dashboard': 'Paneli', 'My Members': 'Anëtarët e Mi',
+            'Measurements': 'Matjet', 'PT Sessions': 'Seancat PT',
+            'Exercise Library': 'Libraria e Ushtrimeve',
+            'My Availability': 'Disponueshmëria Ime',
+            'Message Clients': 'Mesazho Klientët',
+            'AI Coaching Assistant': 'Asistenti AI i Trajnimit',
+            'Edit Profile': 'Ndrysho Profilin', 'Change Password': 'Ndrysho Fjalëkalimin',
+            'Dark mode': 'Modaliteti i errët', 'Language': 'Gjuha',
+            'Help & Support': 'Ndihmë & Mbështetje', 'Terms & Conditions': 'Termat & Kushtet',
+            'Logout': 'Dilni'
+        };
+        function applyLang(lang) {
+            var lbl = document.getElementById('langLabel');
+            if (lbl) lbl.textContent = lang === 'sq' ? 'SQ' : 'EN';
+            document.querySelectorAll('.sidebar-link, .sp-item').forEach(function(el) {
+                var nodes = el.childNodes;
+                for (var i = 0; i < nodes.length; i++) {
+                    var n = nodes[i];
+                    if (n.nodeType !== 3) continue;
+                    var key = 'origText' + i;
+                    var orig = el.dataset[key] || n.textContent.trim();
+                    if (!orig) continue;
+                    el.dataset[key] = orig;
+                    n.textContent = (lang === 'sq' && TRANSLATIONS_SQ[orig]) ? ' ' + TRANSLATIONS_SQ[orig] + ' ' : ' ' + orig + ' ';
+                }
+            });
+        }
+        function toggleLang() {
+            var cur = localStorage.getItem('forgeLang') || 'en';
+            var next = cur === 'sq' ? 'en' : 'sq';
+            localStorage.setItem('forgeLang', next);
+            applyLang(next);
+        }
+        applyLang(localStorage.getItem('forgeLang') || 'en');
+        window.toggleLang = toggleLang;
+
+        var PHOTO_KEY = 'forgePhoto_' + /*[[${user!=null ? user.email : 'guest'}]]*/ 'guest';
+        function loadPhoto() {
+            var p = localStorage.getItem(PHOTO_KEY);
+            ['sidebarAvatarImg','spAvatarImg','modalAvatarImg'].forEach(function(id) {
+                var img = document.getElementById(id);
+                var ini = document.getElementById(id.replace('Img','Initial'));
+                if (img) { img.src = p||''; img.style.display = p ? 'block':'none'; }
+                if (ini) ini.style.display = p ? 'none':'inline';
+            });
+        }
+        function handlePhotoUpload(input) {
+            var file = input.files[0]; if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = new Image();
+                img.onload = function() {
+                    var c = document.createElement('canvas'); c.width=c.height=120;
+                    var ctx=c.getContext('2d');
+                    var r=Math.min(120/img.width,120/img.height),w=img.width*r,h=img.height*r;
+                    ctx.drawImage(img,(120-w)/2,(120-h)/2,w,h);
+                    localStorage.setItem(PHOTO_KEY, c.toDataURL('image/jpeg',.85));
+                    loadPhoto();
+                };
+                img.src=e.target.result;
+            };
+            reader.readAsDataURL(file); input.value='';
+        }
+        loadPhoto();
+        window.handlePhotoUpload = handlePhotoUpload;
+
+        function toggleSettingsPopup() {
+            var popup=document.getElementById('settingsPopup'), btn=document.getElementById('settingsBtn');
+            var open=popup.classList.toggle('open');
+            btn.setAttribute('aria-expanded', open?'true':'false');
+        }
+        document.addEventListener('click',function(e){
+            var card=document.querySelector('.sidebar-user-card');
+            if(card&&!card.contains(e.target)){
+                var p=document.getElementById('settingsPopup'),b=document.getElementById('settingsBtn');
+                if(p)p.classList.remove('open'); if(b)b.setAttribute('aria-expanded','false');
+            }
+        });
+        window.toggleSettingsPopup=toggleSettingsPopup;
+
+        function openSpModal(id){ var p=document.getElementById('settingsPopup'),b=document.getElementById('settingsBtn'); if(p)p.classList.remove('open'); if(b)b.setAttribute('aria-expanded','false'); var m=document.getElementById(id); if(m)m.classList.add('open'); }
+        function closeSpModal(id){ var m=document.getElementById(id); if(m)m.classList.remove('open'); }
+        window.openSpModal=openSpModal; window.closeSpModal=closeSpModal;
+        document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ document.querySelectorAll('.sp-modal-overlay.open').forEach(function(m){m.classList.remove('open');}); var p=document.getElementById('settingsPopup'); if(p)p.classList.remove('open'); }});
+    })();
+    /*]]>*/
+    </script>
+</aside>
+
+<!-- ====================== CLIENT SIDEBAR ====================== -->
+<aside class="sidebar" th:fragment="clientSidebar(active)">
+    <div class="sidebar-logo">Forge<span class="dot"></span></div>
+
+    <div class="sidebar-section">Member Area</div>
+    <a href="/client"            class="sidebar-link" th:classappend="${active=='home'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
+    </a>
+    <a href="/client/membership" class="sidebar-link" th:classappend="${active=='membership'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        My Membership
+    </a>
+    <a href="/client/progress"   class="sidebar-link" th:classappend="${active=='progress'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+        My Progress
+    </a>
+    <a href="/client/pt"         class="sidebar-link" th:classappend="${active=='pt'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        My PT
+    </a>
+    <a href="/client/exercises"  class="sidebar-link" th:classappend="${active=='exercises'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        Exercises &amp; Plans
+    </a>
+
+    <div class="sidebar-section">Health</div>
+    <a href="/client/workouts"   class="sidebar-link" th:classappend="${active=='workouts'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        Workout Log
+    </a>
+    <a href="/client/food"       class="sidebar-link" th:classappend="${active=='food'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        Food &amp; Water
+        <span style="margin-left:auto;font-family:var(--font-mono);font-size:9px;padding:2px 6px;background:var(--accent-pale);color:var(--accent-deep);border-radius:999px;font-weight:600;letter-spacing:.06em">NEW</span>
+    </a>
+    <a href="/client/classes"    class="sidebar-link" th:classappend="${active=='classes'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Group Classes
+    </a>
+    <a href="/client/goals"        class="sidebar-link" th:classappend="${active=='goals'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        Goals
+    </a>
+    <a href="/client/book-trainer" class="sidebar-link" th:classappend="${active=='book-trainer'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/><line x1="19" y1="8" x2="23" y2="8"/><line x1="21" y1="6" x2="21" y2="10"/></svg>
+        Book a Trainer
+    </a>
+    <a href="/client/watch"      class="sidebar-link" th:classappend="${active=='watch'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+        Wearable
+    </a>
+    <a href="/client/ai"         class="sidebar-link" th:classappend="${active=='ai'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg>
+        AI Coach
+        <span style="margin-left:auto;font-family:var(--font-mono);font-size:9px;padding:2px 6px;background:var(--accent-pale);color:var(--accent-deep);border-radius:999px;font-weight:600;letter-spacing:.06em">NEW</span>
+    </a>
+
+    <div class="sidebar-section">Community</div>
+    <a href="/client/notifications" class="sidebar-link" th:classappend="${active=='notifications'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Notifications
+    </a>
+    <a href="/client/notification-preferences" class="sidebar-link" th:classappend="${active=='notif-prefs'}?'active':''">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Notification Settings
+    </a>
+
+    <!-- ── SETTINGS USER CARD ── -->
+    <div class="sidebar-user-card">
+        <div class="settings-popup" id="settingsPopup">
+            <div class="sp-header">
+                <div class="sp-big-avatar" id="spAvatar" onclick="document.getElementById('photoInput').click()" title="Change photo">
+                    <img id="spAvatarImg" src="" style="display:none" alt="">
+                    <span id="spAvatarInitial" th:text="${user!=null ? #strings.substring(user.name,0,1).toUpperCase() : '?'}">A</span>
+                    <div class="sp-camera">📷</div>
+                </div>
+                <div>
+                    <div class="sp-hd-name"  th:text="${user!=null ? user.name  : ''}">Name</div>
+                    <div class="sp-hd-email" th:text="${user!=null ? user.email : ''}">email</div>
+                </div>
+            </div>
+            <div class="sp-body">
+                <button class="sp-item" onclick="openSpModal('editProfileModal')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Edit Profile
+                </button>
+                <a class="sp-item" href="/client/change-password">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Change Password
+                </a>
+                <div class="sp-divider"></div>
+                <button class="sp-item" onclick="toggleDarkMode()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    Dark mode
+                    <div class="sp-end"><span class="sp-toggle-pill" id="darkToggle" onclick="event.stopPropagation();toggleDarkMode()"></span></div>
+                </button>
+                <button class="sp-item" onclick="toggleLang()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    Language
+                    <span class="sp-end" id="langLabel" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--accent-deep)">EN</span>
+                </button>
+                <div class="sp-divider"></div>
+                <button class="sp-item" onclick="openSpModal('helpModal')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17"/></svg>
+                    Help &amp; Support
+                </button>
+                <button class="sp-item" onclick="openSpModal('termsModal')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    Terms &amp; Conditions
+                </button>
+                <div class="sp-divider"></div>
+                <a class="sp-item sp-danger" href="/logout">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Logout
+                </a>
+            </div>
+        </div>
+        <button class="sidebar-user-btn" id="settingsBtn" onclick="toggleSettingsPopup()" type="button" aria-expanded="false">
+            <div class="sidebar-u-avatar" id="sidebarAvatar">
+                <img id="sidebarAvatarImg" src="" style="display:none" alt="">
+                <span id="sidebarAvatarInitial" th:text="${user!=null ? #strings.substring(user.name,0,1).toUpperCase() : '?'}">A</span>
+            </div>
+            <div class="sidebar-u-info">
+                <div class="sidebar-u-name" th:text="${user!=null ? user.name : ''}">Name</div>
+                <div class="sidebar-u-role">Member</div>
+            </div>
+            <svg class="sidebar-u-cog" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+        </button>
+    </div>
+    <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)" autocomplete="nope">
+
+    <div id="editProfileModal" class="sp-modal-overlay" onclick="if(event.target===this)closeSpModal('editProfileModal')">
+        <div class="sp-modal-box">
+            <div class="sp-modal-header">
+                <span class="sp-modal-title">Edit <em>Profile</em></span>
+                <button class="sp-modal-close" onclick="closeSpModal('editProfileModal')">×</button>
+            </div>
+            <form autocomplete="off" method="post" action="/client/profile">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <div class="sp-modal-body">
+                    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+                        <div class="sp-big-avatar" style="width:60px;height:60px;font-size:22px;cursor:pointer" onclick="document.getElementById('photoInput').click()">
+                            <img id="modalAvatarImg" src="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%" alt="">
+                            <span id="modalAvatarInitial" th:text="${user!=null ? #strings.substring(user.name,0,1).toUpperCase() : '?'}">A</span>
+                            <div class="sp-camera">📷</div>
+                        </div>
+                        <div style="font-size:12px;color:var(--stone-400);line-height:1.5">Click photo to change it.<br>Stored locally on this device.</div>
+                    </div>
+                    <div style="margin-bottom:12px">
+                        <label class="form-label">Full name</label>
+                        <input class="form-input" name="name" th:value="${user!=null ? user.name : ''}" required autocomplete="nope">
+                    </div>
+                    <div style="margin-bottom:12px">
+                        <label class="form-label">Phone number</label>
+                        <input class="form-input" name="phone" th:value="${me!=null ? me.phone : ''}" placeholder="+355 69 123 4567" autocomplete="nope">
+                    </div>
+                </div>
+                <div class="sp-modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeSpModal('editProfileModal')">Cancel</button>
+                    <button type="submit" class="btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="helpModal" class="sp-modal-overlay" onclick="if(event.target===this)closeSpModal('helpModal')">
+        <div class="sp-modal-box">
+            <div class="sp-modal-header">
+                <span class="sp-modal-title">Help <em>&amp; Support</em></span>
+                <button class="sp-modal-close" onclick="closeSpModal('helpModal')">×</button>
+            </div>
+            <div class="sp-modal-body" style="padding-bottom:24px">
+                <p style="font-size:13px;color:var(--stone-500);margin-bottom:16px">Tips for managing your membership on <strong>Forge</strong>:</p>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                    <div style="background:var(--bg-sunken);border-radius:var(--r-md);padding:12px 14px">
+                        <div style="font-weight:600;font-size:13px;margin-bottom:3px">💳 Membership</div>
+                        <div style="font-size:12px;color:var(--stone-500)">View your plan, door PIN, and payment history under My Membership.</div>
+                    </div>
+                    <div style="background:var(--bg-sunken);border-radius:var(--r-md);padding:12px 14px">
+                        <div style="font-weight:600;font-size:13px;margin-bottom:3px">📈 Progress</div>
+                        <div style="font-size:12px;color:var(--stone-500)">Your trainer logs measurements that appear on your Progress chart.</div>
+                    </div>
+                    <div style="background:var(--bg-sunken);border-radius:var(--r-md);padding:12px 14px">
+                        <div style="font-weight:600;font-size:13px;margin-bottom:3px">✉️ Support</div>
+                        <div style="font-size:12px;color:var(--stone-500)"><a href="mailto:support@forge.al" style="color:var(--accent-deep)">support@forge.al</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="termsModal" class="sp-modal-overlay" onclick="if(event.target===this)closeSpModal('termsModal')">
+        <div class="sp-modal-box">
+            <div class="sp-modal-header">
+                <span class="sp-modal-title">Terms <em>&amp; Conditions</em></span>
+                <button class="sp-modal-close" onclick="closeSpModal('termsModal')">×</button>
+            </div>
+            <div class="sp-modal-body" style="padding-bottom:24px;font-size:13px;color:var(--stone-600);line-height:1.7">
+                <p style="margin-bottom:8px"><strong style="color:var(--fg-1)">1. Data &amp; Privacy</strong><br>All member data is stored securely and used solely for gym operations.</p>
+                <p style="margin-bottom:8px"><strong style="color:var(--fg-1)">2. Account Security</strong><br>Keep your credentials secure and report suspicious activity immediately.</p>
+                <p style="margin-bottom:8px"><strong style="color:var(--fg-1)">3. Usage</strong><br>This system is for authorised Forge members only.</p>
+                <p><strong style="color:var(--fg-1)">4. Contact</strong><br><a href="mailto:support@forge.al" style="color:var(--accent-deep)">support@forge.al</a> · Forge, Tiranë, Albania.</p>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+    (function() {
+        function applyDark(on) {
+            document.documentElement.setAttribute('data-theme', on ? 'dark' : '');
+            var t = document.getElementById('darkToggle');
+            if (t) t.classList.toggle('on', on);
+        }
+        function toggleDarkMode() {
+            var on = document.documentElement.getAttribute('data-theme') === 'dark';
+            localStorage.setItem('forgeDark', on ? '0' : '1');
+            applyDark(!on);
+        }
+        applyDark(localStorage.getItem('forgeDark') === '1');
+        window.toggleDarkMode = toggleDarkMode;
+
+        var TRANSLATIONS_SQ = {
+            'Home': 'Kreu', 'My Membership': 'Anëtarësia Ime',
+            'My Progress': 'Progresi Im', 'My PT': 'PT-ja Ime',
+            'Exercises & Plans': 'Ushtrime & Plane', 'Workout Log': 'Regjistri i Stërvitjeve',
+            'Food Log': 'Ditari Ushqimor', 'Food & Water': 'Ushqim & Ujë', 'Group Classes': 'Klasat Grupore',
+            'Goals': 'Objektivat',
+            'Book a Trainer': 'Rezervo Trajnerin',
+            'Apple Watch': 'Apple Watch', 'AI Coach': 'Trajneri AI',
+            'Notifications': 'Njoftimet', 'Notification Settings': 'Cilësimet e Njoftimeve',
+            'Edit Profile': 'Ndrysho Profilin', 'Change Password': 'Ndrysho Fjalëkalimin',
+            'Dark mode': 'Modaliteti i errët', 'Language': 'Gjuha',
+            'Help & Support': 'Ndihmë & Mbështetje', 'Terms & Conditions': 'Termat & Kushtet',
+            'Logout': 'Dilni'
+        };
+        function applyLang(lang) {
+            var lbl = document.getElementById('langLabel');
+            if (lbl) lbl.textContent = lang === 'sq' ? 'SQ' : 'EN';
+            document.querySelectorAll('.sidebar-link, .sp-item').forEach(function(el) {
+                var nodes = el.childNodes;
+                for (var i = 0; i < nodes.length; i++) {
+                    var n = nodes[i];
+                    if (n.nodeType !== 3) continue;
+                    var key = 'origText' + i;
+                    var orig = el.dataset[key] || n.textContent.trim();
+                    if (!orig) continue;
+                    el.dataset[key] = orig;
+                    n.textContent = (lang === 'sq' && TRANSLATIONS_SQ[orig]) ? ' ' + TRANSLATIONS_SQ[orig] + ' ' : ' ' + orig + ' ';
+                }
+            });
+        }
+        function toggleLang() {
+            var next = (localStorage.getItem('forgeLang')||'en') === 'sq' ? 'en' : 'sq';
+            localStorage.setItem('forgeLang', next);
+            applyLang(next);
+        }
+        applyLang(localStorage.getItem('forgeLang') || 'en');
+        window.toggleLang = toggleLang;
+
+        var PHOTO_KEY = 'forgePhoto_' + /*[[${user!=null ? user.email : 'guest'}]]*/ 'guest';
+        function loadPhoto() {
+            var p = localStorage.getItem(PHOTO_KEY);
+            ['sidebarAvatarImg','spAvatarImg','modalAvatarImg'].forEach(function(id) {
+                var img = document.getElementById(id);
+                var ini = document.getElementById(id.replace('Img','Initial'));
+                if (img) { img.src=p||''; img.style.display=p?'block':'none'; }
+                if (ini) ini.style.display = p ? 'none' : 'inline';
+            });
+        }
+        function handlePhotoUpload(input) {
+            var file=input.files[0]; if(!file) return;
+            var reader=new FileReader();
+            reader.onload=function(e){
+                var img=new Image();
+                img.onload=function(){
+                    var c=document.createElement('canvas'); c.width=c.height=120;
+                    var ctx=c.getContext('2d'),r=Math.min(120/img.width,120/img.height),w=img.width*r,h=img.height*r;
+                    ctx.drawImage(img,(120-w)/2,(120-h)/2,w,h);
+                    localStorage.setItem(PHOTO_KEY,c.toDataURL('image/jpeg',.85)); loadPhoto();
+                };
+                img.src=e.target.result;
+            };
+            reader.readAsDataURL(file); input.value='';
+        }
+        loadPhoto();
+        window.handlePhotoUpload=handlePhotoUpload;
+
+        function toggleSettingsPopup(){
+            var p=document.getElementById('settingsPopup'),b=document.getElementById('settingsBtn');
+            var open=p.classList.toggle('open'); b.setAttribute('aria-expanded',open?'true':'false');
+        }
+        document.addEventListener('click',function(e){
+            var card=document.querySelector('.sidebar-user-card');
+            if(card&&!card.contains(e.target)){var p=document.getElementById('settingsPopup'),b=document.getElementById('settingsBtn');if(p)p.classList.remove('open');if(b)b.setAttribute('aria-expanded','false');}
+        });
+        window.toggleSettingsPopup=toggleSettingsPopup;
+
+        function openSpModal(id){var p=document.getElementById('settingsPopup'),b=document.getElementById('settingsBtn');if(p)p.classList.remove('open');if(b)b.setAttribute('aria-expanded','false');var m=document.getElementById(id);if(m)m.classList.add('open');}
+        function closeSpModal(id){var m=document.getElementById(id);if(m)m.classList.remove('open');}
+        window.openSpModal=openSpModal; window.closeSpModal=closeSpModal;
+        document.addEventListener('keydown',function(e){if(e.key==='Escape'){document.querySelectorAll('.sp-modal-overlay.open').forEach(function(m){m.classList.remove('open');});var p=document.getElementById('settingsPopup');if(p)p.classList.remove('open');}});
+    })();
+    /*]]>*/
+    </script>
+</aside>
+
+<!-- ====================== TOP BAR ====================== -->
+<header class="topbar" th:fragment="topbar(title)">
+    <div class="topbar-title" th:text="${title}">Dashboard</div>
+    <div class="topbar-user" style="display:flex;align-items:center;gap:14px">
+        <a href="/client/notifications" style="position:relative;color:var(--fg-2);text-decoration:none" title="Notifications"
+           th:if="${unreadNotifs != null}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span th:if="${unreadNotifs > 0}"
+                  style="position:absolute;top:-6px;right:-8px;background:var(--signal-danger);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:999px;min-width:14px;text-align:center"
+                  th:text="${unreadNotifs}">0</span>
+        </a>
+        <a class="btn-logout" href="/logout">Logout</a>
+    </div>
+</header>
+
+</body>
+</html>

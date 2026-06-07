@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+<meta charset="UTF-8">
+<title>Verify email, Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}">
+<style>
+  body { margin: 0; }
+  .arr { width: 14px; height: 14px; transition: transform .2s; }
+  .submit:hover .arr { transform: translateX(3px); }
+</style>
+</head>
+<body>
+
+<div class="otp-wrap">
+  <div class="otp-card">
+
+    <!-- Logo -->
+    <div style="text-align:center; margin-bottom: 28px;">
+      <span style="font-family:var(--font-display); font-size:28px; font-weight:400; color:var(--ink); letter-spacing:-0.025em; display:inline-flex; align-items:baseline; gap:2px;">
+        Forge<span style="width:5px;height:5px;background:var(--accent);border-radius:50%;margin-left:2px;transform:translateY(-3px);display:inline-block;"></span>
+      </span>
+    </div>
+
+    <div class="otp-icon">✉️</div>
+    <h1 class="otp-title">Check your <em>email</em>.</h1>
+    <p class="otp-desc">
+      We sent a 6-digit code to<br/>
+      <strong th:text="${masked}" style="color:var(--ink);">em••@mail.com</strong>
+    </p>
+
+    <!-- Alerts -->
+    <div class="alert alert-success" th:if="${success}" th:text="${success}" style="text-align:left;margin-bottom:20px;"></div>
+    <div class="alert alert-info"    th:if="${info}"    th:text="${info}"    style="text-align:left;margin-bottom:20px;"></div>
+    <div class="alert alert-danger"  th:if="${error}"   th:text="${error}"   style="text-align:left;margin-bottom:20px;"></div>
+
+    <!-- OTP form -->
+    <form autocomplete="off" method="post" th:action="@{/verify/email/confirm}" id="otpForm">
+      <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+      <input type="hidden" name="code" id="codeHidden"/ autocomplete="nope">
+
+      <div class="otp-inputs" id="otpInputs">
+        <input class="otp-input" type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" data-idx="0"/>
+        <input class="otp-input" type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" data-idx="1"/ autocomplete="nope">
+        <input class="otp-input" type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" data-idx="2"/ autocomplete="nope">
+        <input class="otp-input" type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" data-idx="3"/ autocomplete="nope">
+        <input class="otp-input" type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" data-idx="4"/ autocomplete="nope">
+        <input class="otp-input" type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" data-idx="5"/ autocomplete="nope">
+      </div>
+
+      <button type="submit" class="auth-button submit" style="margin-bottom:16px;">
+        Verify email
+        <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </button>
+    </form>
+
+    <!-- Resend -->
+    <p style="font-size:13px; color:var(--stone-500); text-align:center; margin-top:8px;">
+      Didn't receive it?
+      <a th:href="@{/verify/email/resend}"
+         style="color:var(--ink); font-weight:600; border-bottom:1px solid var(--accent); padding-bottom:1px; text-decoration:none;">
+        Resend code
+      </a>
+    </p>
+
+    <p style="font-size:13px; color:var(--stone-400); text-align:center; margin-top:16px;">
+      <a th:href="@{/login}" style="color:var(--stone-500); text-decoration:none;">← Back to sign in</a>
+    </p>
+
+  </div>
+</div>
+
+<script>
+  const inputs = document.querySelectorAll('.otp-input');
+  const hidden = document.getElementById('codeHidden');
+  const form   = document.getElementById('otpForm');
+
+  inputs.forEach((inp, i) => {
+    inp.addEventListener('input', (e) => {
+      const val = e.target.value.replace(/\D/g, '');
+      e.target.value = val;
+      if (val && i < inputs.length - 1) inputs[i + 1].focus();
+      updateHidden();
+    });
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !e.target.value && i > 0) {
+        inputs[i - 1].focus();
+      }
+    });
+    inp.addEventListener('paste', (e) => {
+      const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+      if (pasted.length >= 6) {
+        e.preventDefault();
+        for (let j = 0; j < 6; j++) inputs[j].value = pasted[j] || '';
+        inputs[5].focus();
+        updateHidden();
+      }
+    });
+  });
+
+  function updateHidden() {
+    hidden.value = Array.from(inputs).map(i => i.value).join('');
+    if (hidden.value.length === 6) {
+      // Auto-submit when all 6 digits entered
+      setTimeout(() => form.submit(), 120);
+    }
+  }
+
+  // Focus first input on load
+  inputs[0].focus();
+</script>
+</body>
+</html>

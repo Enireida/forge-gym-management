@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>My PT - Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: clientSidebar('pt')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('My PT')}"></div>
+    <main class="main">
+        <div class="card">
+            <div class="card-title">My personal-training subscriptions</div>
+            <table>
+                <thead><tr><th>Package</th><th>Trainer</th><th>Sessions used</th>
+                    <th>Sessions left</th><th>Status</th></tr></thead>
+                <tbody>
+                <tr th:each="s : ${subscriptions}">
+                    <td th:text="${s.ptPackage.name}"></td>
+                    <td th:text="${s.trainer!=null?s.trainer.name:'-'}"></td>
+                    <td th:text="${s.sessionsUsed}"></td>
+                    <td><strong th:text="${s.sessionsRemaining}"></strong></td>
+                    <td><span class="badge badge-success" th:text="${s.status}"></span></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(subscriptions)}">
+                    <td colspan="5">You don't have any active PT subscriptions.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+</body></html>

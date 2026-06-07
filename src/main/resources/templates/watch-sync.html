@@ -1,0 +1,281 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Forge Watch Sync</title>
+    <!-- PWA: lets you add this page to iPhone home screen, looks like a native app -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Forge Sync">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+        :root {
+            --navy:    #060F1A;
+            --navy-2:  #0D1B2A;
+            --navy-3:  #122030;
+            --accent:  #C8A96E;
+            --acc-bg:  rgba(200,169,110,.13);
+            --text:    #F0EDE8;
+            --dim:     rgba(240,237,232,.45);
+            --ok:      #4ade80;
+            --err:     #f87171;
+            --line:    rgba(255,255,255,.08);
+        }
+
+        body {
+            background: var(--navy);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            min-height: 100vh; min-height: 100dvh;
+            display: flex; flex-direction: column;
+            overscroll-behavior: none;
+        }
+
+        /* ─── HEADER ─── */
+        .hdr {
+            padding: 52px 24px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--line);
+        }
+        .hdr-label {
+            font-size: 10px; font-weight: 700; letter-spacing: .2em;
+            text-transform: uppercase; color: var(--accent);
+            margin-bottom: 14px;
+        }
+        .hdr-name {
+            font-size: 26px; font-weight: 300;
+            letter-spacing: -.025em; color: var(--text);
+        }
+        .hdr-date {
+            font-size: 12px; color: var(--dim); margin-top: 4px;
+        }
+
+        /* ─── SECTION LABEL ─── */
+        .sec {
+            padding: 18px 20px 10px;
+            font-size: 10px; font-weight: 700;
+            letter-spacing: .13em; text-transform: uppercase;
+            color: var(--dim);
+        }
+
+        /* ─── WORKOUT GRID ─── */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 0 14px;
+        }
+
+        .wbtn {
+            background: var(--navy-2);
+            border: 1.5px solid var(--line);
+            border-radius: 18px;
+            padding: 22px 10px 18px;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 9px;
+            cursor: pointer;
+            transition: transform .12s, background .12s, border-color .12s;
+            -webkit-appearance: none;
+            color: var(--text);
+            width: 100%;
+        }
+        .wbtn:active   { transform: scale(.95); }
+        .wbtn.selected { background: var(--acc-bg); border-color: var(--accent); }
+
+        .wbtn .ico  { font-size: 30px; }
+        .wbtn .lbl  {
+            font-size: 11px; font-weight: 700;
+            letter-spacing: .06em; text-transform: uppercase;
+        }
+
+        /* ─── EXTRAS ─── */
+        .extras { padding: 14px; }
+
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+        .igrp { display: flex; flex-direction: column; gap: 5px; }
+        .ilbl { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+        .iinp {
+            background: var(--navy-2); border: 1.5px solid var(--line);
+            border-radius: 12px; padding: 13px 14px;
+            font-size: 17px; color: var(--text); font-family: inherit; width: 100%;
+        }
+        .iinp:focus { outline: none; border-color: var(--accent); }
+
+        /* ─── SYNC BUTTON ─── */
+        .sbtn {
+            width: 100%;
+            background: var(--accent); border: none;
+            border-radius: 16px; padding: 19px;
+            font-size: 17px; font-weight: 700;
+            letter-spacing: .04em;
+            color: var(--navy); cursor: pointer;
+            transition: transform .12s, opacity .12s;
+            -webkit-appearance: none;
+        }
+        .sbtn:active   { transform: scale(.97); opacity: .88; }
+        .sbtn:disabled { opacity: .35; cursor: default; }
+
+        /* ─── STATUS ─── */
+        .status {
+            padding: 14px 0 4px;
+            text-align: center; font-size: 15px; min-height: 48px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .status.ok  { color: var(--ok); }
+        .status.err { color: var(--err); }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin {
+            width: 20px; height: 20px;
+            border: 2px solid rgba(255,255,255,.15);
+            border-top-color: var(--accent);
+            border-radius: 50%; animation: spin .7s linear infinite;
+        }
+
+        /* ─── FOOTER ─── */
+        .footer {
+            margin-top: auto; padding: 16px;
+            text-align: center; font-size: 10px;
+            color: var(--dim); border-top: 1px solid var(--line);
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+    <div class="hdr-label">⌚ Forge Watch Sync</div>
+    <div class="hdr-name" th:text="${member.name}">Member</div>
+    <div class="hdr-date" id="today"></div>
+</div>
+
+<!-- WORKOUT PICKER -->
+<div class="sec">Select workout</div>
+<div class="grid">
+    <button class="wbtn" onclick="pick(this,'STRENGTH')">
+        <span class="ico">💪</span><span class="lbl">Strength</span>
+    </button>
+    <button class="wbtn" onclick="pick(this,'RUNNING')">
+        <span class="ico">🏃</span><span class="lbl">Running</span>
+    </button>
+    <button class="wbtn" onclick="pick(this,'CYCLING')">
+        <span class="ico">🚴</span><span class="lbl">Cycling</span>
+    </button>
+    <button class="wbtn" onclick="pick(this,'CARDIO')">
+        <span class="ico">❤️</span><span class="lbl">Cardio</span>
+    </button>
+    <button class="wbtn" onclick="pick(this,'HIIT')">
+        <span class="ico">⚡</span><span class="lbl">HIIT</span>
+    </button>
+    <button class="wbtn" onclick="pick(this,'YOGA')">
+        <span class="ico">🧘</span><span class="lbl">Yoga</span>
+    </button>
+    <button class="wbtn" onclick="pick(this,'SWIMMING')">
+        <span class="ico">🏊</span><span class="lbl">Swimming</span>
+    </button>
+    <button class="wbtn" onclick="pick(this,'OTHER')">
+        <span class="ico">▶️</span><span class="lbl">Other</span>
+    </button>
+</div>
+
+<!-- OPTIONAL FIELDS + SYNC -->
+<div class="extras">
+    <div class="row2">
+        <div class="igrp">
+            <span class="ilbl">Duration (min)</span>
+            <input class="iinp" id="dur" type="number" placeholder="45" inputmode="numeric" autocomplete="nope">
+        </div>
+        <div class="igrp">
+            <span class="ilbl">Calories (kcal)</span>
+            <input class="iinp" id="cal" type="number" placeholder="320" inputmode="numeric" autocomplete="nope">
+        </div>
+    </div>
+    <button class="sbtn" id="sbtn" onclick="doSync()">⌚  Sync to Forge</button>
+    <div class="status" id="status"></div>
+</div>
+
+<div class="footer">Forge Gym · Apple Watch Integration</div>
+
+<script th:inline="javascript">
+    const MID = /*[[${memberId}]]*/ 0;
+
+    // Today's date display
+    document.getElementById('today').textContent = new Date().toLocaleDateString('en-US', {
+        weekday: 'long', month: 'long', day: 'numeric'
+    });
+
+    let chosen = null;
+
+    function pick(btn, type) {
+        document.querySelectorAll('.wbtn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        chosen = type;
+        setStatus('', '');
+    }
+
+    async function doSync() {
+        if (!chosen) { setStatus('err', '⚠️  Select a workout type first'); return; }
+
+        const dur = document.getElementById('dur').value;
+        const cal = document.getElementById('cal').value;
+
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        const ts  = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}` +
+                    `T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+        const body = {
+            workoutType:    chosen,
+            startTime:      ts,
+            source:         'apple_watch',
+            healthKitUUID:  'FORGE-' + MID + '-' + Date.now(),
+            notes:          'Synced via Forge Watch app'
+        };
+        if (dur) body.durationSeconds = parseInt(dur) * 60;
+        if (cal) body.activeCalories  = parseFloat(cal);
+
+        const btn = document.getElementById('sbtn');
+        btn.disabled = true;
+        setStatus('spin', '');
+
+        try {
+            const res  = await fetch('/api/watch/' + MID + '/workout', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(body)
+            });
+            const data = await res.json();
+
+            if (data.status === 'saved') {
+                setStatus('ok', '✅  ' + chosen + ' synced to Forge!');
+                setTimeout(() => {
+                    document.querySelectorAll('.wbtn').forEach(b => b.classList.remove('selected'));
+                    chosen = null;
+                    document.getElementById('dur').value = '';
+                    document.getElementById('cal').value = '';
+                    setStatus('', '');
+                    btn.disabled = false;
+                }, 3500);
+            } else {
+                setStatus('ok', '📋  Already logged');
+                btn.disabled = false;
+            }
+        } catch (e) {
+            setStatus('err', '❌  Cannot reach Forge server');
+            btn.disabled = false;
+        }
+    }
+
+    function setStatus(type, msg) {
+        const el = document.getElementById('status');
+        el.className = 'status ' + (type === 'ok' || type === 'err' ? type : '');
+        el.innerHTML = type === 'spin'
+            ? '<div class="spin"></div>'
+            : msg;
+    }
+</script>
+</body>
+</html>

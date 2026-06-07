@@ -1,0 +1,205 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>Announcements - Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}">
+<style>
+    .modal-overlay{position:fixed;inset:0;background:rgba(6,15,26,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+    .modal-overlay.open{display:flex}
+    .modal-box{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-xl);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-3)}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:22px 24px 0}
+    .modal-title{font-family:var(--font-display);font-size:22px;font-weight:400;letter-spacing:-.01em;color:var(--fg-1)}
+    .modal-title em{font-style:italic;color:var(--accent-deep)}
+    .modal-close{background:none;border:none;cursor:pointer;color:var(--stone-400);font-size:26px;line-height:1;padding:4px 8px;border-radius:var(--r-sm)}
+    .modal-close:hover{background:var(--bg-sunken);color:var(--fg-1)}
+    .modal-body{padding:18px 24px 0}
+    .modal-footer{padding:16px 24px 22px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line-1);margin-top:18px}
+    .ann-card{background:var(--bg-sunken);border:1px solid var(--line-1);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:14px}
+    .ann-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
+    .ann-title{font-family:var(--font-display);font-size:17px;font-weight:400;color:var(--fg-1)}
+    .ann-meta{font-family:var(--font-mono);font-size:11px;color:var(--stone-400)}
+    .ann-message{font-size:14px;color:var(--fg-2);line-height:1.6;margin-bottom:10px}
+    .ann-footer{display:flex;justify-content:space-between;align-items:center}
+    .ann-audience{font-family:var(--font-mono);font-size:11px;color:var(--stone-400);letter-spacing:.06em;text-transform:uppercase}
+    /* ── 3-dot menu ── */
+    .dot-wrap{position:relative;display:inline-block}
+    .dot-btn{display:flex;align-items:center;justify-content:center;width:30px;height:30px;background:none;border:1px solid var(--line-1);border-radius:var(--r-sm);cursor:pointer;color:var(--stone-400);transition:all var(--dur-fast) var(--ease-out)}
+    .dot-btn:hover{background:var(--bg-surface);border-color:var(--stone-200);color:var(--fg-1)}
+    .dot-btn.active{background:var(--accent-pale);border-color:var(--accent);color:var(--accent-deep)}
+    .dot-menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-lg);box-shadow:var(--shadow-3);min-width:160px;padding:5px;z-index:200;display:none;animation:dotIn .14s var(--ease-out)}
+    .dot-menu.open{display:block}
+    @keyframes dotIn{from{opacity:0;transform:translateY(4px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .dot-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r-sm);font-size:13px;font-weight:500;color:var(--fg-2);cursor:pointer;width:100%;text-align:left;background:none;border:none;text-decoration:none;transition:background var(--dur-fast);font-family:var(--font-sans)}
+    .dot-item:hover{background:var(--bg-sunken);color:var(--fg-1)}
+    .dot-item svg{color:var(--stone-400);flex-shrink:0}
+    .dot-sep{height:1px;background:var(--line-1);margin:4px 6px}
+    .dot-item.danger{color:var(--signal-danger)}
+    .dot-item.danger svg{color:var(--signal-danger)}
+    .dot-item.danger:hover{background:var(--signal-danger-bg)}
+</style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('announcements')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Announcements')}"></div>
+    <main class="main">
+
+        <!-- ANNOUNCEMENTS LIST -->
+        <div class="card">
+            <div class="card-title">
+                Published Announcements
+                <span style="display:flex;align-items:center;gap:10px">
+                    <span style="font-size:13px;font-weight:400;color:var(--stone-400)"
+                          th:text="'(' + ${#lists.size(announcements)} + ')'"></span>
+                    <a href="/admin/announcements/new" class="btn"
+                       style="white-space:nowrap;gap:7px;display:flex;align-items:center;text-decoration:none">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        New Announcement
+                    </a>
+                </span>
+            </div>
+            <div th:if="${#lists.isEmpty(announcements)}"
+                 style="color:var(--stone-400);font-style:italic;padding:12px 0">No announcements yet.</div>
+            <div th:each="a : ${announcements}" class="ann-card">
+                <div class="ann-header">
+                    <span class="ann-title" th:text="${a.title}"></span>
+                    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+                        <span class="ann-meta" th:text="${#temporals.format(a.createdAt,'d MMM yyyy, HH:mm')}"></span>
+                        <div class="dot-wrap">
+                            <button class="dot-btn" type="button" onclick="toggleDotMenu(this)">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+                                </svg>
+                            </button>
+                            <div class="dot-menu">
+                                <button class="dot-item" type="button"
+                                        th:data-id="${a.id}" th:data-title="${a.title}"
+                                        th:data-message="${a.message}" th:data-audience="${a.audience}"
+                                        onclick="openEditAnnouncement(this); closeDotMenus()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    Edit
+                                </button>
+                                <div class="dot-sep"></div>
+                                <form autocomplete="off" method="post" th:action="@{'/admin/announcements/'+${a.id}+'/delete'}" style="margin:0">
+                                    <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                                    <button class="dot-item danger" type="submit"
+                                            onclick="return confirm('Delete this announcement?')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ann-message" th:text="${a.message}"></div>
+                <div class="ann-footer">
+                    <span class="ann-audience">Audience: <span th:text="${a.audience}"></span></span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- ===== ADD ANNOUNCEMENT MODAL ===== -->
+<div id="addAnnouncementModal" class="modal-overlay" onclick="if(event.target===this)closeModal('addAnnouncementModal')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Post <em>Announcement</em></span>
+            <button class="modal-close" onclick="closeModal('addAnnouncementModal')">×</button>
+        </div>
+        <form autocomplete="off" method="post" action="/admin/announcements">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div><label class="form-label">Title <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" name="title" placeholder="e.g. Gym closed on Sunday" required autocomplete="nope"></div>
+                    <div><label class="form-label">Audience <span style="color:var(--signal-danger)">*</span></label>
+                        <select class="form-select" name="audience">
+                            <option value="all">Everyone</option>
+                            <option value="members">Members only</option>
+                            <option value="staff">Staff only</option>
+                        </select></div>
+                </div>
+                <div style="margin-bottom:4px">
+                    <label class="form-label">Message <span style="color:var(--signal-danger)">*</span></label>
+                    <textarea class="form-input" name="message" rows="4"
+                              placeholder="Write your announcement here…" required
+                              style="resize:vertical"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addAnnouncementModal')">Cancel</button>
+                <button type="submit" class="btn" style="display:flex;align-items:center;gap:7px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+                    Publish
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== EDIT ANNOUNCEMENT MODAL ===== -->
+<div id="editAnnouncementModal" class="modal-overlay" onclick="if(event.target===this)closeModal('editAnnouncementModal')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Edit <em>Announcement</em></span>
+            <button class="modal-close" onclick="closeModal('editAnnouncementModal')">×</button>
+        </div>
+        <form autocomplete="off" method="post" id="editAnnouncementForm">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div><label class="form-label">Title</label>
+                        <input class="form-input" id="ea-title" name="title" required autocomplete="nope"></div>
+                    <div><label class="form-label">Audience</label>
+                        <select class="form-select" id="ea-audience" name="audience">
+                            <option value="all">Everyone</option>
+                            <option value="members">Members only</option>
+                            <option value="staff">Staff only</option>
+                        </select></div>
+                </div>
+                <label class="form-label">Message</label>
+                <textarea class="form-input" id="ea-message" name="message" rows="4" required></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editAnnouncementModal')">Cancel</button>
+                <button type="submit" class="btn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal(id)  { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open')); } });
+
+    function openEditAnnouncement(btn) {
+        const d = btn.dataset;
+        document.getElementById('editAnnouncementForm').action = '/admin/announcements/' + d.id + '/edit';
+        document.getElementById('ea-title').value   = d.title   || '';
+        document.getElementById('ea-message').value = d.message || '';
+        const audSel = document.getElementById('ea-audience');
+        for (let o of audSel.options) { o.selected = o.value === d.audience; }
+        openModal('editAnnouncementModal');
+    }
+
+    function toggleDotMenu(btn) {
+        const menu = btn.closest('.dot-wrap').querySelector('.dot-menu');
+        const isOpen = menu.classList.contains('open');
+        closeDotMenus();
+        if (!isOpen) { menu.classList.add('open'); btn.classList.add('active'); }
+    }
+    function closeDotMenus() {
+        document.querySelectorAll('.dot-menu.open').forEach(m => {
+            m.classList.remove('open');
+            const b = m.closest('.dot-wrap')?.querySelector('.dot-btn');
+            if (b) b.classList.remove('active');
+        });
+    }
+    document.addEventListener('click', e => { if (!e.target.closest('.dot-wrap')) closeDotMenus(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDotMenus(); });
+</script>
+</body>
+</html>

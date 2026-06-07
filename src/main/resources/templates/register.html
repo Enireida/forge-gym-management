@@ -1,0 +1,353 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+<meta charset="UTF-8">
+<title>Forge, Create Account</title>
+<link rel="stylesheet" th:href="@{/css/app.css}">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    background: #FFFFFF;
+    font-family: var(--font-sans); color: var(--ink);
+    display: grid; grid-template-columns: 1fr 1.1fr;
+  }
+
+  /* ===== LEFT, editorial ===== */
+  .left {
+    padding: 40px 56px;
+    display: flex; flex-direction: column;
+    background: #FFFFFF;
+    border-right: 1px solid var(--stone-100);
+    position: relative; overflow: hidden;
+  }
+  .left::before {
+    content: '';
+    position: absolute; bottom: -120px; left: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(184,149,106,.10), transparent 65%);
+    pointer-events: none;
+  }
+  .left-top { display: flex; justify-content: space-between; align-items: center; }
+  .brand { display: inline-flex; align-items: baseline; gap: 2px; text-decoration: none; }
+  .brand .word { font-family: var(--font-display); font-weight: 400; font-size: 28px; letter-spacing: -0.035em; color: var(--ink); }
+  .brand .dot  { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; display: inline-block; margin-left: 3px; transform: translateY(-2px); }
+  .left-top .meta { font-size: 12px; font-weight: 500; letter-spacing: .04em; color: var(--stone-500); }
+
+  .left-content { margin: auto 0; max-width: 480px; }
+  .left-eyebrow { font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: 17px; color: var(--accent-deep); margin-bottom: 28px; }
+  .left h1 {
+    font-family: var(--font-display); font-weight: 300;
+    font-size: clamp(48px, 6vw, 92px);
+    line-height: 0.95; letter-spacing: -0.035em;
+    margin: 0 0 32px; color: var(--ink);
+  }
+  .left h1 em { font-style: italic; font-weight: 300; }
+  .left p { font-size: 16px; line-height: 1.55; color: var(--stone-700); max-width: 420px; margin: 0 0 40px; }
+
+  .perks { display: flex; flex-direction: column; gap: 18px; margin-bottom: 48px; }
+  .perk { display: flex; align-items: flex-start; gap: 14px; padding-left: 4px; }
+  .perk-dot {
+    width: 6px; height: 6px; flex-shrink: 0; border-radius: 50%;
+    background: var(--fg-1); margin-top: 8px;
+  }
+  .perk-text strong { display: block; font-size: 14px; font-weight: 600; color: var(--fg-1); }
+  .perk-text span   { font-size: 13px; color: var(--stone-500); }
+
+  .left-footer {
+    font-size: 12px; color: var(--stone-400);
+    margin-top: auto; padding-top: 24px;
+    border-top: 1px solid var(--stone-100);
+  }
+
+  /* ===== RIGHT, form ===== */
+  .right {
+    padding: 40px 56px;
+    display: flex; flex-direction: column;
+    background: var(--paper-soft);
+    overflow-y: auto;
+  }
+  .right-top {
+    display: flex; justify-content: flex-end; align-items: center; gap: 6px;
+    font-size: 14px; color: var(--stone-600); margin-bottom: 8px;
+  }
+  .right-top a { color: var(--ink); font-weight: 600; border-bottom: 1px solid var(--accent); padding-bottom: 1px; text-decoration: none; }
+  .right-top a:hover { border-bottom-color: var(--ink); }
+
+  .form-wrap { margin: auto 0; max-width: 480px; width: 100%; }
+  .form-heading { font-family: var(--font-display); font-size: 32px; font-weight: 400; letter-spacing: -0.02em; color: var(--fg-1); margin: 0 0 6px; }
+  .form-heading em { font-style: italic; color: var(--accent-deep); }
+  .form-sub { font-size: 14px; color: var(--stone-500); margin: 0 0 32px; }
+
+  .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+  .field label { font-size: 13px; font-weight: 600; color: var(--stone-600); }
+  .field input, .field select {
+    padding: 13px 20px; background: #DDDDF0;
+    border: none; border-radius: 999px;
+    font-size: 15px; font-family: var(--font-sans); color: var(--fg-1);
+    outline: none; transition: background .15s, box-shadow .15s;
+  }
+  .field input:focus, .field select:focus {
+    background: #CCCCE8;
+    box-shadow: 0 0 0 3px rgba(100,100,200,.15);
+  }
+  .field input::placeholder { color: var(--stone-500); }
+
+  /* Gender radio pills */
+  .gender-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .gender-opt input[type=radio] { display: none; }
+  .gender-opt label {
+    padding: 10px 22px; background: #DDDDF0; border-radius: 999px;
+    font-size: 14px; font-weight: 500; color: var(--stone-600);
+    cursor: pointer; transition: background .15s, color .15s;
+  }
+  .gender-opt input[type=radio]:checked + label {
+    background: var(--ink); color: #fff;
+  }
+  .gender-opt label:hover { background: #CCCCE8; }
+
+  .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .plan-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+  .plan-opt { position: relative; }
+  .plan-opt input[type=radio] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .plan-opt label {
+    display: block; padding: 14px 16px; background: var(--paper);
+    border: 1.5px solid var(--stone-200); border-radius: var(--r-md);
+    cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .plan-opt input[type=radio]:checked + label {
+    border-color: var(--accent); background: var(--accent-pale);
+  }
+  .plan-opt label:hover { border-color: var(--accent); }
+  .plan-name  { font-size: 14px; font-weight: 600; color: var(--fg-1); margin-bottom: 2px; }
+  .plan-price { font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: var(--accent-deep); }
+  .plan-dur   { font-size: 12px; color: var(--stone-500); }
+  .plan-desc  { font-size: 12px; color: var(--stone-500); margin-top: 4px; line-height: 1.4; }
+
+  .error-banner {
+    background: var(--signal-error-bg); border: 1px solid var(--signal-error);
+    color: var(--signal-error); padding: 10px 14px; border-radius: var(--r-md);
+    font-size: 13px; margin-bottom: 18px;
+  }
+  .submit-btn {
+    width: 100%; padding: 14px; background: var(--ink); color: #fff;
+    border: none; border-radius: var(--r-md); font-size: 15px; font-weight: 600;
+    cursor: pointer; letter-spacing: .02em; transition: background .15s, transform .1s;
+    margin-top: 8px;
+  }
+  .submit-btn:hover  { background: var(--ink-soft); }
+  .submit-btn:active { transform: scale(.99); }
+
+  .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--stone-200); }
+  .divider span { font-size: 12px; color: var(--stone-400); white-space: nowrap; }
+
+  @media (max-width: 860px) {
+    body { grid-template-columns: 1fr; }
+    .left { display: none; }
+    .right { padding: 40px 28px; }
+    .plan-grid { grid-template-columns: 1fr; }
+    .fields-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== LEFT PANEL ===== -->
+<div class="left">
+  <div class="left-top">
+    <a href="/" class="brand">
+      <span class="word">Forge</span><span class="dot"></span>
+    </a>
+    <span class="meta">Member Portal</span>
+  </div>
+
+  <div class="left-content">
+    <div class="left-eyebrow">Welcome to Forge.</div>
+    <h1>Start your<br><em>journey</em><br>today.</h1>
+    <p>Create your account in under a minute. Your membership starts the moment you sign up, full access, no waiting.</p>
+
+    <div class="perks">
+      <div class="perk">
+        <div class="perk-dot"></div>
+        <div class="perk-text">
+          <strong>Track your progress</strong>
+          <span>Measurements, workouts and body stats in one place.</span>
+        </div>
+      </div>
+      <div class="perk">
+        <div class="perk-dot"></div>
+        <div class="perk-text">
+          <strong>AI Coaching</strong>
+          <span>Personalised advice based on your actual data.</span>
+        </div>
+      </div>
+      <div class="perk">
+        <div class="perk-dot"></div>
+        <div class="perk-text">
+          <strong>Exercise library and PT</strong>
+          <span>Hundreds of exercises and personal training sessions.</span>
+        </div>
+      </div>
+      <div class="perk">
+        <div class="perk-dot"></div>
+        <div class="perk-text">
+          <strong>Wearable sync</strong>
+          <span>Log workouts from your wrist, synced in real time.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="left-footer">
+    © 2026 Forge Gym Management · All rights reserved
+  </div>
+</div>
+
+<!-- ===== RIGHT PANEL, FORM ===== -->
+<div class="right">
+  <div class="right-top">
+    Already have an account? <a href="/login">Sign in →</a>
+  </div>
+
+  <div class="form-wrap">
+    <h2 class="form-heading">Create your <em>account.</em></h2>
+    <p class="form-sub">Fill in your details and pick a membership plan to get started.</p>
+
+    <!-- Error -->
+    <div class="error-banner" th:if="${error}" th:text="${error}"></div>
+
+    <form autocomplete="off" method="post" th:action="@{/register}">
+      <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+
+      <!-- First + Last name -->
+      <div class="fields-row">
+        <div class="field">
+          <label>First name</label>
+          <input type="text" name="firstName" placeholder="First" required th:value="${param.firstName}" autocomplete="nope">
+        </div>
+        <div class="field">
+          <label>Last name</label>
+          <input type="text" name="lastName" placeholder="Last" required th:value="${param.lastName}" autocomplete="nope">
+        </div>
+      </div>
+
+      <!-- Phone -->
+      <div class="field">
+        <label>Phone number <span style="font-weight:400;color:var(--stone-400)">(optional)</span></label>
+        <input type="tel" name="phone" placeholder="+355 69 123 4567" th:value="${param.phone}" autocomplete="nope">
+      </div>
+
+      <!-- Email -->
+      <div class="field">
+        <label>Email address</label>
+        <input type="email" name="email" placeholder="john@example.com" required th:value="${param.email}" autocomplete="nope">
+      </div>
+
+      <!-- Date of Birth -->
+      <div class="field">
+        <label>Date of birth</label>
+        <input type="date" name="birthDate" max="2010-01-01" min="1940-01-01" th:value="${param.birthDate}" autocomplete="nope">
+      </div>
+
+      <!-- Gender -->
+      <div class="field">
+        <label>What is your gender?</label>
+        <div class="gender-row">
+          <div class="gender-opt">
+            <input type="radio" name="gender" id="gf" value="Female" autocomplete="nope" th:checked="${param.gender != null and param.gender[0] == 'Female'}">
+            <label for="gf">Female</label>
+          </div>
+          <div class="gender-opt">
+            <input type="radio" name="gender" id="gm" value="Male" autocomplete="nope" th:checked="${param.gender != null and param.gender[0] == 'Male'}">
+            <label for="gm">Male</label>
+          </div>
+          <div class="gender-opt">
+            <input type="radio" name="gender" id="go" value="Other" autocomplete="nope" th:checked="${param.gender != null and param.gender[0] == 'Other'}">
+            <label for="go">Other</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Password + Confirm -->
+      <div class="fields-row">
+        <div class="field">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="Min 6 characters" required minlength="6" autocomplete="nope">
+        </div>
+        <div class="field">
+          <label>Confirm password</label>
+          <input type="password" name="confirmPassword" placeholder="Repeat password" required autocomplete="nope">
+        </div>
+      </div>
+
+      <div class="divider"><span>Choose your membership plan</span></div>
+
+      <!-- Plan selection -->
+      <div class="plan-grid">
+        <div class="plan-opt" th:each="p, stat : ${plans}">
+          <input type="radio" name="planId" th:id="'plan_' + ${p.id}" th:value="${p.id}"
+                 th:checked="${stat.first}" autocomplete="nope">
+          <label th:for="'plan_' + ${p.id}">
+            <div class="plan-name"  th:text="${p.name}">Plan</div>
+            <div class="plan-price">$<span th:text="${p.price}">0</span></div>
+            <div class="plan-dur"   th:text="${p.durationMonths} + ' month(s)'">1 month</div>
+            <div class="plan-desc"  th:text="${p.description}"></div>
+          </label>
+        </div>
+      </div>
+
+      <div id="clientError" style="display:none;background:var(--signal-error-bg,#fef2f2);border:1px solid var(--signal-error,#fca5a5);color:var(--signal-error,#dc2626);padding:10px 14px;border-radius:var(--r-md,12px);font-size:13px;margin-bottom:14px"></div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">Create Account &amp; Start Training →</button>
+
+      <p style="font-size:12px;color:var(--stone-400);text-align:center;margin-top:14px">
+        By registering you agree to Forge's membership terms.
+        Already a member? <a href="/login" style="color:var(--accent-deep)">Sign in here.</a>
+      </p>
+    </form>
+  </div>
+</div>
+
+<script>
+  const form        = document.querySelector('form');
+  const btn         = document.getElementById('submitBtn');
+  const clientError = document.getElementById('clientError');
+  const serverError = document.querySelector('.error-banner');
+
+  function showError(msg) {
+    clientError.textContent = msg;
+    clientError.style.display = 'block';
+    clientError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // If the server returned an error, copy it down near the button too (so it's visible)
+  if (serverError && serverError.textContent.trim()) {
+    showError(serverError.textContent.trim());
+  }
+
+  form.addEventListener('submit', function(e) {
+    const pw      = form.querySelector('input[name="password"]').value;
+    const confirm = form.querySelector('input[name="confirmPassword"]').value;
+
+    // Client-side validation BEFORE sending
+    if (pw.length < 6) {
+      e.preventDefault();
+      showError('Password must be at least 6 characters.');
+      return;
+    }
+    if (pw !== confirm) {
+      e.preventDefault();
+      showError('Passwords do not match.');
+      return;
+    }
+
+    // All good — show loading state
+    btn.textContent = 'Creating account…';
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+  });
+</script>
+</body>
+</html>

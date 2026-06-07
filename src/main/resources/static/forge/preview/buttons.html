@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Buttons</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:24px;background:var(--bg-canvas);font-family:var(--font-sans);}
+  .row{display:flex;gap:12px;margin-bottom:14px;align-items:center;flex-wrap:wrap;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all 220ms cubic-bezier(0.2,0,0,1);font-family:inherit;letter-spacing:-0.005em;}
+  .btn-primary{background:var(--sage-800);color:var(--bone-50);}
+  .btn-primary:hover{background:var(--sage-900);}
+  .btn-secondary{background:var(--bg-surface);color:var(--fg-1);border-color:var(--line-2);}
+  .btn-secondary:hover{background:var(--bone-100);}
+  .btn-ghost{background:transparent;color:var(--fg-1);}
+  .btn-ghost:hover{background:var(--bone-100);}
+  .btn-accent{background:var(--copper-500);color:#fff;}
+  .btn-accent:hover{background:var(--copper-600);}
+  .btn-danger{background:transparent;color:var(--signal-danger);border-color:var(--signal-danger);}
+  .btn-lg{padding:14px 24px;font-size:15px;border-radius:14px;}
+  .btn-sm{padding:6px 12px;font-size:13px;border-radius:8px;}
+  .lbl{font-family:var(--font-mono);font-size:10px;color:var(--fg-3);text-transform:uppercase;letter-spacing:.1em;width:64px;}
+</style></head>
+<body>
+<div class="row"><div class="lbl">Primary</div>
+  <button class="btn btn-primary btn-lg">Get started <span>→</span></button>
+  <button class="btn btn-primary">Save changes</button>
+  <button class="btn btn-primary btn-sm">Open</button>
+</div>
+<div class="row"><div class="lbl">Secondary</div>
+  <button class="btn btn-secondary btn-lg">Learn more</button>
+  <button class="btn btn-secondary">Cancel</button>
+  <button class="btn btn-secondary btn-sm">Edit</button>
+</div>
+<div class="row"><div class="lbl">Accent</div>
+  <button class="btn btn-accent">Start workout</button>
+  <button class="btn btn-ghost">View all</button>
+  <button class="btn btn-danger btn-sm">Delete</button>
+</div>
+</body></html>

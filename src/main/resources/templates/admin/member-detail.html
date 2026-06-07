@@ -1,0 +1,371 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${m.name + ', Forge'}">Member Detail</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .modal-overlay{position:fixed;inset:0;background:rgba(6,15,26,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+        .modal-overlay.open{display:flex}
+        .modal-box{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-xl);width:100%;max-width:480px;box-shadow:var(--shadow-3)}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;padding:22px 24px 0}
+        .modal-title{font-family:var(--font-display);font-size:20px;font-weight:400;color:var(--fg-1)}
+        .modal-title em{font-style:italic;color:var(--accent-deep)}
+        .modal-close{background:none;border:none;cursor:pointer;color:var(--stone-400);font-size:26px;line-height:1;padding:4px 8px;border-radius:var(--r-sm)}
+        .modal-close:hover{background:var(--bg-sunken)}
+        .modal-body{padding:16px 24px 0}
+        .modal-footer{padding:14px 24px 20px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line-1);margin-top:16px}
+        .btn-sm{padding:5px 12px;font-size:12px}
+        .btn-danger{background:var(--signal-error);color:#fff}
+        .btn-danger:hover{background:#8b2020;color:#fff;transform:none}
+        .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .info-box{background:var(--bg-sunken);border-radius:var(--r-md);padding:12px 14px}
+        .info-box .lbl{font-size:11px;color:var(--stone-400);margin-bottom:3px}
+        .info-box .val{font-size:15px;font-weight:500;color:var(--fg-1)}
+        .section-tabs{display:flex;gap:0;margin-bottom:-1px;flex-wrap:wrap}
+        .tab-btn{padding:8px 16px;font-size:13px;border:1px solid var(--line-1);border-bottom:none;background:var(--bg-sunken);color:var(--stone-500);cursor:pointer;border-radius:var(--r-sm) var(--r-sm) 0 0}
+        .tab-btn.active{background:var(--bg-surface);color:var(--fg-1);font-weight:600}
+        .tab-panel{display:none}.tab-panel.active{display:block}
+        @media(max-width:600px){.info-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('members')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Member Profile')}"></div>
+    <main class="main">
+
+        <!-- Flash messages -->
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+        <!-- Temp password banner — shown once after admin registers a new member -->
+        <div th:if="${tempPassword}"
+             style="background:#faf6ee;border:1px solid #e8d9b8;border-radius:var(--r-lg);
+                    padding:16px 20px;margin-bottom:20px;display:flex;gap:14px;align-items:flex-start">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8956A" stroke-width="2" style="flex-shrink:0;margin-top:2px">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <div>
+                <div style="font-weight:600;color:var(--ink);margin-bottom:4px">Give this temporary password to the member</div>
+                <div style="font-size:13px;color:var(--stone-600);margin-bottom:8px">
+                    The member can log in with their email and this password, then change it from their profile.
+                    This password is shown <strong>only once</strong>.
+                </div>
+                <code style="font-family:var(--font-mono);font-size:16px;letter-spacing:.12em;
+                             background:var(--paper);border:1px solid #e8d9b8;padding:6px 14px;
+                             border-radius:var(--r-md);color:var(--accent-deep);font-weight:700"
+                      th:text="${tempPassword}"></code>
+            </div>
+        </div>
+
+        <!-- BREADCRUMB -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:13px;color:var(--stone-400)">
+            <a href="/admin/members" style="color:var(--accent-deep);text-decoration:none">← All Members</a>
+            <span>/</span>
+            <span th:text="${m.name}"></span>
+        </div>
+
+        <!-- PROFILE HEADER CARD -->
+        <div class="card">
+            <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px;flex-wrap:wrap">
+                <div style="width:56px;height:56px;border-radius:50%;background:var(--accent-deep);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:22px;color:#fff;flex-shrink:0"
+                     th:text="${#strings.substring(m.name,0,1).toUpperCase()}">A</div>
+                <div>
+                    <div style="font-family:var(--font-display);font-size:24px;color:var(--fg-1)" th:text="${m.name}"></div>
+                    <div style="font-size:13px;color:var(--stone-400)" th:text="${m.email}"></div>
+                </div>
+                <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+                    <button class="btn btn-sm" onclick="document.getElementById('editMemberModal').classList.add('open')"
+                            style="display:flex;align-items:center;gap:6px">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        Edit Member
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="openRenewModal()">Renew Membership</button>
+                    <button class="btn btn-secondary btn-sm" onclick="openPwModal()">Change Password</button>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-box">
+                    <div class="lbl">Plan</div>
+                    <div class="val" th:text="${m.plan != null ? m.plan.name : ''}"></div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Status</div>
+                    <div class="val"><span class="badge badge-success" th:text="${m.status}"></span></div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Start date</div>
+                    <div class="val" th:text="${m.startDate}"></div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Expiry date</div>
+                    <div class="val" th:text="${m.expiryDate}"></div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Phone</div>
+                    <div class="val" th:text="${m.phone != null ? m.phone : ''}"></div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Door PIN</div>
+                    <div class="val" style="font-family:var(--font-mono);letter-spacing:.15em;color:var(--accent-deep)"
+                         th:text="${m.pin}"></div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">RFID card</div>
+                    <div class="val" th:text="${m.rfidCode != null ? m.rfidCode : ' none '}"></div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Member ID</div>
+                    <div class="val" th:text="${'#' + m.id}"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABBED HISTORY -->
+        <div class="card">
+            <div class="section-tabs">
+                <button class="tab-btn active" onclick="switchTab('payments', this)">
+                    Payments
+                    <span style="font-size:11px;color:var(--stone-400)"
+                          th:text="'(' + ${#lists.size(payments)} + ')'"></span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('measurements', this)">
+                    Measurements
+                    <span style="font-size:11px;color:var(--stone-400)"
+                          th:text="'(' + ${#lists.size(measurements)} + ')'"></span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('attendance', this)">
+                    Attendance
+                    <span style="font-size:11px;color:var(--stone-400)"
+                          th:text="'(' + ${#lists.size(attendance)} + ')'"></span>
+                </button>
+            </div>
+
+            <div style="border:1px solid var(--line-1);border-radius:0 var(--r-md) var(--r-md) var(--r-md);padding:16px">
+
+                <!-- PAYMENTS TAB -->
+                <div id="tab-payments" class="tab-panel active">
+                    <div th:if="${#lists.isEmpty(payments)}"
+                         style="text-align:center;padding:24px;color:var(--stone-400);font-size:13px">
+                        No payments recorded.
+                    </div>
+                    <table th:unless="${#lists.isEmpty(payments)}">
+                        <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Method</th><th>Status</th></tr></thead>
+                        <tbody>
+                        <tr th:each="p : ${payments}">
+                            <td th:text="${p.date}"></td>
+                            <td th:text="${p.description != null ? p.description : ''}"></td>
+                            <td><strong th:text="'$' + p.amount"></strong></td>
+                            <td th:text="${p.method}"></td>
+                            <td><span class="badge badge-success" th:text="${p.status}"></span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- MEASUREMENTS TAB -->
+                <div id="tab-measurements" class="tab-panel">
+                    <div th:if="${#lists.isEmpty(measurements)}"
+                         style="text-align:center;padding:24px;color:var(--stone-400);font-size:13px">
+                        No measurements recorded.
+                    </div>
+                    <table th:unless="${#lists.isEmpty(measurements)}">
+                        <thead><tr><th>Date</th><th>Weight</th><th>Height</th><th>BMI</th><th>Body fat</th><th>Notes</th></tr></thead>
+                        <tbody>
+                        <tr th:each="x : ${measurements}">
+                            <td th:text="${x.date}"></td>
+                            <td th:text="${x.weightKg + ' kg'}"></td>
+                            <td th:text="${x.heightCm + ' cm'}"></td>
+                            <td th:text="${#numbers.formatDecimal(x.weightKg/((x.heightCm/100)*(x.heightCm/100)),1,1)}"></td>
+                            <td th:text="${x.bodyFatPct != null ? x.bodyFatPct + '%' : ''}"></td>
+                            <td th:text="${x.notes}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- ATTENDANCE TAB -->
+                <div id="tab-attendance" class="tab-panel">
+                    <div th:if="${#lists.isEmpty(attendance)}"
+                         style="text-align:center;padding:24px;color:var(--stone-400);font-size:13px">
+                        No attendance records.
+                    </div>
+                    <table th:unless="${#lists.isEmpty(attendance)}">
+                        <thead><tr><th>Date</th><th>Check-in</th><th>Check-out</th></tr></thead>
+                        <tbody>
+                        <tr th:each="a : ${attendance}">
+                            <td th:text="${a.date}"></td>
+                            <td th:text="${a.checkIn}"></td>
+                            <td th:text="${a.checkOut != null ? a.checkOut : ''}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        <!-- ADMIN NOTE -->
+        <div class="card" style="margin-top:20px">
+            <div class="card-title" style="display:flex;align-items:center;gap:8px">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-deep)" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                Admin Note
+                <span style="font-size:11px;font-weight:400;color:var(--stone-400)">(visible to staff only)</span>
+            </div>
+            <form autocomplete="off" method="post" th:action="@{'/admin/members/' + ${m.id} + '/note'}">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <textarea class="form-input" name="adminNote" rows="3"
+                          placeholder="Add an internal note about this member — allergies, special requirements, payment issues…"
+                          th:text="${m.adminNote}"
+                          style="resize:vertical;margin-bottom:12px"></textarea>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <button type="submit" class="btn" style="font-size:13px;padding:8px 18px">Save Note</button>
+                    <span th:if="${m.adminNote != null and !m.adminNote.isEmpty()}"
+                          style="font-size:12px;color:var(--stone-400)">Last note: <em th:text="${#strings.abbreviate(m.adminNote, 60)}"></em></span>
+                </div>
+            </form>
+        </div>
+
+        </div>
+
+    </main>
+</div>
+
+<!-- RENEW MEMBERSHIP MODAL -->
+<div id="renewModal" class="modal-overlay" onclick="if(event.target===this)closeModal('renewModal')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Renew <em>Membership</em></span>
+            <button class="modal-close" onclick="closeModal('renewModal')">×</button>
+        </div>
+        <form autocomplete="off" method="post" th:action="@{'/admin/members/' + ${m.id} + '/renew'}">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <div style="margin-bottom:14px">
+                    <label class="form-label">Extend by (months)</label>
+                    <select class="form-select" name="months" required>
+                        <option value="1">1 month</option>
+                        <option value="3" selected>3 months</option>
+                        <option value="6">6 months</option>
+                        <option value="12">12 months (1 year)</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:14px">
+                    <label class="form-label">Change plan (optional)</label>
+                    <select class="form-select" name="planId">
+                        <option value=""> keep current plan </option>
+                        <option th:each="p : ${plans}" th:value="${p.id}" th:text="${p.name + ', $' + p.price}">Plan</option>
+                    </select>
+                </div>
+                <p style="font-size:12px;color:var(--stone-400);margin:0">
+                    A payment record will be auto-created for the renewal amount.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('renewModal')">Cancel</button>
+                <button type="submit" class="btn">Renew Now</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div id="pwModal" class="modal-overlay" onclick="if(event.target===this)closeModal('pwModal')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Change <em>Password</em></span>
+            <button class="modal-close" onclick="closeModal('pwModal')">×</button>
+        </div>
+        <form autocomplete="off" method="post" th:action="@{'/admin/members/' + ${m.id} + '/password'}">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <p style="font-size:13px;color:var(--stone-500);margin-bottom:12px">
+                    Setting a new password for <strong th:text="${m.name}"></strong>.
+                    The member will need to use this to log in.
+                </p>
+                <label class="form-label">New password</label>
+                <input class="form-input" type="password" name="newPassword" required minlength="6"
+                       placeholder="At least 6 characters" autocomplete="nope">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('pwModal')">Cancel</button>
+                <button type="submit" class="btn">Set Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- EDIT MEMBER MODAL -->
+<div id="editMemberModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Edit <em th:text="${m.name}">Member</em></span>
+            <button class="modal-close" onclick="document.getElementById('editMemberModal').classList.remove('open')">×</button>
+        </div>
+        <form autocomplete="off" method="post" th:action="@{'/admin/members/' + ${m.id} + '/edit'}">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Name</label>
+                        <input class="form-input" name="name" th:value="${m.name}" required autocomplete="nope">
+                    </div>
+                    <div>
+                        <label class="form-label">Phone</label>
+                        <input class="form-input" name="phone" th:value="${m.phone}" autocomplete="nope">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Plan</label>
+                        <select class="form-select" name="planId">
+                            <option th:each="p : ${plans}"
+                                    th:value="${p.id}"
+                                    th:text="${p.name}"
+                                    th:selected="${m.plan != null and m.plan.id == p.id}">Plan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status">
+                            <option value="ACTIVE"    th:selected="${m.status.name() == 'ACTIVE'}">Active</option>
+                            <option value="INACTIVE"  th:selected="${m.status.name() == 'INACTIVE'}">Inactive</option>
+                            <option value="SUSPENDED" th:selected="${m.status.name() == 'SUSPENDED'}">Suspended</option>
+                            <option value="EXPIRED"   th:selected="${m.status.name() == 'EXPIRED'}">Expired</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Expiry date</label>
+                    <input class="form-input" type="date" name="expiryDate" th:value="${m.expiryDate}" required autocomplete="nope">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                        onclick="document.getElementById('editMemberModal').classList.remove('open')">Cancel</button>
+                <button type="submit" class="btn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal(id)  { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    function openRenewModal() { openModal('renewModal'); }
+    function openPwModal()    { openModal('pwModal'); }
+
+    function switchTab(name, btn) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+        btn.classList.add('active');
+    }
+</script>
+</body>
+</html>

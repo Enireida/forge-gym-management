@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>Measurements - Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: trainerSidebar('measurements')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Body Measurements')}"></div>
+    <main class="main">
+        <div class="card">
+            <div class="card-title">Record measurement</div>
+            <form autocomplete="off" method="post" action="/trainer/measurements">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <div class="form-row">
+                    <div><label class="form-label">Member</label>
+                        <select class="form-select" name="memberId" required>
+                            <option th:each="m : ${members}" th:value="${m.id}" th:text="${m.name}"></option>
+                        </select></div>
+                    <div><label class="form-label">Weight (kg)</label>
+                        <input class="form-input" type="number" step="0.1" name="weightKg" required autocomplete="nope"></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Height (cm)</label>
+                        <input class="form-input" type="number" step="0.1" name="heightCm" required autocomplete="nope"></div>
+                    <div><label class="form-label">Body fat %</label>
+                        <input class="form-input" type="number" step="0.1" name="bodyFatPct" autocomplete="nope"></div>
+                </div>
+                <label class="form-label">Notes</label>
+                <input class="form-input" name="notes" autocomplete="nope">
+                <br><br>
+                <button class="btn" type="submit">Save Measurement</button>
+            </form>
+        </div>
+        <div class="card">
+            <div class="card-title">All measurements</div>
+            <table>
+                <thead><tr><th>Date</th><th>Member</th><th>Weight</th><th>Height</th>
+                    <th>BMI</th><th>Body fat %</th><th>Notes</th></tr></thead>
+                <tbody>
+                <tr th:each="x : ${measurements}">
+                    <td th:text="${x.date}"></td>
+                    <td th:text="${x.member.name}"></td>
+                    <td th:text="${x.weightKg + ' kg'}"></td>
+                    <td th:text="${x.heightCm + ' cm'}"></td>
+                    <td th:text="${#numbers.formatDecimal(x.weightKg/((x.heightCm/100)*(x.heightCm/100)),1,1)}"></td>
+                    <td th:text="${x.bodyFatPct}"></td>
+                    <td th:text="${x.notes}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+</body></html>

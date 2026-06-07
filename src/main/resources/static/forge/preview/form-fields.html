@@ -1,0 +1,32 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Form fields</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:24px;background:var(--bg-canvas);font-family:var(--font-sans);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .label{font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em;}
+  .input,.select{height:42px;padding:0 14px;border:1px solid var(--line-2);border-radius:10px;background:var(--bg-surface);font-family:inherit;font-size:14px;color:var(--fg-1);transition:all 220ms;}
+  .input:focus,.select:focus{outline:none;border-color:var(--sage-700);box-shadow:0 0 0 3px var(--sage-100);}
+  .help{font-size:12px;color:var(--fg-3);}
+  .input.error{border-color:var(--signal-danger);}
+  .err{font-size:12px;color:var(--signal-danger);}
+  .pin{display:flex;gap:8px;}
+  .pin input{width:48px;height:56px;text-align:center;font-family:var(--font-mono);font-size:22px;font-weight:500;}
+</style></head>
+<body>
+<div class="grid">
+  <div class="field"><label class="label">Full name</label>
+    <input class="input" value="Maria Krasniqi" /></div>
+  <div class="field"><label class="label">Email</label>
+    <input class="input" value="maria@gym.com" /></div>
+  <div class="field"><label class="label">Plan</label>
+    <select class="select"><option>Premium · €45 / mo</option><option>Standard · €25 / mo</option></select></div>
+  <div class="field"><label class="label">RFID card</label>
+    <input class="input" placeholder="Scan or type 10 digits" /><span class="help">Tap card to the reader to autofill.</span></div>
+  <div class="field"><label class="label">Password</label>
+    <input class="input error" type="password" value="••••" /><span class="err">At least 8 characters required.</span></div>
+  <div class="field"><label class="label">Door PIN</label>
+    <div class="pin"><input class="input" maxlength="1" value="4"/><input class="input" maxlength="1" value="7"/><input class="input" maxlength="1" value="0"/><input class="input" maxlength="1" value="2"/></div></div>
+</div>
+</body></html>

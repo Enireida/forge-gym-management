@@ -1,0 +1,256 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#B8956A">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Forge Gym">
+    <link rel="manifest" href="/manifest.json">
+    <title>My gym, Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .greeting{margin:4px 0 24px}
+        .greeting h1{font-family:var(--font-display);font-weight:400;font-size:40px;line-height:1;letter-spacing:-.02em;color:var(--fg-1);margin:0 0 6px}
+        .greeting h1 em{font-style:italic;color:var(--accent-deep)}
+        .greeting .sub{font-family:var(--font-mono);font-size:12px;letter-spacing:.10em;text-transform:uppercase;color:var(--stone-400)}
+        .pin-card{background:var(--ink);color:#fff;border-radius:var(--r-xl);padding:22px 24px;margin-bottom:24px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:18px;position:relative;overflow:hidden}
+        .pin-card::before{content:'';position:absolute;top:-120px;right:-120px;width:320px;height:320px;background:radial-gradient(circle,rgba(184,149,106,.25),transparent 70%);pointer-events:none}
+        .pin-eyebrow{font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+        .pin-msg{font-family:var(--font-display);font-weight:400;font-size:28px;line-height:1.1;letter-spacing:-.01em;color:#fff}
+        .pin-msg em{font-style:italic;color:var(--accent)}
+        .pin-value{font-family:var(--font-mono);font-size:56px;font-weight:600;line-height:1;letter-spacing:.08em;color:#fff;text-align:right;position:relative}
+        .pin-label{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.20em;text-transform:uppercase;color:var(--accent);text-align:right;margin-bottom:4px;position:relative}
+        .stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+        @media (max-width:900px){.stats-3{grid-template-columns:1fr}}
+        .info-card{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-lg);padding:18px 20px}
+        .info-label{font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--stone-400);margin-bottom:10px}
+        .info-value{font-family:var(--font-display);font-weight:400;font-size:26px;line-height:1.1;letter-spacing:-.01em;color:var(--fg-1)}
+        .pill{display:inline-block;padding:4px 10px;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;border-radius:var(--r-pill);background:var(--accent-pale);color:var(--accent-deep)}
+        .panel{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-lg);padding:22px 24px}
+        .panel-title{font-family:var(--font-display);font-weight:400;font-size:22px;letter-spacing:-.01em;color:var(--fg-1);margin-bottom:14px}
+        .panel-title em{font-style:italic;color:var(--accent-deep)}
+        .ann{padding:14px 16px;margin-bottom:10px;border:1px solid var(--line-1);border-left:3px solid var(--accent);border-radius:var(--r-md);background:var(--bg-canvas-soft)}
+        .ann:last-child{margin-bottom:0}
+        .ann strong{display:block;margin-bottom:4px;color:var(--fg-1);font-size:14px}
+        .ann p{margin:0;color:var(--fg-2);font-size:13px;line-height:1.5}
+        .empty{padding:32px;text-align:center;font-family:var(--font-display);font-style:italic;font-size:18px;color:var(--stone-400);background:var(--bg-canvas-soft);border:1px dashed var(--line-2);border-radius:var(--r-md)}
+        /* AI Coach widget */
+        .ai-widget{display:flex;align-items:center;justify-content:space-between;gap:20px;background:var(--ink);border-radius:var(--r-xl);padding:20px 24px;margin-top:24px;position:relative;overflow:hidden}
+        .ai-widget::before{content:'';position:absolute;right:-60px;top:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(184,149,106,0.18),transparent 65%);pointer-events:none}
+        .ai-widget-left{display:flex;align-items:center;gap:14px}
+        .ai-widget-icon{width:40px;height:40px;background:rgba(184,149,106,0.15);border:1px solid rgba(184,149,106,0.30);border-radius:var(--r-md);display:grid;place-items:center;color:var(--accent);flex-shrink:0}
+        .ai-widget-title{font-family:var(--font-display);font-size:18px;font-weight:400;letter-spacing:-.01em;color:#fff}
+        .ai-widget-title em{font-style:italic;color:var(--accent)}
+        .ai-widget-sub{font-size:12px;color:rgba(255,255,255,.45);margin-top:2px}
+        .ai-widget-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+        .ai-widget-input{padding:9px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:var(--r-pill);font-size:13px;color:#fff;font-family:var(--font-sans);outline:none;width:200px;transition:border-color .15s}
+        .ai-widget-input:focus{border-color:rgba(184,149,106,.50)}
+        .ai-widget-input::placeholder{color:rgba(255,255,255,.30)}
+        .ai-widget-btn{padding:9px 18px;background:var(--accent);color:#fff;border-radius:var(--r-pill);font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;transition:background .15s}
+        .ai-widget-btn:hover{background:var(--accent-deep);color:#fff}
+        @media(max-width:700px){.ai-widget{flex-direction:column;align-items:flex-start}.ai-widget-right{width:100%}.ai-widget-input{flex:1}}
+        /* Birthday banner */
+        .bday-banner{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,var(--ink),#1a2f4a);border-radius:var(--r-xl);padding:18px 24px;margin-bottom:24px;border:1px solid rgba(184,149,106,.3)}
+        .bday-emoji{font-size:36px;line-height:1;flex-shrink:0}
+        .bday-text-main{font-family:var(--font-display);font-size:20px;font-weight:400;color:#fff}
+        .bday-text-main em{font-style:italic;color:var(--accent)}
+        .bday-text-sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:3px}
+        /* PWA install banner */
+        .pwa-banner{display:none;align-items:center;justify-content:space-between;gap:16px;background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-lg);padding:14px 18px;margin-bottom:20px}
+        .pwa-banner.show{display:flex}
+        .pwa-install-btn{padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+        .pwa-install-btn:hover{background:var(--accent-deep)}
+        .pwa-dismiss{background:none;border:none;color:var(--stone-400);cursor:pointer;font-size:20px;padding:2px 6px}
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: clientSidebar('home')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('My dashboard')}"></div>
+
+    <main class="main">
+
+        <!-- PWA Install Banner -->
+        <div class="pwa-banner" id="pwaBanner">
+            <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:24px">📱</span>
+                <div>
+                    <div style="font-weight:600;font-size:14px;color:var(--fg-1)">Add Forge to your Home Screen</div>
+                    <div style="font-size:12px;color:var(--stone-400)">Get quick access to your gym dashboard, offline support &amp; more.</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+                <button class="pwa-install-btn" id="pwaInstallBtn">Install App</button>
+                <button class="pwa-dismiss" id="pwaDismiss">×</button>
+            </div>
+        </div>
+
+        <!-- Birthday Banner -->
+        <div class="bday-banner"
+             th:if="${me != null and me.birthDate != null and me.birthDate.month == #temporals.createNow().toLocalDate().month and me.birthDate.dayOfMonth == #temporals.createNow().toLocalDate().dayOfMonth}">
+            <div class="bday-emoji">🎂</div>
+            <div>
+                <div class="bday-text-main">Happy Birthday, <em th:text="${me.name}">Member</em>!</div>
+                <div class="bday-text-sub">The whole Forge team wishes you a wonderful day. Keep crushing it! 💪</div>
+            </div>
+        </div>
+
+        <div class="greeting">
+            <h1>Welcome back, <em th:text="${me != null ? me.name : 'Member'}">Member</em>.</h1>
+        </div>
+
+        <div class="pin-card">
+            <div>
+                <div class="pin-eyebrow">Your door access</div>
+                <div class="pin-msg">Tap your card, or use your <em>4-digit PIN</em> at the kiosk.</div>
+            </div>
+            <div>
+                <div class="pin-label">PIN</div>
+                <div class="pin-value" th:text="${me != null ? me.pin : '----'}">----</div>
+            </div>
+        </div>
+
+        <div class="stats-3">
+            <div class="info-card">
+                <div class="info-label">Plan</div>
+                <div class="info-value" th:text="${me != null and me.plan != null ? me.plan.name : '-'}">-</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Status</div>
+                <div class="info-value">
+                    <span class="pill" th:text="${me != null ? me.status : '-'}">ACTIVE</span>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Expires on</div>
+                <div class="info-value" th:text="${me != null and me.expiryDate != null ? me.expiryDate : '-'}">-</div>
+            </div>
+        </div>
+
+        <!-- WORKOUT STATS DASHBOARD -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:24px">
+            <div class="info-card" style="text-align:center">
+                <div class="info-label">Workouts this week</div>
+                <div class="info-value" th:text="${workoutsThisWeek != null ? workoutsThisWeek : 0}">0</div>
+            </div>
+            <div class="info-card" style="text-align:center">
+                <div class="info-label">Workouts this month</div>
+                <div class="info-value" th:text="${workoutsThisMonth != null ? workoutsThisMonth : 0}">0</div>
+            </div>
+            <div class="info-card" style="text-align:center">
+                <div class="info-label">Cals burned (week)</div>
+                <div class="info-value" th:text="${calsBurnedWeek != null ? calsBurnedWeek : 0}">0</div>
+            </div>
+            <div class="info-card" style="text-align:center">
+                <div class="info-label">Workout streak</div>
+                <div class="info-value">
+                    <span th:text="${workoutStreak != null ? workoutStreak : 0}">0</span>
+                    <span style="font-size:14px;color:var(--stone-400)"> days</span>
+                </div>
+            </div>
+            <div class="info-card" style="text-align:center">
+                <div class="info-label">Active goals</div>
+                <div class="info-value" th:text="${activeGoals != null ? activeGoals : 0}">0</div>
+            </div>
+            <div class="info-card" style="text-align:center">
+                <div class="info-label">Water today</div>
+                <div class="info-value">
+                    <span th:text="${todayWater != null ? todayWater : 0}">0</span>
+                    <span style="font-size:14px;color:var(--stone-400)"> glasses</span>
+                </div>
+            </div>
+            <div class="info-card" style="text-align:center">
+                <div class="info-label">Calories today</div>
+                <div class="info-value">
+                    <span th:text="${todayCalories != null ? todayCalories : 0}">0</span>
+                    <span style="font-size:14px;color:var(--stone-400)"> kcal</span>
+                </div>
+            </div>
+            <div class="info-card" style="text-align:center">
+                <div class="info-label">Notifications</div>
+                <div class="info-value">
+                    <a href="/client/notifications" style="color:var(--accent-deep);text-decoration:none">
+                        <span th:text="${unreadNotifs != null ? unreadNotifs : 0}">0</span>
+                        <span style="font-size:14px;color:var(--stone-400)"> unread</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Latest <em>announcements</em></div>
+
+            <div th:if="${announcements == null or #lists.isEmpty(announcements)}" class="empty">
+                Nothing new from the gym just yet.
+            </div>
+
+            <div th:each="a : ${announcements}" class="ann">
+                <strong th:text="${a.title}">Announcement title</strong>
+                <p th:text="${a.message}">Body of the announcement.</p>
+            </div>
+        </div>
+
+        <!-- AI Coach quick-access widget -->
+        <div class="ai-widget">
+            <div class="ai-widget-left">
+                <div class="ai-widget-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="ai-widget-title">Ask your <em>AI Coach</em></div>
+                    <div class="ai-widget-sub">Personalised fitness advice powered by your data</div>
+                </div>
+            </div>
+            <div class="ai-widget-right">
+                <input class="ai-widget-input" id="quickAsk"
+                       placeholder="Ask something…"
+                       onkeydown="if(event.key==='Enter') quickAsk()" autocomplete="nope">
+                <a href="/client/ai" class="ai-widget-btn">Open Coach →</a>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+function quickAsk() {
+    const q = document.getElementById('quickAsk').value.trim();
+    if (q) window.location.href = '/client/ai?q=' + encodeURIComponent(q);
+}
+
+// ── Service Worker registration ──
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(function() {});
+}
+
+// ── PWA Install prompt ──
+let _deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    _deferredPrompt = e;
+    if (!localStorage.getItem('forgePwaDismissed')) {
+        document.getElementById('pwaBanner').classList.add('show');
+    }
+});
+document.getElementById('pwaInstallBtn').addEventListener('click', function() {
+    if (!_deferredPrompt) return;
+    _deferredPrompt.prompt();
+    _deferredPrompt.userChoice.then(function() {
+        _deferredPrompt = null;
+        document.getElementById('pwaBanner').classList.remove('show');
+    });
+});
+document.getElementById('pwaDismiss').addEventListener('click', function() {
+    localStorage.setItem('forgePwaDismissed', '1');
+    document.getElementById('pwaBanner').classList.remove('show');
+});
+</script>
+
+</body>
+</html>

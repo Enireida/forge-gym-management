@@ -1,0 +1,19 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Forge logo</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:24px;background:var(--bg-canvas);font-family:var(--font-sans);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .item{background:#fff;border:1px solid var(--line-1);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:120px;}
+  .dark{background:var(--sage-900);}
+  .lbl{position:absolute;font-family:var(--font-mono);font-size:10px;color:var(--fg-3);text-transform:uppercase;letter-spacing:.1em;margin:8px;}
+  .wrap{position:relative;}
+</style></head>
+<body>
+<div class="grid">
+  <div class="wrap"><span class="lbl">wordmark · light bg</span><div class="item"><img src="../assets/logo-wordmark.svg" alt="Forge" width="200"/></div></div>
+  <div class="wrap"><span class="lbl" style="color:#B5CCAC">wordmark · dark bg</span><div class="item dark"><img src="../assets/logo-wordmark-light.svg" alt="Forge" width="200"/></div></div>
+  <div class="wrap"><span class="lbl">mark only</span><div class="item"><img src="../assets/logo-mark.svg" alt="Forge mark" width="64"/></div></div>
+  <div class="wrap"><span class="lbl" style="color:#B5CCAC">mark · scale</span><div class="item dark" style="gap:16px;"><img src="../assets/logo-mark.svg" width="32"/><img src="../assets/logo-mark.svg" width="48"/><img src="../assets/logo-mark.svg" width="72"/></div></div>
+</div>
+</body></html>

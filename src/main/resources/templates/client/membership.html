@@ -1,0 +1,181 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>My Membership - Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+        .info-box{background:var(--bg-sunken);border-radius:var(--r-md);padding:14px 16px}
+        .info-box .lbl{font-size:11px;color:var(--stone-400);margin-bottom:4px}
+        .info-box .val{font-size:16px;font-weight:500;color:var(--fg-1)}
+        .pin-display{font-family:var(--font-mono);font-size:28px;letter-spacing:.2em;color:var(--accent-deep);font-weight:700}
+        @media(max-width:600px){.info-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: clientSidebar('membership')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('My Membership')}"></div>
+    <main class="main">
+
+        <!-- MEMBERSHIP DETAILS -->
+        <div class="card">
+            <div class="card-title">Membership details</div>
+            <div class="info-grid">
+                <div class="info-box">
+                    <div class="lbl">Full name</div>
+                    <div class="val" th:text="${me.name}"></div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Email</div>
+                    <div class="val" th:text="${me.email}"></div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Phone</div>
+                    <div class="val" th:text="${me.phone != null ? me.phone : ''}"></div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Status</div>
+                    <div class="val">
+                        <span class="badge badge-success" th:text="${me.status}"></span>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Membership plan</div>
+                    <div class="val" th:text="${me.plan != null ? me.plan.name : ''}"></div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Monthly price</div>
+                    <div class="val" th:text="${me.plan != null ? '$' + me.plan.price : ''}"></div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Start date</div>
+                    <div class="val" th:text="${me.startDate}"></div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Expires</div>
+                    <div class="val" th:text="${me.expiryDate}"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLAN PERKS -->
+        <div class="card">
+            <div class="card-title">What your plan includes</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:4px">
+                <div style="background:var(--bg-sunken);border-radius:var(--r-md);padding:14px 16px;display:flex;align-items:center;gap:12px">
+                    <div style="width:34px;height:34px;border-radius:50%;background:#dcfce7;color:#16a34a;display:grid;place-items:center;flex-shrink:0">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div>
+                        <div style="font-size:13px;font-weight:600;color:var(--fg-1)">PIN access</div>
+                        <div style="font-size:11px;color:var(--stone-400)">Always included</div>
+                    </div>
+                </div>
+                <div th:with="ok=${me.plan != null and me.plan.allowRfid}"
+                     style="background:var(--bg-sunken);border-radius:var(--r-md);padding:14px 16px;display:flex;align-items:center;gap:12px">
+                    <div th:style="'width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;background:' + (${ok} ? '#dcfce7' : '#fee2e2') + ';color:' + (${ok} ? '#16a34a' : '#ef4444')">
+                        <svg th:if="${ok}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        <svg th:unless="${ok}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </div>
+                    <div>
+                        <div style="font-size:13px;font-weight:600;color:var(--fg-1)">RFID card</div>
+                        <div style="font-size:11px;color:var(--stone-400)" th:text="${ok ? 'Tap to enter' : 'Standard plan or higher'}">Standard or higher</div>
+                    </div>
+                </div>
+                <div th:with="ok=${me.plan != null and me.plan.allowAiCoach}"
+                     style="background:var(--bg-sunken);border-radius:var(--r-md);padding:14px 16px;display:flex;align-items:center;gap:12px">
+                    <div th:style="'width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;background:' + (${ok} ? '#dcfce7' : '#fee2e2') + ';color:' + (${ok} ? '#16a34a' : '#ef4444')">
+                        <svg th:if="${ok}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        <svg th:unless="${ok}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </div>
+                    <div>
+                        <div style="font-size:13px;font-weight:600;color:var(--fg-1)">AI Coach</div>
+                        <div style="font-size:11px;color:var(--stone-400)" th:text="${ok ? 'Unlocked for you' : 'Premium plan only'}">Premium only</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUCCESS / INFO FLASH -->
+        <div th:if="${success}"
+             style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px 16px;
+                    font-size:14px;color:#166534;margin-bottom:4px;display:flex;align-items:center;gap:8px">
+            <span>&#10003;</span> <span th:text="${success}"></span>
+        </div>
+
+        <!-- REQUEST RENEWAL -->
+        <div class="card">
+            <div class="card-title">Renew or upgrade membership</div>
+            <p style="font-size:14px;color:var(--stone-500);margin-bottom:16px">
+                If your membership is about to expire or you'd like to switch to a different plan,
+                send a renewal request to reception — they'll contact you to confirm.
+            </p>
+            <form autocomplete="off" method="post" action="/client/membership/request-renewal">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <button type="submit" class="btn" style="display:flex;align-items:center;gap:7px">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Request Renewal
+                </button>
+            </form>
+        </div>
+
+        <!-- DOOR PIN -->
+        <div class="card">
+            <div class="card-title">Door PIN &amp; Access</div>
+            <p style="font-size:13px;color:var(--stone-500);margin-bottom:12px">
+                Show this PIN at reception or use your RFID card to enter the gym.
+            </p>
+            <div class="pin-display" th:text="${me.pin != null ? me.pin : ''}"></div>
+            <p style="font-size:12px;color:var(--stone-400);margin-top:8px">
+                Keep this PIN private. Contact staff if you need it reset.
+            </p>
+        </div>
+
+        <!-- PAYMENT HISTORY -->
+        <div class="card">
+            <div class="card-title">Payment history</div>
+
+            <div th:if="${#lists.isEmpty(payments)}"
+                 style="text-align:center;padding:32px;color:var(--stone-400);font-size:13px">
+                No payments recorded yet.
+            </div>
+
+            <table th:unless="${#lists.isEmpty(payments)}">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                        <th>Receipt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${payments}">
+                    <td th:text="${p.date}"></td>
+                    <td th:text="${p.description != null ? p.description : ''}"></td>
+                    <td><strong th:text="'$' + p.amount"></strong></td>
+                    <td th:text="${p.method}"></td>
+                    <td>
+                        <span class="badge badge-success"
+                              th:classappend="${p.status == 'Completed'} ? '' : 'badge-warn'"
+                              th:text="${p.status}"></span>
+                    </td>
+                    <td>
+                        <a th:href="@{'/client/membership/receipt/' + ${p.id}}"
+                           style="font-size:12px;color:var(--accent-deep);text-decoration:none;font-weight:600"
+                           title="Download receipt">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:3px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Receipt</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+</body>
+</html>

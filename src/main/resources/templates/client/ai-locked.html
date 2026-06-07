@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Coach - Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .lock-card{background:linear-gradient(140deg,var(--ink),#1a2f4a);color:#fff;border-radius:var(--r-xl);padding:48px 40px;text-align:center;max-width:600px;margin:40px auto;position:relative;overflow:hidden}
+        .lock-card::before{content:'';position:absolute;top:-60px;right:-60px;width:240px;height:240px;background:radial-gradient(circle,rgba(184,149,106,.25),transparent 70%);pointer-events:none}
+        .lock-icon{width:64px;height:64px;background:rgba(184,149,106,.16);border:1px solid rgba(184,149,106,.35);border-radius:50%;margin:0 auto 18px;display:grid;place-items:center;color:var(--accent)}
+        .lock-title{font-family:var(--font-display);font-size:32px;font-weight:400;letter-spacing:-.01em;margin-bottom:8px}
+        .lock-title em{font-style:italic;color:var(--accent)}
+        .lock-sub{font-size:14px;color:rgba(255,255,255,.65);max-width:440px;margin:0 auto 28px;line-height:1.6}
+        .plan-pill{display:inline-block;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,.08);font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:18px}
+        .perks{display:flex;flex-direction:column;gap:10px;text-align:left;max-width:380px;margin:0 auto 28px}
+        .perk{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.85)}
+        .perk svg{color:var(--accent);flex-shrink:0}
+        .upgrade-btn{display:inline-block;padding:13px 30px;background:var(--accent);color:#fff;font-weight:600;font-size:14px;border-radius:var(--r-pill);text-decoration:none;transition:.15s}
+        .upgrade-btn:hover{background:var(--accent-deep);color:#fff}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: clientSidebar('ai')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('AI Coach')}"></div>
+    <main class="main">
+
+        <div class="lock-card">
+            <div class="lock-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+            </div>
+            <div class="plan-pill" th:text="${me.plan != null ? 'Your plan: ' + me.plan.name : 'No active plan'}">Your plan</div>
+            <div class="lock-title">AI <em>Coach</em> is a Premium feature</div>
+            <div class="lock-sub">
+                Upgrade your membership to unlock personalised, data-driven coaching tailored to
+                your workouts, food log, and progress measurements.
+            </div>
+
+            <div class="perks">
+                <div class="perk">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Daily personalised training advice
+                </div>
+                <div class="perk">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Nutrition guidance based on your food log
+                </div>
+                <div class="perk">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Smart suggestions when your progress stalls
+                </div>
+                <div class="perk">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Includes everything in Standard (RFID, classes, PT)
+                </div>
+            </div>
+
+            <a href="/client/membership" class="upgrade-btn">View plans &amp; upgrade &rarr;</a>
+        </div>
+
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Iconography</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  body{margin:0;padding:20px;background:var(--bg-canvas);font-family:var(--font-sans);}
+  .grid{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;}
+  .ico{aspect-ratio:1;background:#fff;border:1px solid var(--line-1);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;}
+  .ico svg{color:var(--sage-800);width:22px;height:22px;stroke-width:1.6;}
+  .nm{font-family:var(--font-mono);font-size:9px;color:var(--fg-3);}
+  .meta{margin-top:14px;font-size:12px;color:var(--fg-3);font-family:var(--font-mono);}
+</style></head>
+<body>
+<div class="grid">
+  <div class="ico"><i data-lucide="dumbbell"></i><span class="nm">dumbbell</span></div>
+  <div class="ico"><i data-lucide="heart-pulse"></i><span class="nm">heart-pulse</span></div>
+  <div class="ico"><i data-lucide="footprints"></i><span class="nm">footprints</span></div>
+  <div class="ico"><i data-lucide="flame"></i><span class="nm">flame</span></div>
+  <div class="ico"><i data-lucide="users"></i><span class="nm">users</span></div>
+  <div class="ico"><i data-lucide="user-round"></i><span class="nm">user</span></div>
+  <div class="ico"><i data-lucide="credit-card"></i><span class="nm">payment</span></div>
+  <div class="ico"><i data-lucide="calendar"></i><span class="nm">calendar</span></div>
+  <div class="ico"><i data-lucide="qr-code"></i><span class="nm">qr-code</span></div>
+  <div class="ico"><i data-lucide="wifi"></i><span class="nm">rfid</span></div>
+  <div class="ico"><i data-lucide="message-circle"></i><span class="nm">chat</span></div>
+  <div class="ico"><i data-lucide="sparkles"></i><span class="nm">ai</span></div>
+  <div class="ico"><i data-lucide="utensils"></i><span class="nm">food</span></div>
+  <div class="ico"><i data-lucide="apple"></i><span class="nm">nutrition</span></div>
+  <div class="ico"><i data-lucide="line-chart"></i><span class="nm">chart</span></div>
+  <div class="ico"><i data-lucide="bar-chart-3"></i><span class="nm">bars</span></div>
+  <div class="ico"><i data-lucide="settings"></i><span class="nm">settings</span></div>
+  <div class="ico"><i data-lucide="bell"></i><span class="nm">bell</span></div>
+  <div class="ico"><i data-lucide="log-in"></i><span class="nm">login</span></div>
+  <div class="ico"><i data-lucide="log-out"></i><span class="nm">logout</span></div>
+  <div class="ico"><i data-lucide="check-circle-2"></i><span class="nm">check</span></div>
+  <div class="ico"><i data-lucide="x-circle"></i><span class="nm">x</span></div>
+  <div class="ico"><i data-lucide="alert-triangle"></i><span class="nm">warn</span></div>
+  <div class="ico"><i data-lucide="search"></i><span class="nm">search</span></div>
+</div>
+<div class="meta">Lucide · 1.6 stroke · 22px @ 14px ico-frame · sage-800</div>
+<script>lucide.createIcons();</script>
+</body></html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>Trainer, Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .greeting{margin:4px 0 24px}
+        .greeting h1{font-family:var(--font-display);font-weight:400;font-size:40px;line-height:1;letter-spacing:-.02em;color:var(--fg-1);margin:0 0 6px}
+        .greeting h1 em{font-style:italic;color:var(--accent-deep)}
+        .greeting .sub{font-family:var(--font-mono);font-size:12px;letter-spacing:.10em;text-transform:uppercase;color:var(--stone-400)}
+        .specialty-bar{display:inline-flex;align-items:center;gap:10px;padding:6px 14px;background:var(--accent-pale);color:var(--accent-deep);border-radius:var(--r-pill);font-size:12px;font-weight:500;margin-bottom:24px}
+        .specialty-bar::before{content:'';width:6px;height:6px;background:var(--accent);border-radius:50%}
+        .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+        @media (max-width:900px){.kpi-grid{grid-template-columns:1fr}}
+        .kpi{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-lg);padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+        .kpi-label{font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--stone-400)}
+        .kpi-value{font-family:var(--font-display);font-weight:400;font-size:40px;line-height:1;letter-spacing:-.02em;color:var(--fg-1)}
+        .panel{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-lg);padding:22px 24px;margin-bottom:24px}
+        .panel-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+        .panel-title{font-family:var(--font-display);font-weight:400;font-size:22px;letter-spacing:-.01em;color:var(--fg-1)}
+        .panel-title em{font-style:italic;color:var(--accent-deep)}
+        .panel-eyebrow{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--stone-400)}
+        table{width:100%;border-collapse:collapse}
+        th{font-size:12px;font-weight:500;color:var(--stone-500);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line-1)}
+        td{padding:12px;font-size:14px;color:var(--fg-1);border-bottom:1px solid var(--line-1)}
+        tbody tr:hover{background:var(--bg-sunken)}
+        td .remain{font-family:var(--font-mono);font-weight:600;color:var(--accent-deep)}
+        .badge-sage{display:inline-block;padding:3px 10px;background:var(--accent-pale);color:var(--accent-deep);border-radius:var(--r-pill);font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.06em}
+        .badge-info{display:inline-block;padding:3px 10px;background:var(--signal-info-bg);color:var(--signal-info);border-radius:var(--r-pill);font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.06em}
+        .btn-open{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--ink);color:#fff;border-radius:var(--r-pill);font-size:12px;font-weight:500;text-decoration:none;transition:all var(--dur-fast) var(--ease-out)}
+        .btn-open:hover{background:var(--ink-soft);color:#fff}
+        .empty{font-family:var(--font-display);font-style:italic;color:var(--stone-400);padding:24px;text-align:center}
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: trainerSidebar('home')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Trainer dashboard')}"></div>
+
+    <main class="main">
+
+        <div class="greeting">
+            <h1>Hey, <em th:text="${user != null ? user.name : 'Coach'}">Coach</em>.</h1>
+        </div>
+
+        <div class="specialty-bar" th:if="${trainer != null and trainer.specialty != null}">
+            Specialty: <em style="font-style:italic" th:text="${trainer.specialty}">Strength</em>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="kpi">
+                <div class="kpi-label">Members in gym</div>
+                <div class="kpi-value" th:text="${#lists.size(members)}">0</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-label">My PT subscriptions</div>
+                <div class="kpi-value" th:text="${#lists.size(subscriptions)}">0</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-label">Sessions recorded</div>
+                <div class="kpi-value" th:text="${#lists.size(recentSessions)}">0</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head">
+                <span class="panel-title">My PT <em>clients</em></span>
+                <span class="panel-eyebrow">assigned to you</span>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Member</th><th>Package</th><th>Used</th><th>Remaining</th><th>Status</th><th></th></tr>
+                </thead>
+                <tbody>
+                    <tr th:each="s : ${subscriptions}">
+                        <td th:text="${s.member.name}">Name</td>
+                        <td th:text="${s.ptPackage.name}">Package</td>
+                        <td th:text="${s.sessionsUsed}">0</td>
+                        <td><span class="remain" th:text="${s.sessionsRemaining}">0</span></td>
+                        <td><span class="badge-sage" th:text="${s.status}">ACTIVE</span></td>
+                        <td><a class="btn-open" th:href="@{'/trainer/pt/'+${s.id}}">Open →</a></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(subscriptions)}">
+                        <td colspan="6" class="empty">No PT clients yet, assign yourself from the PT page.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head">
+                <span class="panel-title">Recent <em>sessions</em></span>
+                <span class="panel-eyebrow">last logged</span>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Date</th><th>Member</th><th>Type</th><th>Notes</th></tr>
+                </thead>
+                <tbody>
+                    <tr th:each="s : ${recentSessions}">
+                        <td th:text="${s.sessionDate}">2026-05-12</td>
+                        <td th:text="${s.subscription.member.name}">Name</td>
+                        <td><span class="badge-info" th:text="${s.type}">PT</span></td>
+                        <td th:text="${s.notes}">Notes</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(recentSessions)}">
+                        <td colspan="4" class="empty">No sessions recorded yet.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+
+</body>
+</html>

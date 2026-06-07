@@ -1,0 +1,242 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>PT Packages - Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .modal-overlay{position:fixed;inset:0;background:rgba(6,15,26,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+        .modal-overlay.open{display:flex}
+        .modal-box{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-xl);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-3)}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;padding:22px 24px 0}
+        .modal-title{font-family:var(--font-display);font-size:22px;font-weight:400;letter-spacing:-.01em;color:var(--fg-1)}
+        .modal-title em{font-style:italic;color:var(--accent-deep)}
+        .modal-close{background:none;border:none;cursor:pointer;color:var(--stone-400);font-size:26px;line-height:1;padding:4px 8px;border-radius:var(--r-sm)}
+        .modal-close:hover{background:var(--bg-sunken);color:var(--fg-1)}
+        .modal-body{padding:18px 24px 0}
+        .modal-footer{padding:16px 24px 22px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line-1);margin-top:18px}
+        .inactive-row{opacity:.55}
+        /* ── 3-dot menu ── */
+        .dot-wrap{position:relative;display:inline-block}
+        .dot-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:none;border:1px solid var(--line-1);border-radius:var(--r-sm);cursor:pointer;color:var(--stone-400);transition:all var(--dur-fast) var(--ease-out)}
+        .dot-btn:hover{background:var(--bg-sunken);border-color:var(--stone-200);color:var(--fg-1)}
+        .dot-btn.active{background:var(--accent-pale);border-color:var(--accent);color:var(--accent-deep)}
+        .dot-menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-lg);box-shadow:var(--shadow-3);min-width:168px;padding:5px;z-index:200;display:none;animation:dotIn .14s var(--ease-out)}
+        .dot-menu.open{display:block}
+        @keyframes dotIn{from{opacity:0;transform:translateY(4px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+        .dot-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r-sm);font-size:13px;font-weight:500;color:var(--fg-2);cursor:pointer;width:100%;text-align:left;background:none;border:none;text-decoration:none;transition:background var(--dur-fast);font-family:var(--font-sans)}
+        .dot-item:hover{background:var(--bg-sunken);color:var(--fg-1)}
+        .dot-item svg{color:var(--stone-400);flex-shrink:0}
+        .dot-sep{height:1px;background:var(--line-1);margin:4px 6px}
+        .dot-item.danger{color:var(--signal-danger)}
+        .dot-item.danger svg{color:var(--signal-danger)}
+        .dot-item.danger:hover{background:var(--signal-danger-bg)}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('pt-packages')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('PT Packages')}"></div>
+    <main class="main">
+
+        <!-- Flash messages -->
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+        <!-- PACKAGES TABLE -->
+        <div class="card">
+            <div class="card-title">
+                All PT packages
+                <span style="display:flex;align-items:center;gap:10px">
+                    <span style="font-size:13px;color:var(--stone-400);font-weight:400"
+                          th:text="'(' + ${#lists.size(packages)} + ' total)'"></span>
+                    <a href="/admin/pt-packages/new" class="btn"
+                       style="white-space:nowrap;gap:7px;display:flex;align-items:center;text-decoration:none">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        New Package
+                    </a>
+                </span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(packages)}"
+                 style="text-align:center;padding:36px;color:var(--stone-400);font-size:13px">
+                No PT packages yet. Click "New Package" to add one.
+            </div>
+
+            <table th:unless="${#lists.isEmpty(packages)}">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Sessions</th>
+                        <th>Price</th>
+                        <th>Description</th>
+                        <th>Active</th>
+                        <th style="width:48px;text-align:center"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${packages}" th:classappend="${!p.active} ? 'inactive-row' : ''">
+                    <td><strong th:text="${p.name}"></strong></td>
+                    <td th:text="${p.sessions}"></td>
+                    <td th:text="'$' + p.price"></td>
+                    <td th:text="${p.description != null ? p.description : ''}"></td>
+                    <td>
+                        <span class="badge badge-success" th:if="${p.active}">Active</span>
+                        <span class="badge" style="background:var(--bg-sunken);color:var(--stone-400)"
+                              th:unless="${p.active}">Inactive</span>
+                    </td>
+                    <td style="text-align:center">
+                        <div class="dot-wrap">
+                            <button class="dot-btn" type="button" onclick="toggleDotMenu(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+                                </svg>
+                            </button>
+                            <div class="dot-menu">
+                                <!-- Edit -->
+                                <button class="dot-item" type="button"
+                                        th:data-id="${p.id}" th:data-name="${p.name}"
+                                        th:data-sessions="${p.sessions}" th:data-price="${p.price}"
+                                        th:data-desc="${p.description}"
+                                        onclick="openEdit(this); closeDotMenus()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    Edit Package
+                                </button>
+                                <!-- Toggle Active/Inactive -->
+                                <form autocomplete="off" method="post" th:action="@{'/admin/pt-packages/'+${p.id}+'/toggle'}" style="margin:0">
+                                    <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                                    <button class="dot-item" type="submit">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+                                        <span th:text="${p.active ? 'Deactivate' : 'Activate'}">Toggle</span>
+                                    </button>
+                                </form>
+                                <div class="dot-sep"></div>
+                                <!-- Delete -->
+                                <form autocomplete="off" method="post" th:action="@{'/admin/pt-packages/'+${p.id}+'/delete'}" style="margin:0">
+                                    <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                                    <button class="dot-item danger" type="submit"
+                                            onclick="return confirm('Delete this PT package?')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+
+<!-- ADD PACKAGE MODAL -->
+<div id="addPackageModal" class="modal-overlay" onclick="if(event.target===this)closeModal('addPackageModal')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">New <em>PT Package</em></span>
+            <button class="modal-close" onclick="closeModal('addPackageModal')">×</button>
+        </div>
+        <form autocomplete="off" method="post" action="/admin/pt-packages">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div><label class="form-label">Package Name <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" name="name" required placeholder="e.g. Starter 10-Pack" autocomplete="nope"></div>
+                    <div><label class="form-label">Sessions Included <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" name="sessions" type="number" min="1" required placeholder="e.g. 10" autocomplete="nope"></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Price ($) <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" name="price" type="number" step="0.01" min="0" required placeholder="e.g. 199.00" autocomplete="nope"></div>
+                    <div><label class="form-label">Description <span style="font-weight:400;color:var(--stone-400)">(optional)</span></label>
+                        <input class="form-input" name="description" placeholder="Short description" autocomplete="nope"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addPackageModal')">Cancel</button>
+                <button type="submit" class="btn" style="display:flex;align-items:center;gap:7px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Create Package
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="editModal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Edit <em>Package</em></span>
+            <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <form autocomplete="off" method="post" id="editForm">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Package name</label>
+                        <input class="form-input" id="e-name" name="name" required autocomplete="nope">
+                    </div>
+                    <div>
+                        <label class="form-label">Sessions</label>
+                        <input class="form-input" id="e-sessions" name="sessions" type="number" min="1" required autocomplete="nope">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Price ($)</label>
+                        <input class="form-input" id="e-price" name="price" type="number" step="0.01" min="0" required autocomplete="nope">
+                    </div>
+                    <div>
+                        <label class="form-label">Description</label>
+                        <input class="form-input" id="e-desc" name="description" autocomplete="nope">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal(id)  { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open')); } });
+
+    function openEdit(btn) {
+        const d = btn.dataset;
+        document.getElementById('editForm').action = '/admin/pt-packages/' + d.id + '/edit';
+        document.getElementById('e-name').value     = d.name     || '';
+        document.getElementById('e-sessions').value = d.sessions || '';
+        document.getElementById('e-price').value    = d.price    || '';
+        document.getElementById('e-desc').value     = d.desc     || '';
+        document.getElementById('editModal').classList.add('open');
+    }
+    function closeModal() {
+        document.getElementById('editModal').classList.remove('open');
+    }
+
+    function toggleDotMenu(btn) {
+        const menu = btn.closest('.dot-wrap').querySelector('.dot-menu');
+        const isOpen = menu.classList.contains('open');
+        closeDotMenus();
+        if (!isOpen) { menu.classList.add('open'); btn.classList.add('active'); }
+    }
+    function closeDotMenus() {
+        document.querySelectorAll('.dot-menu.open').forEach(m => {
+            m.classList.remove('open');
+            const b = m.closest('.dot-wrap')?.querySelector('.dot-btn');
+            if (b) b.classList.remove('active');
+        });
+    }
+    document.addEventListener('click', e => { if (!e.target.closest('.dot-wrap')) closeDotMenus(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDotMenus(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>New Class — Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('classes')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('')}"></div>
+    <main class="main">
+        <div class="add-wrap">
+
+            <div style="margin-bottom:28px">
+                <div class="pg-breadcrumb">Classes / New class</div>
+                <h1 class="pg-heading" style="margin-bottom:0">New class</h1>
+            </div>
+
+            <form autocomplete="off" method="post" action="/admin/classes">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+
+                <div class="reg-section">
+                    <div class="sec-header">
+                        <div class="sec-num">01</div>
+                        <div class="sec-header-text">
+                            <h3>Class info</h3>
+                            <p>Visible to members in the class schedule.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="field">
+                            <label>Class name <span class="req">*</span></label>
+                            <input class="form-input" name="name" required placeholder="e.g. Morning Yoga, HIIT, Spin" autocomplete="nope">
+                        </div>
+                        <div class="field">
+                            <label>Category <span style="font-weight:400;color:var(--stone-400)">(optional)</span></label>
+                            <input class="form-input" name="category" placeholder="e.g. Yoga, Cardio, Strength" autocomplete="nope">
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="field">
+                            <label>Trainer <span style="font-weight:400;color:var(--stone-400)">(optional)</span></label>
+                            <select class="form-select" name="trainerId">
+                                <option value="">No trainer assigned</option>
+                                <option th:each="t : ${staff}" th:value="${t.id}" th:text="${t.name}">Trainer</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Capacity</label>
+                            <input class="form-input" type="number" name="capacity" value="20" min="1" max="200" autocomplete="nope">
+                        </div>
+                    </div>
+                    <div class="field" style="margin-bottom:0">
+                        <label>Description <span style="font-weight:400;color:var(--stone-400)">(optional)</span></label>
+                        <input class="form-input" name="description" placeholder="Short description for members" autocomplete="nope">
+                    </div>
+                </div>
+
+                <div class="reg-section">
+                    <div class="sec-header">
+                        <div class="sec-num">02</div>
+                        <div class="sec-header-text">
+                            <h3>Schedule</h3>
+                            <p>When the class takes place.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="field">
+                            <label>Date &amp; time <span class="req">*</span></label>
+                            <input class="form-input" type="datetime-local" name="dateTime" required autocomplete="nope">
+                        </div>
+                        <div class="field">
+                            <label>Duration (minutes)</label>
+                            <input class="form-input" type="number" name="durationMinutes" value="60" min="10" max="300" autocomplete="nope">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reg-actions">
+                    <a href="/admin/classes" class="btn btn-secondary" style="text-decoration:none">Cancel</a>
+                    <button type="submit" class="btn" style="display:flex;align-items:center;gap:7px;min-width:140px;justify-content:center">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Create class
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+</body></html>

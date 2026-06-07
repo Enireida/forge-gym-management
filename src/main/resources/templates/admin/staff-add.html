@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>Hire Staff — Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('staff')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('')}"></div>
+    <main class="main">
+        <div class="add-wrap">
+
+            <div style="margin-bottom:28px">
+                <div class="pg-breadcrumb">Staff / Hire new</div>
+                <h1 class="pg-heading" style="margin-bottom:0">Hire new staff</h1>
+            </div>
+
+            <div th:if="${error}"
+                 style="background:var(--signal-error-bg);border:1px solid var(--signal-error);
+                        color:var(--signal-error);padding:10px 14px;border-radius:var(--r-md);
+                        font-size:13px;margin-bottom:18px"
+                 th:text="${error}"></div>
+
+            <form autocomplete="off" method="post" action="/admin/staff">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+
+                <div class="reg-section">
+                    <div class="sec-header">
+                        <div class="sec-num">01</div>
+                        <div class="sec-header-text">
+                            <h3>Personal info</h3>
+                            <p>Contact details for the new staff member.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="field">
+                            <label>Full name <span class="req">*</span></label>
+                            <input class="form-input" name="name" placeholder="e.g. Arta Kelmendi" required autocomplete="nope">
+                        </div>
+                        <div class="field">
+                            <label>Email <span class="req">*</span></label>
+                            <input class="form-input" type="email" name="email" placeholder="staff@forge.al" required autocomplete="nope">
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="field">
+                            <label>Phone <span style="font-weight:400;color:var(--stone-400)">(optional)</span></label>
+                            <input class="form-input" name="phone" placeholder="+355 69 …" autocomplete="nope">
+                        </div>
+                        <div></div>
+                    </div>
+                </div>
+
+                <div class="reg-section">
+                    <div class="sec-header">
+                        <div class="sec-num">02</div>
+                        <div class="sec-header-text">
+                            <h3>Role &amp; specialty</h3>
+                            <p>Determines which areas of the system they can access.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="field">
+                            <label>Role <span class="req">*</span></label>
+                            <select class="form-select" name="role" required>
+                                <option>Trainer</option>
+                                <option>Receptionist</option>
+                                <option>Manager</option>
+                                <option>Cleaning</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Specialty <span style="font-weight:400;color:var(--stone-400)">(optional)</span></label>
+                            <input class="form-input" name="specialty" placeholder="e.g. CrossFit, Yoga" autocomplete="nope">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reg-actions">
+                    <a href="/admin/staff" class="btn btn-secondary" style="text-decoration:none">Cancel</a>
+                    <button type="submit" class="btn" style="display:flex;align-items:center;gap:7px;min-width:160px;justify-content:center">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add staff member
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+</body></html>

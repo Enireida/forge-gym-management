@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>Notification Settings - Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .pref-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;background:var(--bg-sunken);border:1px solid var(--line-1);border-radius:var(--r-md);margin-bottom:10px}
+        .pref-row .info{display:flex;gap:14px;align-items:center;flex:1}
+        .pref-icon{width:36px;height:36px;border-radius:var(--r-md);background:var(--accent-pale);color:var(--accent-deep);display:grid;place-items:center;flex-shrink:0}
+        .pref-icon svg{width:18px;height:18px}
+        .pref-title{font-weight:600;font-size:14px;color:var(--fg-1)}
+        .pref-desc{font-size:12px;color:var(--stone-500);margin-top:2px;line-height:1.4}
+        .switch{position:relative;width:44px;height:24px;display:inline-block;flex-shrink:0;cursor:pointer}
+        .switch input{opacity:0;width:0;height:0}
+        .switch .slider{position:absolute;inset:0;background:var(--line-2);border-radius:99px;transition:.2s}
+        .switch .slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+        .switch input:checked + .slider{background:var(--accent)}
+        .switch input:checked + .slider::before{transform:translateX(20px)}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: clientSidebar('notif-prefs')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Notification Settings')}"></div>
+    <main class="main">
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+        <div class="card">
+            <div class="card-title">Choose which notifications you want</div>
+            <p style="font-size:13px;color:var(--stone-500);margin-bottom:18px">
+                Toggle a category off and Forge will stop sending those to your notification center.
+                You can change this anytime.
+            </p>
+
+            <form autocomplete="off" method="post" action="/client/notification-preferences/save">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+
+                <div class="pref-row">
+                    <div class="info">
+                        <div class="pref-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <div>
+                            <div class="pref-title">Membership expiry</div>
+                            <div class="pref-desc">Reminder when your membership ends in 7 days or less.</div>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" name="enabledTypes" value="MEMBERSHIP_EXPIRY"
+                               th:checked="${enabledMap['MEMBERSHIP_EXPIRY']}" autocomplete="nope">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="pref-row">
+                    <div class="info">
+                        <div class="pref-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        </div>
+                        <div>
+                            <div class="pref-title">Class reminders</div>
+                            <div class="pref-desc">Confirmation when you book a class and reminders before it starts.</div>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" name="enabledTypes" value="CLASS_REMINDER"
+                               th:checked="${enabledMap['CLASS_REMINDER']}" autocomplete="nope">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="pref-row">
+                    <div class="info">
+                        <div class="pref-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="6"/><polyline points="12 12 16 14"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+                        </div>
+                        <div>
+                            <div class="pref-title">Goal achievements</div>
+                            <div class="pref-desc">Celebrate when you complete a fitness goal.</div>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" name="enabledTypes" value="GOAL_ACHIEVED"
+                               th:checked="${enabledMap['GOAL_ACHIEVED']}" autocomplete="nope">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="pref-row">
+                    <div class="info">
+                        <div class="pref-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6M12 16v6M2 12h6M16 12h6M5 5l4 4M15 15l4 4M19 5l-4 4M9 15l-4 4"/></svg>
+                        </div>
+                        <div>
+                            <div class="pref-title">New classes added</div>
+                            <div class="pref-desc">When the gym adds a new class to the schedule.</div>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" name="enabledTypes" value="NEW_CLASS"
+                               th:checked="${enabledMap['NEW_CLASS']}" autocomplete="nope">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="pref-row">
+                    <div class="info">
+                        <div class="pref-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <div>
+                            <div class="pref-title">PT session updates</div>
+                            <div class="pref-desc">When your trainer confirms or changes a session.</div>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" name="enabledTypes" value="TRAINER_SESSION"
+                               th:checked="${enabledMap['TRAINER_SESSION']}" autocomplete="nope">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="pref-row">
+                    <div class="info">
+                        <div class="pref-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <div>
+                            <div class="pref-title">Waitlist openings</div>
+                            <div class="pref-desc">When a spot opens up in a class you're waiting for.</div>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" name="enabledTypes" value="WAITLIST_AVAILABLE"
+                               th:checked="${enabledMap['WAITLIST_AVAILABLE']}" autocomplete="nope">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="pref-row">
+                    <div class="info">
+                        <div class="pref-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 21 4 18 21 12 14 3 11"/></svg>
+                        </div>
+                        <div>
+                            <div class="pref-title">Announcements</div>
+                            <div class="pref-desc">Important messages from the gym staff.</div>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" name="enabledTypes" value="ANNOUNCEMENT"
+                               th:checked="${enabledMap['ANNOUNCEMENT']}" autocomplete="nope">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="pref-row">
+                    <div class="info">
+                        <div class="pref-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        </div>
+                        <div>
+                            <div class="pref-title">System messages</div>
+                            <div class="pref-desc">Account updates, password changes and other essentials.</div>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" name="enabledTypes" value="SYSTEM"
+                               th:checked="${enabledMap['SYSTEM']}" autocomplete="nope">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div style="margin-top:18px;display:flex;justify-content:flex-end">
+                    <button class="btn" type="submit">Save preferences</button>
+                </div>
+            </form>
+        </div>
+
+    </main>
+</div>
+</body>
+</html>

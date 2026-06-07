@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>Workout Plan - Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: trainerSidebar('exercises')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Workout Plan')}"></div>
+    <main class="main">
+        <a class="btn btn-secondary" href="/trainer/exercises">&larr; Back</a>
+        <div class="card">
+            <h2 th:text="${plan.name}"></h2>
+            <p th:text="${plan.description}"></p>
+            <p>
+                <span class="badge badge-info" th:text="${plan.level}"></span>
+                <span class="badge badge-purple" th:text="${plan.goal}"></span>
+            </p>
+        </div>
+        <div class="card">
+            <div class="card-title">Exercises</div>
+            <div class="exercise-grid">
+                <div th:each="e : ${plan.exercises}" class="exercise-card">
+                    <div class="exercise-img"
+                         th:style="${e.imageUrl}!=null ? 'background-image:url(' + ${e.imageUrl} + ')':''">
+                        <span th:if="${e.imageUrl}==null">💪</span>
+                    </div>
+                    <div class="exercise-body">
+                        <div class="exercise-name" th:text="${e.name}"></div>
+                        <div class="exercise-meta">
+                            <span class="badge badge-info" th:text="${e.muscleGroup}"></span>
+                        </div>
+                        <div class="exercise-instructions" th:text="${e.instructions}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body></html>

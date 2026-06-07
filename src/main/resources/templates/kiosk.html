@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>Forge, Reception · Live check-in</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        /* ============================================================
+           KIOSK v2, Reception dashboard (light, editorial)
+           Cream canvas · navy ink · champagne copper accents
+           ============================================================ */
+        html, body { margin: 0; min-height: 100%; }
+        body {
+            background: var(--bg-canvas);
+            color: var(--ink);
+            font-family: var(--font-sans);
+        }
+        /* Standalone mode (no admin sidebar) */
+        .k-wrap { max-width: 1280px; margin: 0 auto; padding: 28px 36px 48px; }
+        /* Inside admin layout, main column has its own padding so we tighten the wrap */
+        .main .k-wrap { padding: 8px 0 32px; max-width: none; }
+
+        /* ---- Header ---- */
+        .k-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px; }
+        .k-head-l .eyebrow {
+            font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em;
+            text-transform: uppercase; color: var(--stone-500); margin-bottom: 6px;
+        }
+        .k-head-l h1 {
+            font-family: var(--font-display); font-weight: 400;
+            font-size: 34px; line-height: 1.1; letter-spacing: -0.01em; margin: 0;
+            color: var(--ink);
+        }
+        .k-head-l h1 em { font-style: italic; color: var(--accent-deep); }
+        .k-head-r { display: flex; align-items: center; gap: 12px; }
+        .k-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 7px 13px; background: var(--accent-pale);
+            color: var(--accent-deep); border-radius: 999px;
+            font-size: 12px; font-weight: 500;
+        }
+        .k-badge .pulse {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--accent); box-shadow: 0 0 0 0 rgba(184,149,106,0.5);
+            animation: kpulse 1.8s infinite;
+        }
+        @keyframes kpulse {
+            0%   { box-shadow: 0 0 0 0 rgba(184,149,106,0.5);}
+            70%  { box-shadow: 0 0 0 10px rgba(184,149,106,0);}
+            100% { box-shadow: 0 0 0 0 rgba(184,149,106,0);}
+        }
+        .k-clock {
+            font-family: var(--font-mono); font-size: 14px;
+            padding: 7px 14px; border-radius: 10px;
+            background: #fff; border: 1px solid var(--line-1);
+            color: var(--ink); font-variant-numeric: tabular-nums;
+            letter-spacing: 0.04em;
+        }
+
+        /* ---- Grid ---- */
+        .k-grid { display: grid; grid-template-columns: 1.45fr 1fr; gap: 28px; align-items: start; }
+
+        /* ---- LEFT side ---- */
+        .card {
+            background: #fff; border: 1px solid var(--line-1);
+            border-radius: 20px; padding: 28px;
+        }
+        .card-eyebrow {
+            font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em;
+            text-transform: uppercase; color: var(--stone-500); margin-bottom: 18px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .card-eyebrow .x { color: var(--stone-300); font-size: 16px; }
+
+        /* Waiting-for-card hero card */
+        .wait-card { display: grid; grid-template-columns: 86px 1fr; gap: 22px; align-items: center; }
+        .wait-icon {
+            width: 86px; height: 86px; border-radius: 16px;
+            background: var(--ink); color: var(--accent-pale);
+            display: grid; place-items: center;
+        }
+        .wait-icon svg { width: 36px; height: 36px; }
+        .wait-text h2 {
+            font-family: var(--font-display); font-weight: 400;
+            font-size: 30px; line-height: 1.15; margin: 0 0 6px;
+            color: var(--ink); letter-spacing: -0.01em;
+        }
+        .wait-text h2 em { font-style: italic; color: var(--accent-deep); }
+        .wait-text p { font-size: 13.5px; color: var(--stone-500); margin: 0; line-height: 1.55; }
+
+        /* Result variants (success / bye / error) */
+        .wait-card.success .wait-icon { background: #1F3D2B; color: #C8E6CF; }
+        .wait-card.bye     .wait-icon { background: var(--accent-deep); color: #fff; }
+        .wait-card.error   .wait-icon { background: #5A1F1F; color: #FBD8D8; }
+        .wait-card.success .wait-text h2 em,
+        .wait-card.bye     .wait-text h2 em { color: var(--accent-deep); }
+
+        /* Manual PIN entry */
+        .pin-row { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; }
+        .pin-dots {
+            display: flex; gap: 14px;
+            font-family: var(--font-mono); font-size: 26px;
+            color: var(--stone-400); letter-spacing: 0.2em;
+            padding: 14px 20px; background: var(--paper-soft);
+            border: 1px solid var(--line-1); border-radius: 12px;
+            justify-content: center; min-width: 220px;
+        }
+        .pin-dots .d { width: 18px; text-align: center; }
+        .pin-dots .d.on { color: var(--ink); }
+        .pin-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 13px 22px; background: var(--ink); color: #fff;
+            border: none; border-radius: 999px; font-size: 14px; font-weight: 500;
+            font-family: var(--font-sans); cursor: pointer; transition: all .15s;
+        }
+        .pin-btn:hover { background: var(--ink-soft); transform: translateY(-1px); }
+        .pin-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        /* Simulate RFID scan chips */
+        .sim-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .sim-chip {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 16px;
+            background: var(--paper-soft); border: 1px solid var(--line-1);
+            border-radius: 10px; font-family: var(--font-mono); font-size: 12px;
+            letter-spacing: 0.06em; color: var(--ink); cursor: pointer;
+            transition: all .15s;
+        }
+        .sim-chip:hover { background: var(--accent-pale); border-color: var(--accent); color: var(--accent-deep); }
+        .sim-chip.bad:hover { background: #FDE7E7; border-color: #C25A5A; color: #8C2A2A; }
+
+        /* ---- RIGHT side ---- */
+        .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+        .stat-card {
+            background: var(--paper-soft); border: 1px solid var(--line-1);
+            border-radius: 14px; padding: 16px 18px;
+        }
+        .stat-card .lbl {
+            font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.14em;
+            text-transform: uppercase; color: var(--stone-500); margin-bottom: 8px;
+        }
+        .stat-card .val {
+            font-family: var(--font-display); font-size: 34px; line-height: 1;
+            color: var(--ink); letter-spacing: -0.01em;
+        }
+
+        .panel-title {
+            font-family: var(--font-display); font-size: 22px;
+            color: var(--ink); margin: 22px 0 14px;
+        }
+
+        /* Live feed rows */
+        .feed { display: flex; flex-direction: column; gap: 10px; }
+        .feed-row {
+            display: grid; grid-template-columns: 36px 1fr auto;
+            gap: 12px; align-items: center;
+            padding: 10px 12px; background: #fff;
+            border: 1px solid var(--line-1); border-radius: 12px;
+        }
+        .avatar {
+            width: 36px; height: 36px; border-radius: 999px;
+            display: grid; place-items: center;
+            font-family: var(--font-sans); font-size: 12px; font-weight: 600;
+            color: #fff;
+        }
+        .avatar.c1 { background: #C2553D; }
+        .avatar.c2 { background: #4A7C45; }
+        .avatar.c3 { background: #A07A22; }
+        .avatar.c4 { background: #3F6792; }
+        .avatar.c5 { background: #6E5D9C; }
+        .avatar.c6 { background: #92456A; }
+        .feed-mid .name { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+        .feed-mid .meta {
+            font-size: 11.5px; color: var(--stone-500);
+            font-family: var(--font-mono); letter-spacing: 0.04em;
+            margin-top: 2px;
+        }
+        .feed-tag {
+            font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em;
+            padding: 5px 10px; border-radius: 999px;
+        }
+        .feed-tag.in  { background: #DCEEDA; color: #2C5C2C; }
+        .feed-tag.out { background: var(--accent-pale); color: var(--accent-deep); }
+        .feed-empty {
+            text-align: center; padding: 36px 12px;
+            color: var(--stone-400); font-size: 13px;
+            background: var(--paper-soft); border: 1px dashed var(--line-2);
+            border-radius: 12px;
+        }
+
+        /* Currently inside chips */
+        .inside-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .inside-chip {
+            display: grid; grid-template-columns: 28px 1fr auto; gap: 10px;
+            align-items: center; padding: 8px 12px;
+            background: var(--paper-soft); border: 1px solid var(--line-1);
+            border-radius: 10px;
+        }
+        .inside-chip .avatar { width: 28px; height: 28px; font-size: 10px; }
+        .inside-chip .name { font-size: 12.5px; font-weight: 500; color: var(--ink); }
+        .inside-chip .since {
+            font-family: var(--font-mono); font-size: 10.5px; color: var(--stone-400);
+        }
+
+        /* Back-to-admin escape */
+        .k-foot { margin-top: 32px; display: flex; justify-content: space-between; align-items: center;
+            color: var(--stone-400); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; }
+        .k-foot a { color: var(--stone-500); text-decoration: none; }
+        .k-foot a:hover { color: var(--ink); }
+
+        @media (max-width: 980px) {
+            .k-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body th:classappend="${isAdmin ? 'dashboard' : ''}">
+
+<!-- Admin chrome (sidebar + topbar) only when logged-in admin opens kiosk -->
+<div th:if="${isAdmin}" th:replace="~{fragments/layout :: adminSidebar('kiosk')}"></div>
+<div th:if="${isAdmin}" th:replace="~{fragments/layout :: topbar('Door Kiosk')}"></div>
+
+<main th:classappend="${isAdmin ? 'main' : ''}">
+<div class="k-wrap">
+
+    <!-- ============ HEADER ============ -->
+    <div class="k-head">
+        <div class="k-head-l">
+            <div class="eyebrow">Reception · Live check-in</div>
+            <h1>The door is <em>listening</em>.</h1>
+        </div>
+        <div class="k-head-r">
+            <div class="k-badge"><span class="pulse"></span> RFID reader connected</div>
+            <div class="k-clock" id="clock">--:--:--</div>
+        </div>
+    </div>
+
+    <!-- ============ MAIN GRID ============ -->
+    <div class="k-grid">
+
+        <!-- ----- LEFT COLUMN ----- -->
+        <div>
+
+            <!-- Waiting-for-card big card -->
+            <div class="card">
+                <div class="card-eyebrow"><span id="cardEyebrow">Waiting for card</span><span class="x"></span></div>
+                <div class="wait-card idle" id="waitCard">
+                    <div class="wait-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+                            <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+                            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+                            <line x1="12" y1="20" x2="12.01" y2="20"/>
+                        </svg>
+                    </div>
+                    <div class="wait-text">
+                        <h2>Hold a <em>card</em> to the reader.</h2>
+                        <p>The kiosk runs in the background and auto-toggles check-in / check-out for each scan.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual PIN entry -->
+            <div class="card" style="margin-top: 18px;">
+                <div class="card-eyebrow"><span>Manual entry · 4-digit PIN</span></div>
+                <div class="pin-row">
+                    <div class="pin-dots" id="pinDots">
+                        <span class="d" data-i="0">·</span>
+                        <span class="d" data-i="1">·</span>
+                        <span class="d" data-i="2">·</span>
+                        <span class="d" data-i="3">·</span>
+                    </div>
+                    <button class="pin-btn" id="pinBtn" disabled onclick="submitPin()">
+                        Check in
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simulate RFID scan -->
+            <div class="card" style="margin-top: 18px;">
+                <div class="card-eyebrow"><span>Simulate RFID scan</span></div>
+                <div class="sim-row">
+                    <button class="sim-chip" onclick="scan('1000000001')">Elira K. card</button>
+                    <button class="sim-chip" onclick="scan('1000000002')">Driton M. card</button>
+                    <button class="sim-chip" onclick="scan('1000000003')">Besnik M. card</button>
+                    <button class="sim-chip bad" onclick="scan('9999999999')">Bad card</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ----- RIGHT COLUMN ----- -->
+        <div>
+            <div class="stat-row">
+                <div class="stat-card">
+                    <div class="lbl">Check-ins today</div>
+                    <div class="val" id="statTotal">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="lbl">Currently inside</div>
+                    <div class="val" id="statInside">0</div>
+                </div>
+            </div>
+
+            <div class="panel-title">Live feed</div>
+            <div class="feed" id="feed">
+                <div class="feed-empty">No activity yet today.</div>
+            </div>
+
+            <div class="panel-title">Currently inside</div>
+            <div class="inside-grid" id="insideGrid">
+                <div class="feed-empty" style="grid-column: span 2;">Nobody is checked in right now.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="k-foot">
+        <span>RFID · USB reader behaves as keyboard · 10-digit code + Enter</span>
+        <a th:if="${isAdmin}" href="/admin">← Back to Admin Dashboard</a>
+        <a th:unless="${isAdmin}" href="/login">← Exit kiosk mode</a>
+    </div>
+</div>
+</main>
+
+<script>
+    // =====================================================
+    // PIN entry (manual mode for when card is forgotten)
+    // =====================================================
+    let pinBuffer = "";
+    const pinDotsEl = document.getElementById("pinDots");
+    const pinBtn = document.getElementById("pinBtn");
+
+    function renderPin() {
+        const dots = pinDotsEl.querySelectorAll(".d");
+        dots.forEach((d, i) => {
+            if (i < pinBuffer.length) { d.textContent = "•"; d.classList.add("on"); }
+            else { d.textContent = "·"; d.classList.remove("on"); }
+        });
+        pinBtn.disabled = pinBuffer.length !== 4;
+    }
+    async function submitPin() {
+        if (pinBuffer.length !== 4) return;
+        try {
+            const r = await fetch("/api/members/checkin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ pin: pinBuffer })
+            });
+            if (!r.ok) { showError("PIN not recognised"); pinBuffer = ""; renderPin(); return; }
+            const j = await r.json();
+            if (j.action === "checkin") showSuccess(j.memberName, j.memberPlan, j.checkIn);
+            else                       showBye(j.memberName, j.checkOut);
+            pinBuffer = ""; renderPin();
+        } catch { showError("Network error"); pinBuffer = ""; renderPin(); }
+    }
+
+    // =====================================================
+    // RFID input, the reader behaves like a fast keyboard.
+    // Buffer keystrokes that arrive faster than 200ms apart,
+    // commit on Enter.
+    // =====================================================
+    let buffer = "";
+    let lastKeyTime = Date.now();
+
+    document.addEventListener("keydown", async function (e) {
+        // If user is typing in an input/textarea, ignore for RFID buffer
+        if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
+
+        const now = Date.now();
+        if (now - lastKeyTime > 200) buffer = "";
+        lastKeyTime = now;
+
+        // PIN entry: digit keys when buffer is short = treat as manual PIN
+        if (/^[0-9]$/.test(e.key)) {
+            buffer += e.key;
+            // Also feed the 4-digit PIN UI
+            if (pinBuffer.length < 4) { pinBuffer += e.key; renderPin(); }
+            return;
+        }
+        if (e.key === "Enter") {
+            if (buffer.length >= 6) { await scan(buffer); buffer = ""; }
+            else if (pinBuffer.length === 4) { await submitPin(); }
+            buffer = "";
+            return;
+        }
+        if (e.key === "Backspace" && pinBuffer.length > 0) {
+            pinBuffer = pinBuffer.slice(0, -1); renderPin();
+        }
+    });
+
+    async function scan(rfid) {
+        try {
+            const r = await fetch("/api/members/checkin-rfid", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ rfid: rfid })
+            });
+            if (!r.ok) { showError("Card not recognised"); return; }
+            const j = await r.json();
+            if (j.action === "checkin") showSuccess(j.memberName, j.memberPlan, j.checkIn);
+            else                       showBye(j.memberName, j.checkOut);
+        } catch { showError("Network error"); }
+    }
+
+    // =====================================================
+    // Card UI state changes
+    // =====================================================
+    let resetTimer = null;
+    const waitCard = document.getElementById("waitCard");
+    const cardEyebrow = document.getElementById("cardEyebrow");
+
+    const ICON_CHECK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+    const ICON_WAVE  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v6"/><path d="M14 10V4a2 2 0 0 0-4 0v8"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 0 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>`;
+    const ICON_ALERT = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+    const ICON_WIFI  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>`;
+
+    function showSuccess(name, plan, time) {
+        cardEyebrow.textContent = "Check-in saved";
+        waitCard.className = "wait-card success";
+        waitCard.innerHTML = `
+            <div class="wait-icon">${ICON_CHECK}</div>
+            <div class="wait-text">
+                <h2>Welcome, <em>${esc(name)}</em>.</h2>
+                <p>${esc(plan || 'Member')} · checked in at ${esc(short(time))}</p>
+            </div>`;
+        scheduleReset();
+        refreshFeed();
+    }
+    function showBye(name, time) {
+        cardEyebrow.textContent = "Check-out saved";
+        waitCard.className = "wait-card bye";
+        waitCard.innerHTML = `
+            <div class="wait-icon">${ICON_WAVE}</div>
+            <div class="wait-text">
+                <h2>Goodbye, <em>${esc(name)}</em>.</h2>
+                <p>Checked out at ${esc(short(time))}. Strong work, see you next time.</p>
+            </div>`;
+        scheduleReset();
+        refreshFeed();
+    }
+    function showError(msg) {
+        cardEyebrow.textContent = "Try again";
+        waitCard.className = "wait-card error";
+        waitCard.innerHTML = `
+            <div class="wait-icon">${ICON_ALERT}</div>
+            <div class="wait-text">
+                <h2>${esc(msg)}.</h2>
+                <p>Please ask reception, or try scanning again.</p>
+            </div>`;
+        scheduleReset();
+    }
+    function scheduleReset() {
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(() => {
+            cardEyebrow.textContent = "Waiting for card";
+            waitCard.className = "wait-card idle";
+            waitCard.innerHTML = `
+                <div class="wait-icon">${ICON_WIFI}</div>
+                <div class="wait-text">
+                    <h2>Hold a <em>card</em> to the reader.</h2>
+                    <p>The kiosk runs in the background and auto-toggles check-in / check-out for each scan.</p>
+                </div>`;
+        }, 5000);
+    }
+
+    // =====================================================
+    // Live feed, fetched every 5 seconds
+    // =====================================================
+    async function refreshFeed() {
+        try {
+            const r = await fetch("/api/members/kiosk-feed");
+            if (!r.ok) return;
+            const j = await r.json();
+            document.getElementById("statTotal").textContent = j.checkInsToday;
+            document.getElementById("statInside").textContent = j.currentlyInside;
+
+            // Live feed
+            const feedEl = document.getElementById("feed");
+            if (!j.liveFeed || j.liveFeed.length === 0) {
+                feedEl.innerHTML = `<div class="feed-empty">No activity yet today.</div>`;
+            } else {
+                feedEl.innerHTML = j.liveFeed.map((row, i) => `
+                    <div class="feed-row">
+                        <div class="avatar c${(i % 6) + 1}">${esc(row.initials)}</div>
+                        <div class="feed-mid">
+                            <div class="name">${esc(row.memberName)}</div>
+                            <div class="meta">${esc(row.memberPlan || 'Member')} · ${esc(row.time)}</div>
+                        </div>
+                        <div class="feed-tag ${row.action === 'checkin' ? 'in' : 'out'}">${row.action === 'checkin' ? 'CHECK IN' : 'CHECK OUT'}</div>
+                    </div>`).join("");
+            }
+
+            // Currently inside
+            const insideEl = document.getElementById("insideGrid");
+            if (!j.insideList || j.insideList.length === 0) {
+                insideEl.innerHTML = `<div class="feed-empty" style="grid-column: span 2;">Nobody is checked in right now.</div>`;
+            } else {
+                insideEl.innerHTML = j.insideList.map((row, i) => `
+                    <div class="inside-chip">
+                        <div class="avatar c${(i % 6) + 1}">${esc(row.initials)}</div>
+                        <div class="name">${esc(row.memberName)}</div>
+                        <div class="since">${esc(row.checkIn)}</div>
+                    </div>`).join("");
+            }
+        } catch {}
+    }
+
+    // =====================================================
+    // Helpers
+    // =====================================================
+    function esc(s) {
+        return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'
+        }[c]));
+    }
+    function short(t) {
+        if (!t) return "";
+        const s = String(t);
+        // Try to extract HH:MM from various time formats
+        const m = s.match(/(\d{2}:\d{2})/);
+        return m ? m[1] : s.substring(0, 8);
+    }
+    function updateClock() {
+        const d = new Date();
+        const h = String(d.getHours()).padStart(2,'0');
+        const m = String(d.getMinutes()).padStart(2,'0');
+        const s = String(d.getSeconds()).padStart(2,'0');
+        document.getElementById("clock").textContent = `${h}:${m}:${s}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    refreshFeed();
+    setInterval(refreshFeed, 5000);
+    renderPin();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="sq" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+<meta charset="UTF-8">
+<title>Forge — Registration Pending</title>
+<link rel="stylesheet" th:href="@{/css/app.css}">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    background: var(--paper-soft, #f8f7f4);
+    font-family: var(--font-sans, Arial, sans-serif);
+    display: grid; grid-template-columns: 1.05fr 1fr;
+  }
+  .left {
+    padding: 40px 56px; display: flex; flex-direction: column;
+    background: #ffffff; border-right: 1px solid var(--stone-100, #e8e4de);
+  }
+  .brand { display: inline-flex; align-items: baseline; gap: 2px; text-decoration: none; }
+  .brand .word {
+    font-family: var(--font-display, Georgia, serif); font-weight: 400;
+    font-size: 28px; letter-spacing: -0.035em; color: var(--ink, #1a1a1a);
+  }
+  .brand .dot {
+    width: 6px; height: 6px; background: var(--accent, #b8956a); border-radius: 50%;
+    display: inline-block; margin-left: 3px; transform: translateY(-2px);
+  }
+  .left-content { margin: auto 0; max-width: 480px; }
+  .left-eyebrow {
+    font-family: var(--font-display, Georgia, serif); font-style: italic;
+    font-size: 17px; color: var(--accent-deep, #8a6a40); margin-bottom: 28px;
+  }
+  .left h1 {
+    font-family: var(--font-display, Georgia, serif); font-weight: 300;
+    font-size: clamp(48px, 6vw, 80px); line-height: 0.95;
+    letter-spacing: -0.035em; margin: 0 0 28px; color: var(--ink, #1a1a1a);
+  }
+  .left h1 em { font-style: italic; }
+  .left p { font-size: 16px; color: var(--stone-600, #6b6560); line-height: 1.6; margin: 0 0 24px; }
+  .steps { display: grid; gap: 18px; max-width: 400px; }
+  .step { display: flex; gap: 14px; align-items: flex-start; }
+  .step-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 1px solid var(--accent, #b8956a);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    font-family: monospace; font-size: 12px; font-weight: 700;
+    color: var(--accent-deep, #8a6a40);
+  }
+  .step-title { font-size: 15px; font-weight: 600; color: var(--ink, #1a1a1a); margin-bottom: 2px; }
+  .step-desc  { font-size: 13px; color: var(--stone-500, #8a8480); line-height: 1.5; }
+  .left-footer {
+    font-size: 12px; color: var(--stone-400, #a8a29e);
+    margin-top: auto; padding-top: 24px;
+    border-top: 1px solid var(--stone-100, #e8e4de);
+    display: flex; justify-content: space-between;
+  }
+  .right {
+    padding: 40px 56px; display: flex; flex-direction: column;
+    background: var(--paper-soft, #f8f7f4);
+  }
+  .right-top {
+    display: flex; justify-content: flex-end;
+    font-size: 14px; color: var(--stone-600, #6b6560);
+  }
+  .right-top a {
+    color: var(--ink, #1a1a1a); font-weight: 600;
+    border-bottom: 1px solid var(--accent, #b8956a);
+    padding-bottom: 1px; text-decoration: none;
+  }
+  .card-wrap { margin: auto; width: 100%; max-width: 420px; padding: 24px 0; }
+  .icon-circle {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: #fff8e1; border: 2px solid #ffe082;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 24px;
+  }
+  .card-wrap h2 {
+    font-family: var(--font-display, Georgia, serif); font-weight: 300;
+    font-size: 42px; line-height: 1; letter-spacing: -0.03em;
+    margin: 0 0 12px; color: var(--ink, #1a1a1a);
+  }
+  .card-wrap h2 em { font-style: italic; }
+  .card-wrap .sub { font-size: 15px; color: var(--stone-600, #6b6560); line-height: 1.6; margin: 0 0 24px; }
+  .notice {
+    background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px;
+    padding: 16px; margin: 0 0 24px;
+    font-size: 14px; color: #5d4037; line-height: 1.6;
+  }
+  .btn-back {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 28px; background: var(--ink, #1a1a1a); color: #fff;
+    border-radius: 999px; text-decoration: none;
+    font-size: 14px; font-weight: 600; width: 100%; justify-content: center;
+    transition: background .2s, transform .15s;
+  }
+  .btn-back:hover { background: #333; transform: translateY(-1px); }
+  @media (max-width: 768px) {
+    body { grid-template-columns: 1fr; }
+    .left { display: none; }
+    .right { padding: 32px 24px; min-height: 100vh; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LEFT -->
+<div class="left">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:auto">
+    <a class="brand" href="/"><span class="word">Forge</span><span class="dot"></span></a>
+    <span style="font-size:12px;font-weight:500;letter-spacing:.04em;color:var(--stone-400)">REGISTRATION</span>
+  </div>
+
+  <div class="left-content">
+    <p class="left-eyebrow">Almost there</p>
+    <h1>One step<br><em>away.</em></h1>
+    <p>Your account has been created. A member of our team will confirm your membership once payment is verified.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">Registration submitted</div>
+          <div class="step-desc">Your account and plan selection are saved.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">Visit reception</div>
+          <div class="step-desc">Come to the gym and complete your payment at the front desk.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">Account activated</div>
+          <div class="step-desc">You'll receive a confirmation email and can log in right away.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="left-footer">
+    <span>© 2026 Forge Gym, Tiranë</span>
+    <span>v4.0</span>
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div class="right">
+  <div class="right-top">
+    <a href="/login">Sign in →</a>
+  </div>
+
+  <div class="card-wrap">
+    <div class="icon-circle">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f57f17" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+    </div>
+
+    <h2>You're<br><em>registered!</em></h2>
+    <p class="sub">Your account is pending confirmation from the Forge team.</p>
+
+    <div class="notice">
+      <strong>What happens next?</strong><br>
+      Visit reception to complete your payment. Once confirmed, you'll receive a welcome email and can log in immediately.
+    </div>
+
+    <a href="/login" class="btn-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      Go to Sign In
+    </a>
+  </div>
+</div>
+</body>
+</html>

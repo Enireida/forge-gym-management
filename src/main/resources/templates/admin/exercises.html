@@ -1,0 +1,191 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>Exercise Library - Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}">
+<style>
+    .modal-overlay{position:fixed;inset:0;background:rgba(6,15,26,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+    .modal-overlay.open{display:flex}
+    .modal-box{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-xl);width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-3)}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:22px 24px 0}
+    .modal-title{font-family:var(--font-display);font-size:22px;font-weight:400;letter-spacing:-.01em;color:var(--fg-1)}
+    .modal-title em{font-style:italic;color:var(--accent-deep)}
+    .modal-close{background:none;border:none;cursor:pointer;color:var(--stone-400);font-size:26px;line-height:1;padding:4px 8px;border-radius:var(--r-sm)}
+    .modal-close:hover{background:var(--bg-sunken);color:var(--fg-1)}
+    .modal-body{padding:18px 24px 0}
+    .modal-footer{padding:16px 24px 22px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line-1);margin-top:18px}
+    .btn-sm{padding:5px 12px;font-size:12px}
+    .btn-danger{background:var(--signal-error);color:#fff}
+    .btn-danger:hover{background:#8b2020;color:#fff;transform:none}
+    .exercise-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('exercises')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Exercise Library & Workout Plans')}"></div>
+    <main class="main">
+
+        <!-- ADD EXERCISE -->
+        <div class="card">
+            <div class="card-title">Add a new exercise</div>
+            <form autocomplete="off" method="post" action="/admin/exercises">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <div class="form-row">
+                    <div><label class="form-label">Name</label>
+                        <input class="form-input" name="name" required autocomplete="nope"></div>
+                    <div><label class="form-label">Muscle group</label>
+                        <select class="form-select" name="muscleGroup" required>
+                            <option>Chest</option><option>Back</option><option>Legs</option>
+                            <option>Shoulders</option><option>Arms</option><option>Core</option>
+                            <option>Full Body</option><option>Cardio</option>
+                        </select></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Difficulty</label>
+                        <select class="form-select" name="difficulty">
+                            <option>Beginner</option><option>Intermediate</option><option>Advanced</option>
+                        </select></div>
+                    <div><label class="form-label">Equipment</label>
+                        <input class="form-input" name="equipment" placeholder="Barbell, Dumbbells, None ..." autocomplete="nope"></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Image URL</label>
+                        <input class="form-input" name="imageUrl" placeholder="https://..." autocomplete="nope"></div>
+                    <div><label class="form-label">Sets × Reps</label>
+                        <input class="form-input" name="setsReps" placeholder="3 × 10-12" autocomplete="nope"></div>
+                </div>
+                <label class="form-label">Instructions</label>
+                <textarea class="form-input" name="instructions" rows="3"></textarea>
+                <br><br>
+                <button class="btn" type="submit">Add Exercise</button>
+            </form>
+        </div>
+
+        <!-- EXERCISE GRID -->
+        <div class="card">
+            <div class="card-title">Exercises (<span th:text="${#lists.size(exercises)}">0</span>)</div>
+            <div class="exercise-grid">
+                <div th:each="e : ${exercises}" class="exercise-card">
+                    <div class="exercise-img"
+                         th:style="${e.imageUrl}!=null ? 'background-image:url(' + ${e.imageUrl} + ')':''">
+                        <span th:if="${e.imageUrl}==null">💪</span>
+                    </div>
+                    <div class="exercise-body">
+                        <div class="exercise-name" th:text="${e.name}"></div>
+                        <div class="exercise-meta">
+                            <span class="badge badge-info"   th:text="${e.muscleGroup}"></span>
+                            <span class="badge badge-purple" th:text="${e.difficulty}"></span>
+                            <span class="badge" th:if="${e.setsReps}" th:text="${e.setsReps}"></span>
+                        </div>
+                        <div class="exercise-instructions" th:text="${e.instructions}"></div>
+                        <div class="exercise-actions">
+                            <!-- Edit -->
+                            <button class="btn btn-secondary btn-sm" type="button"
+                                    th:data-id="${e.id}"
+                                    th:data-name="${e.name}"
+                                    th:data-muscle="${e.muscleGroup}"
+                                    th:data-difficulty="${e.difficulty}"
+                                    th:data-equipment="${e.equipment}"
+                                    th:data-image="${e.imageUrl}"
+                                    th:data-setsreps="${e.setsReps}"
+                                    th:data-instructions="${e.instructions}"
+                                    onclick="openEditExercise(this)">Edit</button>
+                            <!-- Delete -->
+                            <form autocomplete="off" method="post" th:action="@{'/admin/exercises/'+${e.id}+'/delete'}" style="display:inline">
+                                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                                <button class="btn btn-danger btn-sm" type="submit"
+                                        onclick="return confirm('Delete this exercise?')">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORKOUT PLANS -->
+        <div class="card">
+            <div class="card-title">Workout Plans (<span th:text="${#lists.size(plans)}">0</span>)</div>
+            <div class="plan-grid">
+                <div th:each="p : ${plans}" class="plan-tile">
+                    <div class="plan-hero"
+                         th:classappend="${p.level=='Beginner'?'beginner':(p.level=='Advanced'?'advanced':'intermediate')}">
+                        <div class="plan-tile-title" th:text="${p.name}"></div>
+                        <div class="plan-tile-meta"  th:text="${p.level + ' • ' + p.goal}"></div>
+                    </div>
+                    <div class="plan-tile-body">
+                        <div class="plan-tile-desc" th:text="${p.description}"></div>
+                        <small><strong th:text="${#sets.size(p.exercises)}">0</strong> exercises</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- ===== EDIT EXERCISE MODAL ===== -->
+<div id="editExerciseModal" class="modal-overlay" onclick="if(event.target===this)closeModal('editExerciseModal')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Edit <em>Exercise</em></span>
+            <button class="modal-close" onclick="closeModal('editExerciseModal')">×</button>
+        </div>
+        <form autocomplete="off" method="post" id="editExerciseForm">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div><label class="form-label">Name</label>
+                        <input class="form-input" id="ex-name" name="name" required autocomplete="nope"></div>
+                    <div><label class="form-label">Muscle group</label>
+                        <select class="form-select" id="ex-muscle" name="muscleGroup" required>
+                            <option>Chest</option><option>Back</option><option>Legs</option>
+                            <option>Shoulders</option><option>Arms</option><option>Core</option>
+                            <option>Full Body</option><option>Cardio</option>
+                        </select></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Difficulty</label>
+                        <select class="form-select" id="ex-difficulty" name="difficulty">
+                            <option>Beginner</option><option>Intermediate</option><option>Advanced</option>
+                        </select></div>
+                    <div><label class="form-label">Equipment</label>
+                        <input class="form-input" id="ex-equipment" name="equipment" autocomplete="nope"></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Image URL</label>
+                        <input class="form-input" id="ex-image" name="imageUrl" autocomplete="nope"></div>
+                    <div><label class="form-label">Sets × Reps</label>
+                        <input class="form-input" id="ex-setsreps" name="setsReps" autocomplete="nope"></div>
+                </div>
+                <label class="form-label">Instructions</label>
+                <textarea class="form-input" id="ex-instructions" name="instructions" rows="3"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editExerciseModal')">Cancel</button>
+                <button type="submit" class="btn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal(id)  { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    function openEditExercise(btn) {
+        const d = btn.dataset;
+        document.getElementById('editExerciseForm').action = '/admin/exercises/' + d.id + '/edit';
+        document.getElementById('ex-name').value         = d.name         || '';
+        document.getElementById('ex-equipment').value    = d.equipment    || '';
+        document.getElementById('ex-image').value        = d.image        || '';
+        document.getElementById('ex-setsreps').value     = d.setsreps     || '';
+        document.getElementById('ex-instructions').value = d.instructions || '';
+        const muscleSel = document.getElementById('ex-muscle');
+        for (let o of muscleSel.options) { o.selected = o.value === d.muscle; }
+        const diffSel = document.getElementById('ex-difficulty');
+        for (let o of diffSel.options) { o.selected = o.value === d.difficulty; }
+        openModal('editExerciseModal');
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>My Availability, Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .slot-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--line-1);border-radius:var(--r-lg);margin-bottom:8px;background:var(--bg-surface);transition:box-shadow .15s}
+        .slot-row:hover{box-shadow:var(--shadow-1)}
+        .slot-row.booked{border-left:3px solid var(--accent);background:var(--accent-pale)}
+        .slot-row.blocked{border-left:3px solid var(--signal-danger);background:rgba(180,0,0,.04)}
+        .slot-date{font-family:var(--font-display);font-size:15px;color:var(--fg-1);font-weight:400;min-width:180px}
+        .slot-time{font-family:var(--font-mono);font-size:16px;font-weight:600;color:var(--accent-deep)}
+        .slot-member{font-size:12px;color:var(--stone-500)}
+        .slot-actions{display:flex;gap:6px}
+        .action-btn{padding:5px 12px;font-size:12px;font-weight:600;border-radius:var(--r-sm);cursor:pointer;transition:.15s;border:1px solid var(--line-1);background:none;color:var(--stone-500)}
+        .action-btn:hover{background:var(--bg-sunken);color:var(--fg-1)}
+        .action-btn.danger{border-color:var(--signal-danger);color:var(--signal-danger)}
+        .action-btn.danger:hover{background:var(--signal-danger-bg)}
+        .status-pill{padding:2px 10px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+        .avail-pill{background:rgba(43,183,119,.12);color:#1a7a4e}
+        .booked-pill{background:var(--accent-pale);color:var(--accent-deep)}
+        .blocked-pill{background:rgba(180,0,0,.1);color:var(--signal-danger)}
+        .empty-state{text-align:center;padding:40px;color:var(--stone-400);font-style:italic}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: trainerSidebar('availability')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('My Availability')}"></div>
+    <main class="main">
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+        <!-- ADD SLOT FORM -->
+        <div class="card">
+            <div class="card-title">Add a new slot</div>
+            <form autocomplete="off" method="post" action="/trainer/availability/add">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Date <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" type="date" name="slotDate" required
+                               th:min="${#temporals.format(#temporals.createNow(),'yyyy-MM-dd')}" autocomplete="nope">
+                    </div>
+                    <div>
+                        <label class="form-label">Start time <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" type="time" name="startTime" required value="09:00" autocomplete="nope">
+                    </div>
+                    <div>
+                        <label class="form-label">End time <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" type="time" name="endTime" required value="10:00" autocomplete="nope">
+                    </div>
+                </div>
+                <div style="margin-bottom:14px">
+                    <label class="form-label">Notes (optional)</label>
+                    <input class="form-input" name="notes" placeholder="e.g. Strength training only, no cardio" autocomplete="nope">
+                </div>
+                <button class="btn" type="submit">Add Slot</button>
+            </form>
+        </div>
+
+        <!-- SLOTS TABLE -->
+        <div class="card">
+            <div class="card-title">
+                Upcoming slots
+                <span style="font-size:13px;font-weight:400;color:var(--stone-400)">(next 30 days)</span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(slots)}" class="empty-state">
+                No slots in the next 30 days. Add your first availability above!
+            </div>
+
+            <div th:unless="${#lists.isEmpty(slots)}">
+                <div th:each="slot : ${slots}"
+                     th:classappend="${slot.status == 'BOOKED'} ? 'slot-row booked' : (${slot.status == 'BLOCKED'} ? 'slot-row blocked' : 'slot-row')">
+                    <div style="display:flex;align-items:center;gap:24px;flex:1">
+                        <div class="slot-date"
+                             th:text="${#temporals.format(slot.slotDate,'EEE, d MMM yyyy')}">Mon 2 Jun</div>
+                        <div class="slot-time"
+                             th:text="${#temporals.format(slot.startTime,'HH:mm') + ', ' + #temporals.format(slot.endTime,'HH:mm')}">09:00, 10:00</div>
+                        <div>
+                            <span class="status-pill"
+                                  th:classappend="${slot.status == 'AVAILABLE'} ? 'avail-pill' : (${slot.status == 'BOOKED'} ? 'booked-pill' : 'blocked-pill')"
+                                  th:text="${slot.status}">AVAILABLE</span>
+                        </div>
+                        <div class="slot-member" th:if="${slot.bookedByMember != null}">
+                            Booked by: <strong th:text="${slot.bookedByMember.name}">Member</strong>
+                            <span th:if="${slot.bookedByMember.phone != null}"
+                                  th:text="'· ' + ${slot.bookedByMember.phone}">phone</span>
+                        </div>
+                        <div class="slot-member" th:if="${slot.notes != null and !slot.notes.isEmpty()}"
+                             style="font-style:italic" th:text="${slot.notes}">Notes</div>
+                    </div>
+                    <div class="slot-actions">
+                        <form autocomplete="off" method="post" th:action="@{'/trainer/availability/' + ${slot.id} + '/block'}"
+                              style="margin:0" th:if="${slot.status == 'AVAILABLE'}">
+                            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                            <button class="action-btn" type="submit">Block</button>
+                        </form>
+                        <form autocomplete="off" method="post" th:action="@{'/trainer/availability/' + ${slot.id} + '/delete'}"
+                              style="margin:0">
+                            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                            <button class="action-btn danger" type="submit"
+                                    onclick="return confirm('Remove this slot?')">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+</body>
+</html>

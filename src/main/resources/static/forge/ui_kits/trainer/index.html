@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Forge — Trainer</title>
+<link rel="stylesheet" href="../../colors_and_type.css" />
+<style>
+  body{margin:0;font-family:var(--font-sans)}
+  .app{display:flex;height:100vh;background:#FAFAFA}
+  .main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{padding:18px 32px;border-bottom:1px solid #EEEEEA;background:#fff;display:flex;align-items:center;gap:16px}
+  .topbar h1{font-family:var(--font-display);font-weight:400;font-size:24px;line-height:1;letter-spacing:-0.02em;margin:0}
+  .content{flex:1;overflow-y:auto;background:#FAFAFA}
+  .topbar button.action {padding:9px 14px;border-radius:8px;background:#0E1A11;color:#FAFAFA;border:0;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .topbar button.action:hover {background:#18271B}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script type="text/babel" src="TrainerParts.jsx"></script>
+<script type="text/babel" src="TrainerScreens.jsx"></script>
+<script type="text/babel">
+function App() {
+  const [screen, setScreen] = React.useState('home');
+  const [openMemberId, setOpenMemberId] = React.useState(null);
+
+  const [members] = React.useState([
+    { id:1, n:'Driton Mehmeti', em:'driton.m@gmail.com', goal:'Lean bulk', plan:'Premium PT · 12 sessions', used:8, total:12, wt:84.2, ht:182, bf:18.1, waist:88, chest:108, lastSession:'2 days ago' },
+    { id:2, n:'Elira Krasniqi', em:'elira@gmail.com', goal:'Cut · 5 kg', plan:'PT 4-pack', used:1, total:4, wt:78.4, ht:168, bf:22.4, waist:82, chest:98, lastSession:'1 day ago' },
+    { id:3, n:'Mirjeta Lleshi', em:'mirjeta.lleshi@gmail.com', goal:'Mobility & rehab', plan:'PT 8-pack', used:6, total:8, wt:62.1, ht:172, bf:21.0, waist:74, chest:88, lastSession:'5 days ago', alert:true },
+    { id:4, n:'Besnik Hoxha', em:'besnik@hotmail.com', goal:'Strength · 5×5', plan:'PT 8-pack', used:0, total:8, wt:91.6, ht:186, bf:16.2, waist:90, chest:112, lastSession:'New' },
+    { id:5, n:'Anila Shehu', em:'anila.s@gmail.com', goal:'Postpartum recovery', plan:'PT 12-pack', used:5, total:12, wt:67.0, ht:165, bf:24.8, waist:78, chest:90, lastSession:'3 days ago' },
+    { id:6, n:'Ardit Vata', em:'ardit.vata@gmail.com', goal:'Endurance · 10K', plan:'PT 4-pack', used:3, total:4, wt:74.3, ht:178, bf:14.8, waist:78, chest:96, lastSession:'1 day ago' },
+  ]);
+
+  const [measurements, setMeasurements] = React.useState([
+    { d:'12 May 2026', m:'Elira Krasniqi', wt:78.4, ht:168, bf:22.4, waist:82, chest:98, notes:'Plateau check — sleep declining' },
+    { d:'10 May 2026', m:'Driton Mehmeti', wt:84.2, ht:182, bf:18.1, waist:88, chest:108, notes:'Bulking on track, +0.8kg' },
+    { d:'09 May 2026', m:'Anila Shehu', wt:67.0, ht:165, bf:24.8, waist:78, chest:90, notes:'Postpartum 6mo — strong return' },
+    { d:'07 May 2026', m:'Besnik Hoxha', wt:91.6, ht:186, bf:16.2, waist:90, chest:112, notes:'Initial measurement · baseline' },
+    { d:'05 May 2026', m:'Mirjeta Lleshi', wt:62.1, ht:172, bf:21.0, waist:74, chest:88, notes:'Hip flexibility +12 degrees' },
+  ]);
+
+  const [sessions, setSessions] = React.useState([
+    { d:'14 May · 08:00', m:'Driton Mehmeti', type:'Strength · Push', dur:60, notes:'Bench 80kg PR · solid form', status:'Done' },
+    { d:'14 May · 09:30', m:'Elira Krasniqi', type:'HIIT · full body', dur:45, notes:'5 rounds Tabata · 412 kcal', status:'Done' },
+    { d:'13 May · 18:00', m:'Besnik Hoxha', type:'Strength · Pull', dur:60, notes:'First session · baseline established', status:'Done' },
+    { d:'13 May · 11:00', m:'Mirjeta Lleshi', type:'Mobility', dur:45, notes:'Hip openers + thoracic mobility', status:'Done' },
+    { d:'15 May · 08:00', m:'Driton Mehmeti', type:'Strength · Push', dur:60, notes:'—', status:'Upcoming' },
+    { d:'15 May · 11:00', m:'Anila Shehu', type:'Postpartum return', dur:60, notes:'—', status:'Upcoming' },
+  ]);
+
+  const [exercises, setExercises] = React.useState([
+    { n:'Barbell Back Squat', mg:'Legs', dif:'Intermediate', eq:'Barbell · Rack', sets:'5×5', ico:'dumbbell' },
+    { n:'Bench Press', mg:'Chest', dif:'Intermediate', eq:'Barbell · Bench', sets:'5×5', ico:'dumbbell' },
+    { n:'Deadlift', mg:'Back', dif:'Advanced', eq:'Barbell', sets:'3×5', ico:'dumbbell' },
+    { n:'Overhead Press', mg:'Shoulders', dif:'Intermediate', eq:'Barbell', sets:'5×5', ico:'dumbbell' },
+    { n:'Pull-up', mg:'Back', dif:'Intermediate', eq:'Bar', sets:'4×8', ico:'dumbbell' },
+    { n:'Romanian Deadlift', mg:'Legs', dif:'Beginner', eq:'Barbell', sets:'4×10', ico:'dumbbell' },
+    { n:'Goblet Squat', mg:'Legs', dif:'Beginner', eq:'Dumbbell', sets:'3×12', ico:'dumbbell' },
+    { n:'Dumbbell Row', mg:'Back', dif:'Beginner', eq:'Dumbbell', sets:'4×10', ico:'dumbbell' },
+    { n:'Hip Thrust', mg:'Legs', dif:'Beginner', eq:'Barbell · Bench', sets:'4×12', ico:'dumbbell' },
+    { n:'Plank', mg:'Core', dif:'Beginner', eq:'None', sets:'3×45s', ico:'activity' },
+    { n:'Farmer Walk', mg:'Full body', dif:'Beginner', eq:'Dumbbells', sets:'3×40m', ico:'dumbbell' },
+    { n:'Box Jump', mg:'Cardio', dif:'Intermediate', eq:'Box 60cm', sets:'5×5', ico:'activity' },
+    { n:'Bicep Curl', mg:'Arms', dif:'Beginner', eq:'Dumbbell', sets:'3×12', ico:'dumbbell' },
+    { n:'Tricep Pushdown', mg:'Arms', dif:'Beginner', eq:'Cable', sets:'3×12', ico:'dumbbell' },
+    { n:'Lateral Raise', mg:'Shoulders', dif:'Beginner', eq:'Dumbbell', sets:'3×15', ico:'dumbbell' },
+  ]);
+
+  const [templates] = React.useState([
+    { name:'Strength · 5×5 Beginner', level:'Beginner', goal:'Strength', desc:'Classic 5×5 linear progression. Three full-body sessions per week.', duration:60, used:8, updated:'2 days ago', exs:['Squat 5×5','Bench 5×5','Row 5×5','Deadlift 1×5','Press 5×5'], color:'#4A7A4F' },
+    { name:'Hypertrophy Upper / Lower', level:'Intermediate', goal:'Hypertrophy', desc:'4-day split. Volume focus, moderate weights, 6-8 week block.', duration:75, used:12, updated:'1 week ago', exs:['Bench','Row','RDL','Squat','OHP','Pull-up','Curl','Calf'], color:'#1A2E1A' },
+    { name:'HIIT · Conditioning', level:'Beginner', goal:'Cardio', desc:'45-min Tabata-style sessions. 5 rounds of 4 movements.', duration:45, used:23, updated:'3 days ago', exs:['Box jump','KB swing','Burpee','Mountain climber','Plank'], color:'#4A7A4F' },
+    { name:'Postpartum Return', level:'Beginner', goal:'Rehab', desc:'12-week graded return to training. Core, pelvic floor, mobility first.', duration:50, used:3, updated:'5 days ago', exs:['Pelvic tilt','Bird dog','Goblet squat','Glute bridge','Plank progressions'], color:'#4A7A4F' },
+    { name:'Powerlifting · Peak', level:'Advanced', goal:'Strength', desc:'8-week peaking cycle. Singles, doubles, accessory work.', duration:90, used:2, updated:'2 weeks ago', exs:['Squat 1RM','Bench 1RM','Deadlift 1RM','Pause work','Boards'], color:'#7A2E29' },
+    { name:'Mobility · Daily', level:'Beginner', goal:'Mobility', desc:'20-minute daily flow. Hips, thoracic, shoulders.', duration:20, used:18, updated:'4 days ago', exs:['Cat-cow','Worlds greatest stretch','90/90','Cossack','T-spine rotation'], color:'#2E5535' },
+  ]);
+
+  const [threads, setThreads] = React.useState([
+    { memberId:1, unread:0, messages:[
+      { from:'them', text:'Hey Rea, ready for tomorrow at 08:00?', t:'08:14' },
+      { from:'me', text:'Yes! We\'re going heavy on bench today — you ready to chase that PR?', t:'08:22' },
+      { from:'them', text:'Born ready. Should I pre-load creatine?', t:'08:24' },
+      { from:'me', text:'5g 30 min before lifting. See you at 08:00 sharp.', t:'08:25' },
+    ]},
+    { memberId:2, unread:2, messages:[
+      { from:'them', text:'Coach, weight has not moved in 3 weeks 😟', t:'09:01' },
+      { from:'them', text:'Should I cut calories more?', t:'09:01' },
+      { from:'me', text:'Hold the food where it is. Let\'s look at sleep and step count first — can you share your watch screen?', t:'09:10' },
+    ]},
+    { memberId:3, unread:1, messages:[
+      { from:'them', text:'Will not make it tomorrow, doctor appointment.', t:'Yesterday' },
+      { from:'me', text:'No problem, take care. Let\'s reschedule for Friday — same time?', t:'Yesterday' },
+      { from:'them', text:'Friday works. Thanks Rea ❤️', t:'07:42' },
+    ]},
+    { memberId:4, unread:0, messages:[
+      { from:'me', text:'Welcome to Forge PT, Besnik! Looking forward to our first session.', t:'2 days ago' },
+      { from:'them', text:'Thanks coach. Should I bring anything specific?', t:'2 days ago' },
+      { from:'me', text:'Just yourself, water, and a good attitude. We\'ll cover the rest.', t:'2 days ago' },
+    ]},
+    { memberId:5, unread:0, messages:[
+      { from:'them', text:'Strong session today, energy levels great!', t:'Yesterday' },
+      { from:'me', text:'You\'re doing amazing, Anila. Keep listening to your body.', t:'Yesterday' },
+    ]},
+  ]);
+
+  React.useEffect(() => { const t = setTimeout(() => window.lucide && window.lucide.createIcons(), 100); return () => clearTimeout(t); }, [screen, openMemberId]);
+
+  // ─── actions ───
+  function addMeasurement(form) {
+    const today = new Date().toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+    setMeasurements([{ d: today, m: form.member, wt:+form.wt, ht:+form.ht || 0, bf:+form.bf || 0, waist:+form.waist || 0, chest:+form.chest || 0, notes: form.notes }, ...measurements]);
+    alert('Measurement saved for ' + form.member);
+  }
+  function markSessionDone(idx) {
+    const next = [...sessions]; next[idx] = { ...next[idx], status:'Done' }; setSessions(next);
+  }
+  function addExercise(ex) {
+    setExercises([...exercises, { ...ex, ico:'dumbbell' }]);
+    alert('Added "' + ex.n + '" to the library.');
+  }
+  function useTemplate(t) { alert('Template "'+t.name+'" — choose a client to assign (full picker is in roadmap).'); }
+  function sendMessage(memberId, text) {
+    const now = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+    setThreads(threads.map(th => th.memberId === memberId ? { ...th, unread:0, messages: [...th.messages, { from:'me', text, t: now }] } : th));
+  }
+  function openMember(id) { setOpenMemberId(id); setScreen('member-detail'); }
+
+  // ─── action button per screen ───
+  const actionButtons = {
+    home: { label:'Log measurement', ico:'ruler', onClick:()=>setScreen('measure') },
+    members: { label:'Request new client', ico:'user-plus', onClick:()=>alert('New-client requests go to the admin for approval.') },
+    measure: { label:'Quick log', ico:'plus', onClick:()=>{ const el = document.querySelector('select'); if (el) el.focus(); } },
+    pt: { label:'Schedule session', ico:'calendar-plus', onClick:()=>alert('Session scheduler opens here. Pick a client and time slot.') },
+    workouts: { label:'New template', ico:'plus', onClick:()=>alert('Template builder — drag exercises into a plan, save, then assign to clients.') },
+    exercises: null, // handled inside screen
+    chat: null,
+  };
+
+  const titles = { home:'Mireseardhe, Rea.', 'member-detail': '', members:'My clients', measure:'Measurements', pt:'PT sessions', workouts:'Workout templates', exercises:'Exercise library', chat:'Client chat' };
+  const subs = {
+    home:'Trainer · Sunday, May 11',
+    'member-detail':'Trainer · Client profile',
+    members:'18 active clients · 2 pending requests',
+    measure:'Body composition & progress tracking',
+    pt:'23 sessions this week',
+    workouts:'Reusable plan templates',
+    exercises:'Shared library · ' + exercises.length + ' exercises',
+    chat:'Direct messages with clients',
+  };
+
+  let body;
+  if (screen === 'home') body = <TrainerHome/>;
+  else if (screen === 'member-detail') body = <TrainerMemberDetail memberId={openMemberId} onBack={()=>setScreen('members')} members={members} onLogClick={()=>setScreen('measure')}/>;
+  else if (screen === 'members') body = <TrainerMembers members={members} onOpen={openMember}/>;
+  else if (screen === 'measure') body = <TrainerMeasurements members={members} log={measurements} addMeasurement={addMeasurement}/>;
+  else if (screen === 'pt') body = <TrainerPT sessions={sessions} onMark={markSessionDone}/>;
+  else if (screen === 'workouts') body = <TrainerWorkouts templates={templates} onUse={useTemplate}/>;
+  else if (screen === 'exercises') body = <TrainerExercises exercises={exercises} addExercise={addExercise}/>;
+  else if (screen === 'chat') body = <TrainerChat members={members} threads={threads} sendMessage={sendMessage}/>;
+  else body = <div style={{padding:'80px 32px', textAlign:'center', color:'#8FB286', fontFamily:'Instrument Serif, serif', fontStyle:'italic', fontSize:24}}>Roadmap.</div>;
+
+  const action = actionButtons[screen];
+  const hideTopBar = screen === 'member-detail';
+
+  return (
+    <div className="app" data-screen-label={`Trainer · ${screen}`}>
+      <TrainerSidebar active={screen} onSelect={(id)=>{ setScreen(id); setOpenMemberId(null); }}/>
+      <div className="main">
+        {!hideTopBar && <div className="topbar">
+          <div style={{flex:1}}>
+            <div style={{fontSize:11, color:'#8FB286', letterSpacing:'0.10em', marginBottom:2, fontFamily:'Geist Mono, monospace', textTransform:'uppercase'}}>{subs[screen]}</div>
+            <h1>{titles[screen]}</h1>
+          </div>
+          {action && <button className="action" onClick={action.onClick}>
+            <i data-lucide={action.ico} style={{width:14, height:14}}></i>{action.label}
+          </button>}
+        </div>}
+        <div className="content">{body}</div>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

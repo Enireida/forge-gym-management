@@ -1,0 +1,407 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>Workout Log - Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .wtype-badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-pale);color:var(--accent-deep)}
+        .source-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;background:var(--bg-sunken);color:var(--stone-400)}
+        .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:12px}
+        .stat-box{background:var(--bg-sunken);border-radius:var(--r-md);padding:12px 14px}
+        .stat-box .val{font-family:var(--font-display);font-size:22px;color:var(--fg-1)}
+        .stat-box .lbl{font-size:11px;color:var(--stone-400);margin-top:2px}
+        .empty-state{text-align:center;padding:48px 24px;color:var(--stone-400)}
+        .empty-state svg{margin-bottom:12px;opacity:.4}
+        .action-btns{display:flex;gap:6px}
+        .btn-xs{padding:4px 10px;font-size:11px;border-radius:var(--r-md);border:1px solid var(--line-1);background:var(--bg-surface);color:var(--fg-2);cursor:pointer;transition:.15s}
+        .btn-xs:hover{background:var(--accent-pale);color:var(--accent-deep);border-color:var(--accent)}
+        .btn-xs.danger:hover{background:#fde8e8;color:#dc2626;border-color:#dc2626}
+        .tpl-card{background:var(--bg-sunken);border:1px solid var(--line-1);border-radius:var(--r-md);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+        .tpl-name{font-weight:600;font-size:14px;color:var(--fg-1)}
+        .tpl-meta{font-size:12px;color:var(--stone-400);margin-top:2px}
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;place-items:center}
+        .modal-overlay.open{display:grid}
+        .modal-box{background:var(--bg-surface);border-radius:var(--r-xl);padding:28px;width:440px;max-width:90vw;max-height:80vh;overflow-y:auto}
+        .modal-title{font-family:var(--font-display);font-size:20px;margin-bottom:16px;color:var(--fg-1)}
+        .modal-title em{font-style:italic;color:var(--accent-deep)}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: clientSidebar('workouts')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Workout Log')}"></div>
+    <main class="main">
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+        <!-- LOG A WORKOUT -->
+        <div class="card">
+            <div class="card-title">Log a workout</div>
+            <form autocomplete="off" method="post" action="/client/workouts/log">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Workout type</label>
+                        <select class="form-select" name="workoutType" required>
+                            <option th:each="t : ${workoutTypes}" th:value="${t}" th:text="${t}">Type</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Duration (minutes)</label>
+                        <input class="form-input" type="number" name="durationMinutes" min="1" max="600" placeholder="e.g. 45" autocomplete="nope">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Calories burned (kcal)</label>
+                        <input class="form-input" type="number" name="calories" min="0" step="0.1" placeholder="e.g. 350" autocomplete="nope">
+                    </div>
+                    <div>
+                        <label class="form-label">Avg heart rate (bpm)</label>
+                        <input class="form-input" type="number" name="avgHeartRate" min="40" max="220" placeholder="e.g. 145" autocomplete="nope">
+                    </div>
+                </div>
+                <div style="margin-bottom:14px">
+                    <label class="form-label">Notes (optional)</label>
+                    <input class="form-input" type="text" name="notes" placeholder="e.g. Leg day, felt great" maxlength="500" autocomplete="nope">
+                </div>
+                <div style="display:flex;gap:10px">
+                    <button class="btn" type="submit">Save Workout</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- TEMPLATES -->
+        <div class="card" th:unless="${#lists.isEmpty(templates)}">
+            <div class="card-title">Quick templates</div>
+            <div th:each="t : ${templates}" class="tpl-card">
+                <div>
+                    <div class="tpl-name" th:text="${t.name}">Template</div>
+                    <div class="tpl-meta">
+                        <span class="wtype-badge" th:text="${t.workoutType}"></span>
+                        <span th:if="${t.durationMinutes}" th:text="' · ' + ${t.durationMinutes} + ' min'"></span>
+                        <span th:if="${t.targetCalories}" th:text="' · ' + ${t.targetCalories} + ' kcal'"></span>
+                        <span style="opacity:.5" th:text="' · used ' + ${t.timesUsed} + 'x'"></span>
+                    </div>
+                </div>
+                <div class="action-btns">
+                    <form autocomplete="off" method="post" th:action="@{'/client/workouts/template/' + ${t.id} + '/use'}">
+                        <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                        <button class="btn-xs" type="submit">Use</button>
+                    </form>
+                    <form autocomplete="off" method="post" th:action="@{'/client/workouts/template/' + ${t.id} + '/delete'}">
+                        <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                        <button class="btn-xs danger" type="submit">Remove</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- SAVE AS TEMPLATE -->
+        <div class="card">
+            <div class="card-title">Save a template</div>
+            <form autocomplete="off" method="post" action="/client/workouts/template/save">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <div class="form-row">
+                    <div><label class="form-label">Template name</label>
+                        <input class="form-input" type="text" name="name" required placeholder="e.g. Morning HIIT" maxlength="120" autocomplete="nope"></div>
+                    <div><label class="form-label">Workout type</label>
+                        <select class="form-select" name="workoutType" required>
+                            <option th:each="t : ${workoutTypes}" th:value="${t}" th:text="${t}">Type</option>
+                        </select></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Duration (min)</label>
+                        <input class="form-input" type="number" name="durationMinutes" min="1" max="600" autocomplete="nope"></div>
+                    <div><label class="form-label">Target calories</label>
+                        <input class="form-input" type="number" name="targetCalories" min="0" autocomplete="nope"></div>
+                </div>
+                <div style="margin-bottom:14px"><label class="form-label">Notes</label>
+                    <input class="form-input" type="text" name="notes" maxlength="500" autocomplete="nope"></div>
+                <button class="btn btn-outline" type="submit">Save Template</button>
+            </form>
+        </div>
+
+        <!-- IMPORT FROM CSV -->
+        <div class="card">
+            <div class="card-title">Import workouts from CSV</div>
+            <p style="font-size:13px;color:var(--stone-500);margin:0 0 14px;line-height:1.5">
+                Have workouts from Samsung Health, Google Fit, Fitbit, Garmin, or Strava? Export them as a CSV file and upload it here.
+            </p>
+            <form autocomplete="off" method="post" action="/client/workouts/import-csv" enctype="multipart/form-data">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <div class="form-row" style="align-items:end;">
+                    <div style="flex:1;">
+                        <label class="form-label">CSV file</label>
+                        <input class="form-input" type="file" name="file" accept=".csv,text/csv" required autocomplete="nope">
+                    </div>
+                    <div><button class="btn" type="submit">Upload and Import</button></div>
+                </div>
+            </form>
+        </div>
+
+        <!-- STRAVA FLASH MESSAGES -->
+        <div th:if="${stravaSuccess}"
+             style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px 16px;
+                    font-size:14px;color:#166534;margin-bottom:4px;display:flex;align-items:center;gap:8px">
+            <span>&#10003;</span> <span th:text="${stravaSuccess}"></span>
+        </div>
+        <div th:if="${stravaError}"
+             style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;
+                    font-size:14px;color:#dc2626;margin-bottom:4px">
+            <span th:text="${stravaError}"></span>
+        </div>
+        <div th:if="${stravaInfo}"
+             style="background:#eff6ff;border:1px solid #93c5fd;border-radius:8px;padding:12px 16px;
+                    font-size:14px;color:#1d4ed8;margin-bottom:4px">
+            <span th:text="${stravaInfo}"></span>
+        </div>
+
+        <!-- CONNECTED APPS — STRAVA -->
+        <div class="card">
+            <div class="card-title">
+                <span style="display:flex;align-items:center;gap:8px">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;
+                                 width:22px;height:22px;background:#FC4C02;border-radius:4px">
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="white">
+                            <path d="M7 11L9.5 6l2.5 5M5 11L7 6"/>
+                        </svg>
+                    </span>
+                    Strava Integration
+                </span>
+                <span th:if="${stravaConnected}"
+                      style="font-size:11px;font-weight:500;background:#dcfce7;color:#16a34a;
+                             padding:2px 10px;border-radius:999px">Connected</span>
+            </div>
+
+            <!-- NOT CONNECTED -->
+            <div th:unless="${stravaConnected}">
+                <p style="font-size:13px;color:var(--stone-500);margin:0 0 14px;line-height:1.5">
+                    Connect your Strava account to automatically sync your runs, rides, swims and more — no CSV needed.
+                </p>
+                <a href="/client/strava/connect" class="btn"
+                   style="display:inline-flex;align-items:center;gap:8px;background:#FC4C02;border:none;color:#fff">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                    Connect Strava
+                </a>
+            </div>
+
+            <!-- CONNECTED -->
+            <div th:if="${stravaConnected}"
+                 style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+                <div style="font-size:13px;color:var(--stone-500)">
+                    Athlete ID: <strong th:text="${stravaAthleteId}"></strong> &bull;
+                    Click Sync to import your latest activities.
+                </div>
+                <div style="display:flex;gap:8px">
+                    <form autocomplete="off" method="post" action="/client/strava/sync">
+                        <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                        <button type="submit" class="btn"
+                                style="background:#FC4C02;border:none;color:#fff;display:flex;align-items:center;gap:6px">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                                <polyline points="23 4 23 10 17 10"/>
+                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                            </svg>
+                            Sync Now
+                        </button>
+                    </form>
+                    <form autocomplete="off" method="post" action="/client/strava/disconnect">
+                        <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                        <button type="submit" class="btn btn-secondary" style="font-size:12px"
+                                onclick="return confirm('Disconnect Strava?')">Disconnect</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- GOOGLE FIT FLASH MESSAGES -->
+        <div th:if="${googleFitSuccess}"
+             style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px 16px;
+                    font-size:14px;color:#166534;margin-bottom:4px;display:flex;align-items:center;gap:8px">
+            <span>&#10003;</span> <span th:text="${googleFitSuccess}"></span>
+        </div>
+        <div th:if="${googleFitError}"
+             style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;
+                    font-size:14px;color:#dc2626;margin-bottom:4px">
+            <span th:text="${googleFitError}"></span>
+        </div>
+        <div th:if="${googleFitInfo}"
+             style="background:#eff6ff;border:1px solid #93c5fd;border-radius:8px;padding:12px 16px;
+                    font-size:14px;color:#1d4ed8;margin-bottom:4px">
+            <span th:text="${googleFitInfo}"></span>
+        </div>
+
+        <!-- CONNECTED APPS — GOOGLE FIT -->
+        <div class="card">
+            <div class="card-title">
+                <span style="display:flex;align-items:center;gap:8px">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;
+                                 width:22px;height:22px;background:#fff;border-radius:4px;border:1px solid #e5e7eb">
+                        <!-- Google G icon in 4 colours -->
+                        <svg width="13" height="13" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                    </span>
+                    Google Fit Integration
+                </span>
+                <span th:if="${googleFitConnected}"
+                      style="font-size:11px;font-weight:500;background:#dcfce7;color:#16a34a;
+                             padding:2px 10px;border-radius:999px">Connected</span>
+            </div>
+
+            <!-- NOT CONNECTED -->
+            <div th:unless="${googleFitConnected}">
+                <p style="font-size:13px;color:var(--stone-500);margin:0 0 14px;line-height:1.5">
+                    Connect your Google account to automatically sync workouts logged in Google Fit, Wear OS, and compatible fitness apps.
+                </p>
+                <a href="/client/googlefit/connect" class="btn"
+                   style="display:inline-flex;align-items:center;gap:8px;background:#4285F4;border:none;color:#fff">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                    Connect Google Fit
+                </a>
+            </div>
+
+            <!-- CONNECTED -->
+            <div th:if="${googleFitConnected}"
+                 style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+                <div style="font-size:13px;color:var(--stone-500)">
+                    Signed in as <strong th:text="${googleFitEmail}"></strong> &bull;
+                    Click Sync to import your latest sessions.
+                </div>
+                <div style="display:flex;gap:8px">
+                    <form autocomplete="off" method="post" action="/client/googlefit/sync">
+                        <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                        <button type="submit" class="btn"
+                                style="background:#4285F4;border:none;color:#fff;display:flex;align-items:center;gap:6px">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                                <polyline points="23 4 23 10 17 10"/>
+                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                            </svg>
+                            Sync Now
+                        </button>
+                    </form>
+                    <form autocomplete="off" method="post" action="/client/googlefit/disconnect">
+                        <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                        <button type="submit" class="btn btn-secondary" style="font-size:12px"
+                                onclick="return confirm('Disconnect Google Fit?')">Disconnect</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORKOUT HISTORY -->
+        <div class="card">
+            <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+                <span>Workout history
+                    <span style="font-size:13px;color:var(--stone-400);font-weight:400"
+                          th:text="'(' + ${#lists.size(workouts)} + ' total)'"></span>
+                </span>
+                <a th:unless="${#lists.isEmpty(workouts)}" href="/client/workouts/export"
+                   class="btn-xs" style="text-decoration:none">Export CSV</a>
+            </div>
+
+            <div th:if="${#lists.isEmpty(workouts)}" class="empty-state">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                    <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+                </svg>
+                <p style="margin:0;font-size:14px">No workouts logged yet. Log your first workout above!</p>
+            </div>
+
+            <table th:unless="${#lists.isEmpty(workouts)}">
+                <thead>
+                    <tr>
+                        <th>Date &amp; Time</th><th>Type</th><th>Duration</th><th>Calories</th><th>Avg HR</th><th>Source</th><th>Notes</th><th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr th:each="w : ${workouts}">
+                    <td th:text="${w.startTime != null ? #temporals.format(w.startTime, 'dd MMM yyyy, HH:mm') : ''}"></td>
+                    <td><span class="wtype-badge" th:text="${w.workoutType}"></span></td>
+                    <td th:text="${w.durationSeconds != null ? (w.durationSeconds / 60) + ' min' : ''}"></td>
+                    <td th:text="${w.activeCalories != null ? #numbers.formatDecimal(w.activeCalories, 0, 0) + ' kcal' : ''}"></td>
+                    <td th:text="${w.avgHeartRate != null ? w.avgHeartRate + ' bpm' : ''}"></td>
+                    <td><span class="source-badge" th:text="${w.source != null ? w.source : ''}"></span></td>
+                    <td th:text="${w.notes}"></td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-xs" type="button"
+                                    th:onclick="'openEdit('+${w.id}+',\''+${w.workoutType}+'\','+(${w.durationSeconds}!=null?${w.durationSeconds}/60:'')+','+(${w.activeCalories}!=null?${w.activeCalories}:'')+','+(${w.avgHeartRate}!=null?${w.avgHeartRate}:'')+',\''+${w.notes != null ? w.notes : ''}+'\')'">Edit</button>
+                            <form autocomplete="off" method="post" th:action="@{'/client/workouts/' + ${w.id} + '/delete'}" style="margin:0"
+                                  onsubmit="return confirm('Delete this workout?')">
+                                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                                <button class="btn-xs danger" type="submit">Del</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- QUICK STATS -->
+        <div class="card" th:unless="${#lists.isEmpty(workouts)}">
+            <div class="card-title">Quick stats</div>
+            <div class="stat-grid">
+                <div class="stat-box"><div class="val" th:text="${#lists.size(workouts)}"></div><div class="lbl">Total workouts</div></div>
+                <div class="stat-box"><div class="val" th:text="${#aggregates.sum(workouts.![durationSeconds != null ? durationSeconds : 0]) / 60 + ' min'}"></div><div class="lbl">Total time</div></div>
+                <div class="stat-box"><div class="val" th:text="${#numbers.formatDecimal(#aggregates.sum(workouts.![activeCalories != null ? activeCalories : 0]), 0, 0) + ' kcal'}"></div><div class="lbl">Total calories</div></div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Edit Workout Modal -->
+<div class="modal-overlay" id="editModal" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal-box">
+        <div class="modal-title">Edit <em>Workout</em></div>
+        <form autocomplete="off" id="editForm" method="post">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="form-row">
+                <div><label class="form-label">Type</label>
+                    <select class="form-select" name="workoutType" id="eType">
+                        <option th:each="t : ${workoutTypes}" th:value="${t}" th:text="${t}"></option>
+                    </select></div>
+                <div><label class="form-label">Duration (min)</label>
+                    <input class="form-input" type="number" name="durationMinutes" id="eDur" autocomplete="nope"></div>
+            </div>
+            <div class="form-row">
+                <div><label class="form-label">Calories</label>
+                    <input class="form-input" type="number" name="calories" id="eCal" step="0.1" autocomplete="nope"></div>
+                <div><label class="form-label">Avg HR</label>
+                    <input class="form-input" type="number" name="avgHeartRate" id="eHr" autocomplete="nope"></div>
+            </div>
+            <div style="margin-bottom:14px"><label class="form-label">Notes</label>
+                <input class="form-input" type="text" name="notes" id="eNotes" maxlength="500" autocomplete="nope"></div>
+            <div style="display:flex;gap:10px">
+                <button class="btn" type="submit">Save Changes</button>
+                <button class="btn btn-outline" type="button" onclick="document.getElementById('editModal').classList.remove('open')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+function openEdit(id,type,dur,cal,hr,notes){
+    document.getElementById('editForm').action='/client/workouts/'+id+'/edit';
+    document.getElementById('eType').value=type;
+    document.getElementById('eDur').value=dur||'';
+    document.getElementById('eCal').value=cal||'';
+    document.getElementById('eHr').value=hr||'';
+    document.getElementById('eNotes').value=notes||'';
+    document.getElementById('editModal').classList.add('open');
+}
+</script>
+</body>
+</html>

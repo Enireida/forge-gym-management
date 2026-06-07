@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Forge — Apple Watch</title>
+<link rel="stylesheet" href="../../colors_and_type.css" />
+<style>
+  body { margin:0; background: var(--bg-canvas); font-family: var(--font-sans); padding: 48px; }
+  .header { max-width: 1200px; margin: 0 auto 32px; }
+  .header .eyebrow { font-size:11px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--bone-700); margin-bottom:8px; }
+  .header h1 { font-family: var(--font-display); font-weight:400; font-size:48px; line-height:1; letter-spacing:-0.02em; margin:0 0 10px; color: var(--fg-1); }
+  .header h1 em { font-style: italic; color: var(--sage-700); }
+  .header p { color: var(--fg-2); font-size:15px; line-height:1.55; max-width: 640px; margin:0; }
+  .row { max-width: 1200px; margin: 0 auto; display:flex; gap: 56px; justify-content:center; align-items:flex-start; flex-wrap:wrap; }
+  .watch-cell { display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .watch-cell .label { font-family: var(--font-mono); font-size:11px; letter-spacing:0.10em; color: var(--bone-700); text-transform:uppercase; }
+  .watch-cell .title { font-family: var(--font-display); font-style:italic; font-size:20px; color:var(--fg-1); margin-bottom:4px; }
+  .watch {
+    width: 220px; height: 268px; border-radius: 56px;
+    background: linear-gradient(160deg, #2a2a2a, #0a0a0a);
+    padding: 14px;
+    box-shadow: 0 24px 50px -20px rgba(0,0,0,0.45), inset 0 0 0 2px #1a1a1a;
+    position: relative;
+  }
+  .watch::before {
+    content:''; position:absolute; right:-4px; top:48px; width:6px; height:36px; border-radius:3px;
+    background: linear-gradient(90deg, #1a1a1a, #3a3a3a);
+  }
+  .watch::after {
+    content:''; position:absolute; right:-3px; top:104px; width:4px; height:22px; border-radius:2px;
+    background: linear-gradient(90deg, #1a1a1a, #3a3a3a);
+  }
+  .face {
+    width:100%; height:100%; border-radius: 44px;
+    background: #000; color: #fff; padding: 20px 18px;
+    display:flex; flex-direction:column; gap:8px; position:relative; overflow:hidden;
+  }
+  .face .time { font-family: 'Geist Mono', monospace; font-size:13px; color:#D2E0CB; text-align:right; letter-spacing:0.04em; }
+  .face .row-bottom { margin-top:auto; }
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="eyebrow">Forge · Apple Watch</div>
+  <h1>Read-only <em>HealthKit</em>.</h1>
+  <p>The Apple Watch does not run a custom app — health data syncs to the iPhone's Health app, and Forge reads it via HealthKit. These complications and watch faces show how Forge data surfaces on the wrist.</p>
+</header>
+
+<div class="row">
+
+  <!-- 1. Activity face -->
+  <div class="watch-cell">
+    <span class="label">01 · Today</span>
+    <span class="title">Activity face</span>
+    <div class="watch"><div class="face">
+      <div class="time">09:42</div>
+      <div style="display:flex; justify-content:center; margin: 10px 0 8px;">
+        <svg viewBox="0 0 120 120" width="120" height="120">
+          <circle cx="60" cy="60" r="52" stroke="#1a1a1a" stroke-width="9" fill="none"/>
+          <circle cx="60" cy="60" r="52" stroke="#6A9466" stroke-width="9" fill="none" stroke-dasharray="270 327" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="60" r="40" stroke="#1a1a1a" stroke-width="9" fill="none"/>
+          <circle cx="60" cy="60" r="40" stroke="#4A7A4F" stroke-width="9" fill="none" stroke-dasharray="175 251" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="60" r="28" stroke="#1a1a1a" stroke-width="9" fill="none"/>
+          <circle cx="60" cy="60" r="28" stroke="#D2E0CB" stroke-width="9" fill="none" stroke-dasharray="150 176" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+        </svg>
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(3,1fr); gap:4px; text-align:center;">
+        <div><div style="font-family:'Geist Mono',monospace; font-size:13px; font-weight:600;">412</div><div style="font-size:8px; color:#6A9466; letter-spacing:0.08em;">MOVE</div></div>
+        <div><div style="font-family:'Geist Mono',monospace; font-size:13px; font-weight:600;">42</div><div style="font-size:8px; color:#4A7A4F; letter-spacing:0.08em;">EXER</div></div>
+        <div><div style="font-family:'Geist Mono',monospace; font-size:13px; font-weight:600;">10</div><div style="font-size:8px; color:#D2E0CB; letter-spacing:0.08em;">STAND</div></div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 2. Heart rate face -->
+  <div class="watch-cell">
+    <span class="label">02 · Pulse</span>
+    <span class="title">Heart rate</span>
+    <div class="watch"><div class="face">
+      <div class="time">14:18</div>
+      <div style="display:flex; align-items:center; gap:6px; margin-top:8px;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="#4A7A4F"><path d="M12 21s-7-4.5-9.5-9C.5 8 3 4 6.5 4c1.7 0 3.2.8 4.5 2.2C12.3 4.8 13.8 4 15.5 4 19 4 21.5 8 19.5 12c-2.5 4.5-9.5 9-9.5 9z"/></svg>
+        <span style="font-family:'Geist Mono',monospace; font-size:11px; color:#4A7A4F; letter-spacing:0.08em;">RESTING</span>
+      </div>
+      <div style="font-family:'Instrument Serif', serif; font-size:80px; line-height:0.9; margin:6px 0;">62<span style="font-size:18px; color:#8A8A85; margin-left:4px;">bpm</span></div>
+      <svg viewBox="0 0 180 36" width="100%" height="36" preserveAspectRatio="none">
+        <path d="M 0 20 L 20 20 L 28 8 L 36 32 L 44 4 L 52 28 L 60 20 L 80 20 L 88 12 L 96 28 L 104 6 L 112 30 L 120 20 L 180 20" stroke="#4A7A4F" stroke-width="1.5" fill="none"/>
+      </svg>
+      <div style="display:flex; justify-content:space-between; font-size:9px; color:#8A8A85; margin-top:2px; font-family:'Geist Mono',monospace;">
+        <span>RANGE 58-94</span><span>−2 vs LW</span>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 3. Workout face -->
+  <div class="watch-cell">
+    <span class="label">03 · Session</span>
+    <span class="title">Live workout</span>
+    <div class="watch"><div class="face" style="background: linear-gradient(180deg, #1A2E1A 0%, #000 70%);">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:9px; color:#D2E0CB; letter-spacing:0.16em; font-weight:600;">FORGE · PT</span>
+        <span style="width:6px; height:6px; border-radius:50%; background:#4A7A4F; box-shadow: 0 0 8px #4A7A4F;"></span>
+      </div>
+      <div style="font-family:'Geist Mono',monospace; font-size:36px; font-weight:500; letter-spacing:-0.02em; margin-top:4px;">28:14</div>
+      <div style="font-size:10px; color:#D2E0CB; margin-top:-4px;">Push · Bench press</div>
+      <div style="margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <div style="background: rgba(255,255,255,0.06); padding:8px 10px; border-radius:10px;">
+          <div style="font-size:8px; color:#8A8A85; letter-spacing:0.08em;">HR</div>
+          <div style="font-family:'Geist Mono',monospace; font-size:16px; color:#4A7A4F;">148</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.06); padding:8px 10px; border-radius:10px;">
+          <div style="font-size:8px; color:#8A8A85; letter-spacing:0.08em;">KCAL</div>
+          <div style="font-family:'Geist Mono',monospace; font-size:16px;">214</div>
+        </div>
+      </div>
+      <div style="margin-top:8px; background: rgba(245,241,232,0.08); padding:6px 10px; border-radius:8px; font-size:10px; color:#FAFAFA;">Set 3 of 5 · 6 reps</div>
+    </div></div>
+  </div>
+
+  <!-- 4. Check-in glance -->
+  <div class="watch-cell">
+    <span class="label">04 · Door</span>
+    <span class="title">PIN glance</span>
+    <div class="watch"><div class="face">
+      <div style="text-align:center; margin-top:8px;">
+        <div style="font-size:9px; color:#D2E0CB; letter-spacing:0.16em; font-weight:600;">FORGE · NORTH GYM</div>
+        <div style="font-family:'Instrument Serif',serif; font-style:italic; font-size:14px; color:#FAFAFA; margin-top:2px;">Your PIN</div>
+      </div>
+      <div style="display:flex; justify-content:center; gap:8px; margin-top:14px;">
+        <div style="width:36px; height:46px; background: rgba(74,122,79,0.18); border:1px solid #4A7A4F; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'Geist Mono',monospace; font-size:20px; font-weight:600;">4</div>
+        <div style="width:36px; height:46px; background: rgba(74,122,79,0.18); border:1px solid #4A7A4F; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'Geist Mono',monospace; font-size:20px; font-weight:600;">7</div>
+        <div style="width:36px; height:46px; background: rgba(74,122,79,0.18); border:1px solid #4A7A4F; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'Geist Mono',monospace; font-size:20px; font-weight:600;">2</div>
+        <div style="width:36px; height:46px; background: rgba(74,122,79,0.18); border:1px solid #4A7A4F; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'Geist Mono',monospace; font-size:20px; font-weight:600;">9</div>
+      </div>
+      <div style="margin-top:14px; text-align:center; font-size:10px; color:#D2E0CB; line-height:1.4;">Tap card to enter<br/>or use this PIN</div>
+    </div></div>
+  </div>
+
+</div>
+</body>
+</html>

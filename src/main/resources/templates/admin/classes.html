@@ -1,0 +1,244 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>Group Classes, Forge Admin</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .modal-overlay{position:fixed;inset:0;background:rgba(6,15,26,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+        .modal-overlay.open{display:flex}
+        .modal-box{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-xl);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-3)}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;padding:22px 24px 0}
+        .modal-title{font-family:var(--font-display);font-size:22px;font-weight:400;color:var(--fg-1)}
+        .modal-title em{font-style:italic;color:var(--accent-deep)}
+        .modal-close{background:none;border:none;cursor:pointer;color:var(--stone-400);font-size:26px;line-height:1;padding:4px 8px;border-radius:var(--r-sm)}
+        .modal-close:hover{background:var(--bg-sunken);color:var(--fg-1)}
+        .modal-body{padding:18px 24px 0}
+        .modal-footer{padding:16px 24px 22px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line-1);margin-top:18px}
+        .status-badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600}
+        .active-badge{background:rgba(43,183,119,.15);color:#1a7a4e}
+        .inactive-badge{background:var(--bg-sunken);color:var(--stone-400)}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('classes')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Group Classes')}"></div>
+    <main class="main">
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+        <div class="card">
+            <div class="card-title">
+                All Classes
+                <a href="/admin/classes/new" class="btn"
+                   style="display:flex;align-items:center;gap:6px;text-decoration:none">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    New Class
+                </a>
+            </div>
+
+            <div th:if="${#lists.isEmpty(classes)}"
+                 style="text-align:center;padding:40px;color:var(--stone-400);font-style:italic">
+                No classes yet. Create your first class!
+            </div>
+
+            <table th:unless="${#lists.isEmpty(classes)}">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Date &amp; Time</th>
+                        <th>Duration</th>
+                        <th>Trainer</th>
+                        <th>Capacity</th>
+                        <th>Booked</th>
+                        <th>Status</th>
+                        <th style="width:90px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${classes}">
+                    <td style="font-weight:600" th:text="${c.name}">Class</td>
+                    <td>
+                        <span style="font-size:12px;color:var(--stone-500)"
+                              th:text="${c.category != null ? c.category : ''}"></span>
+                    </td>
+                    <td style="font-family:var(--font-mono);font-size:12px"
+                        th:text="${#temporals.format(c.dateTime,'dd MMM yyyy, HH:mm')}">Date</td>
+                    <td th:text="${c.durationMinutes + ' min'}">60 min</td>
+                    <td th:text="${c.trainer != null ? c.trainer.name : ''}">Trainer</td>
+                    <td th:text="${c.capacity}">20</td>
+                    <td th:text="${c.enrolledCount}">0</td>
+                    <td>
+                        <span class="status-badge"
+                              th:classappend="${c.active} ? 'active-badge' : 'inactive-badge'"
+                              th:text="${c.active ? 'Active' : 'Hidden'}">Active</span>
+                    </td>
+                    <td style="display:flex;gap:6px">
+                        <button class="btn btn-secondary" type="button" style="font-size:11px;padding:5px 10px"
+                                th:data-id="${c.id}"
+                                th:data-name="${c.name}"
+                                th:data-description="${c.description}"
+                                th:data-category="${c.category}"
+                                th:data-datetime="${c.dateTime}"
+                                th:data-duration="${c.durationMinutes}"
+                                th:data-capacity="${c.capacity}"
+                                th:data-trainer="${c.trainer != null ? c.trainer.id : ''}"
+                                onclick="openEditClass(this)">Edit</button>
+                        <form autocomplete="off" method="post" th:action="@{'/admin/classes/' + ${c.id} + '/toggle'}" style="margin:0">
+                            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                            <button class="btn btn-secondary" type="submit" style="font-size:11px;padding:5px 10px"
+                                    th:text="${c.active ? 'Hide' : 'Show'}">Toggle</button>
+                        </form>
+                        <form autocomplete="off" method="post" th:action="@{'/admin/classes/' + ${c.id} + '/delete'}" style="margin:0">
+                            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                            <button class="btn" type="submit" style="font-size:11px;padding:5px 10px;background:var(--signal-danger)"
+                                    onclick="return confirm('Delete this class?')">Del</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+
+<!-- EDIT CLASS MODAL -->
+<div id="editClassModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Edit <em>Class</em></span>
+            <button class="modal-close" onclick="document.getElementById('editClassModal').classList.remove('open')">×</button>
+        </div>
+        <form autocomplete="off" method="post" id="editClassForm">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Class name <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" id="ec-name" name="name" required autocomplete="nope">
+                    </div>
+                    <div>
+                        <label class="form-label">Category</label>
+                        <input class="form-input" id="ec-category" name="category" autocomplete="nope">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Date &amp; Time <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" type="datetime-local" id="ec-datetime" name="dateTime" required autocomplete="nope">
+                    </div>
+                    <div>
+                        <label class="form-label">Duration (minutes)</label>
+                        <input class="form-input" type="number" id="ec-duration" name="durationMinutes" min="10" max="300" autocomplete="nope">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Trainer</label>
+                        <select class="form-select" id="ec-trainer" name="trainerId">
+                            <option value=""> — no trainer — </option>
+                            <option th:each="t : ${staff}" th:value="${t.id}" th:text="${t.name}">Trainer</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Capacity</label>
+                        <input class="form-input" type="number" id="ec-capacity" name="capacity" min="1" max="500" autocomplete="nope">
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Description</label>
+                    <input class="form-input" id="ec-description" name="description" autocomplete="nope">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                        onclick="document.getElementById('editClassModal').classList.remove('open')">Cancel</button>
+                <button type="submit" class="btn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditClass(btn) {
+    const d = btn.dataset;
+    document.getElementById('editClassForm').action = '/admin/classes/' + d.id + '/edit';
+    document.getElementById('ec-name').value        = d.name        || '';
+    document.getElementById('ec-category').value    = d.category    || '';
+    document.getElementById('ec-duration').value    = d.duration    || '60';
+    document.getElementById('ec-capacity').value    = d.capacity    || '20';
+    document.getElementById('ec-description').value = d.description || '';
+    // Format datetime for input (LocalDateTime → datetime-local)
+    if (d.datetime) {
+        document.getElementById('ec-datetime').value = d.datetime.substring(0, 16);
+    }
+    const sel = document.getElementById('ec-trainer');
+    for (let o of sel.options) { o.selected = o.value === d.trainer; }
+    document.getElementById('editClassModal').classList.add('open');
+}
+</script>
+
+<!-- ADD CLASS MODAL -->
+<div id="addClassModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Create <em>New Class</em></span>
+            <button class="modal-close" onclick="document.getElementById('addClassModal').classList.remove('open')">×</button>
+        </div>
+        <form autocomplete="off" method="post" action="/admin/classes">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Class name <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" name="name" required placeholder="e.g. Morning Yoga, HIIT, Spin" autocomplete="nope">
+                    </div>
+                    <div>
+                        <label class="form-label">Category</label>
+                        <input class="form-input" name="category" placeholder="e.g. Yoga, Cardio, Strength" autocomplete="nope">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Date &amp; Time <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" type="datetime-local" name="dateTime" required autocomplete="nope">
+                    </div>
+                    <div>
+                        <label class="form-label">Duration (minutes)</label>
+                        <input class="form-input" type="number" name="durationMinutes" value="60" min="10" max="300" autocomplete="nope">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Trainer</label>
+                        <select class="form-select" name="trainerId">
+                            <option value=""> no trainer assigned </option>
+                            <option th:each="t : ${staff}" th:value="${t.id}" th:text="${t.name}">Trainer</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Capacity</label>
+                        <input class="form-input" type="number" name="capacity" value="20" min="1" max="200" autocomplete="nope">
+                    </div>
+                </div>
+                <div style="margin-bottom:14px">
+                    <label class="form-label">Description</label>
+                    <input class="form-input" name="description" placeholder="Short description for members" autocomplete="nope">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                        onclick="document.getElementById('addClassModal').classList.remove('open')">Cancel</button>
+                <button type="submit" class="btn">Create Class</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

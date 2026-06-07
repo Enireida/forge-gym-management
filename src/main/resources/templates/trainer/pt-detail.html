@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>PT Detail - Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: trainerSidebar('pt')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('PT Subscription Details')}"></div>
+    <main class="main">
+        <a class="btn btn-secondary" href="/trainer/pt">&larr; Back</a>
+
+        <div class="card">
+            <div class="card-title">
+                <span th:text="${subscription.member.name}"></span>
+               , <span th:text="${subscription.ptPackage.name}"></span>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Sessions used</div>
+                    <div class="stat-value" th:text="${subscription.sessionsUsed}">0</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-label">Sessions remaining</div>
+                    <div class="stat-value" th:text="${subscription.sessionsRemaining}">0</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-label">Status</div>
+                    <div class="stat-value" style="font-size:20px" th:text="${subscription.status}"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Session history</div>
+            <table>
+                <thead><tr><th>Date</th><th>Time</th><th>Trainer</th><th>Type</th><th>Notes</th></tr></thead>
+                <tbody>
+                <tr th:each="s : ${sessions}">
+                    <td th:text="${s.sessionDate}"></td>
+                    <td th:text="${s.sessionTime}"></td>
+                    <td th:text="${s.trainer.name}"></td>
+                    <td><span class="badge badge-info" th:text="${s.type}"></span></td>
+                    <td th:text="${s.notes}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(sessions)}">
+                    <td colspan="5">No sessions recorded yet.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+</body></html>

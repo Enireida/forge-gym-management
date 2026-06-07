@@ -1,0 +1,28 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Type — Display</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:32px;background:var(--bg-canvas);}
+  .stack{display:flex;flex-direction:column;gap:18px;}
+  .row{display:flex;align-items:baseline;gap:24px;border-bottom:1px solid var(--line-1);padding-bottom:16px;}
+  .row:last-child{border-bottom:none;}
+  .meta{flex-shrink:0;width:140px;font-family:var(--font-mono);font-size:11px;color:var(--fg-3);text-transform:uppercase;letter-spacing:.08em;line-height:1.4;}
+  .sample{flex:1;color:var(--fg-1);}
+  .it{font-style:italic;color:var(--sage-700);}
+</style></head>
+<body>
+<div class="stack">
+  <div class="row">
+    <div class="meta">Display 1<br>96 / 1.05<br>Instrument Serif</div>
+    <div class="sample" style="font-family:var(--font-display);font-size:80px;line-height:1.05;letter-spacing:-0.02em;">Forge a stronger you<span class="it">.</span></div>
+  </div>
+  <div class="row">
+    <div class="meta">H2<br>56 / 1.1<br>Instrument Serif</div>
+    <div class="sample" style="font-family:var(--font-display);font-size:48px;line-height:1.1;letter-spacing:-0.02em;">Built for the modern gym<span class="it">.</span></div>
+  </div>
+  <div class="row">
+    <div class="meta">Eyebrow<br>12 / wide<br>Geist 600</div>
+    <div class="sample" style="font-family:var(--font-sans);font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-3);">Bachelor thesis · UNyT Albania</div>
+  </div>
+</div>
+</body></html>

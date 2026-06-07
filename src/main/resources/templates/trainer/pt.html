@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>PT - Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: trainerSidebar('pt')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('PT Subscriptions')}"></div>
+    <main class="main">
+
+        <div class="card">
+            <div class="card-title">Create new PT subscription (assigned to me)</div>
+            <form autocomplete="off" method="post" action="/trainer/pt/new">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <div class="form-row">
+                    <div><label class="form-label">Member</label>
+                        <select class="form-select" name="memberId" required>
+                            <option th:each="m : ${members}" th:value="${m.id}" th:text="${m.name}"></option>
+                        </select></div>
+                    <div><label class="form-label">Package</label>
+                        <select class="form-select" name="packageId" required>
+                            <option th:each="p : ${packages}" th:value="${p.id}"
+                                    th:text="${p.name + ' - $' + p.price}"></option>
+                        </select></div>
+                </div>
+                <button class="btn" type="submit">Create</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-title">All PT subscriptions</div>
+            <table>
+                <thead><tr><th>Member</th><th>Trainer</th><th>Package</th>
+                    <th>Used</th><th>Remaining</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                <tr th:each="s : ${subscriptions}">
+                    <td th:text="${s.member.name}"></td>
+                    <td>
+                        <span th:if="${s.trainer!=null}" th:text="${s.trainer.name}"></span>
+                        <form autocomplete="off" th:if="${s.trainer==null}" method="post"
+                              th:action="@{'/trainer/pt/'+${s.id}+'/assign'}" style="display:inline">
+                            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                            <button class="btn btn-sm" type="submit">Assign to me</button>
+                        </form>
+                    </td>
+                    <td th:text="${s.ptPackage.name}"></td>
+                    <td th:text="${s.sessionsUsed}"></td>
+                    <td><strong th:text="${s.sessionsRemaining}"></strong></td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${s.status=='Active'?'badge-success':'badge-info'}"
+                              th:text="${s.status}"></span>
+                    </td>
+                    <td>
+                        <a class="btn btn-sm btn-secondary"
+                           th:href="@{'/trainer/pt/'+${s.id}}">Details</a>
+                        <button th:if="${s.sessionsRemaining > 0 and s.trainer!=null and s.trainer.id == trainer.id}"
+                                class="btn btn-sm" type="button"
+                                th:onclick="'recordSession(' + ${s.id} + ', \'' + ${s.member.name} + '\')'">
+                            Record Session
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Record session inline form -->
+        <div id="recordModal" class="card" style="display:none; border:2px solid var(--accent); box-shadow: var(--shadow-3);">
+            <div class="card-title">Record session for <span id="recName"></span></div>
+            <form autocomplete="off" method="post" id="recForm">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <div class="form-row">
+                    <div><label class="form-label">Session type</label>
+                        <select class="form-select" name="type" required>
+                            <option>Strength</option><option>Cardio</option>
+                            <option>Yoga</option><option>HIIT</option>
+                            <option>Mobility</option><option>Other</option>
+                        </select></div>
+                    <div></div>
+                </div>
+                <label class="form-label">Notes</label>
+                <textarea class="form-input" name="notes" rows="3"
+                          placeholder="What was covered, weights, observations..."></textarea>
+                <br><br>
+                <button class="btn" type="submit">Save Session</button>
+                <button class="btn btn-secondary" type="button" onclick="closeRec()">Cancel</button>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+    function recordSession(id, name) {
+        document.getElementById("recName").textContent = name;
+        document.getElementById("recForm").action = "/trainer/pt/" + id + "/record";
+        document.getElementById("recordModal").style.display = "block";
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+    function closeRec() {
+        document.getElementById("recordModal").style.display = "none";
+    }
+</script>
+</body></html>

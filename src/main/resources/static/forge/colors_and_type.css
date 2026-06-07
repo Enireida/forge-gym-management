@@ -1,0 +1,210 @@
+/* ================================================================
+   FORGE — Design tokens
+   Forest green + neutral near-white. Minimalist single accent.
+   Editorial type pairing · Instrument Serif + Geist + Geist Mono
+   ================================================================ */
+
+/* Webfont imports — Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ============== COLORS — primitive scale ============== */
+
+  /* Forest green — single brand & accent family */
+  --sage-950: #0E1A11;   /* deepest, near-black forest */
+  --sage-900: #18271B;
+  --sage-800: #1A2E1A;   /* primary brand spine */
+  --sage-700: #2E5535;
+  --sage-600: #4A7A4F;   /* mid green — the accent */
+  --sage-500: #6A9466;   /* lighter accent (good on dark backgrounds) */
+  --sage-400: #8FB286;
+  --sage-300: #B5CCAC;
+  --sage-200: #D2E0CB;
+  --sage-100: #E8EFE5;
+  --sage-50:  #F2F6EF;
+
+  /* Neutral — cool near-whites and soft grays. Almost no warmth. */
+  --bone-950: #0E0E0C;
+  --bone-900: #1A1A18;
+  --bone-800: #2E2E2A;
+  --bone-700: #4A4A45;
+  --bone-600: #6A6A65;
+  --bone-500: #8A8A85;
+  --bone-400: #B0B0AB;
+  --bone-300: #D6D6D2;
+  --bone-200: #E5E5E0;
+  --bone-100: #EEEEEA;
+  --bone-50:  #FAFAFA;   /* canvas — near white */
+  --bone-25:  #F5F5F3;   /* softer canvas tone */
+
+  /* Copper kept ONLY as aliases (now point to green) for any leftover refs */
+  --copper-700: var(--sage-700);
+  --copper-600: var(--sage-700);
+  --copper-500: var(--sage-600);
+  --copper-400: var(--sage-500);
+  --copper-100: var(--sage-100);
+
+  /* Semantic — harmonized with the new palette */
+  --signal-success: #4A7A4F;
+  --signal-success-bg: #E8EFE5;
+  --signal-warning: #B8893A;
+  --signal-warning-bg: #F4E7CC;
+  --signal-danger:  #A8413A;
+  --signal-danger-bg: #F1D8D4;
+  --signal-info:    #4B6B7A;
+  --signal-info-bg: #DCE6EA;
+
+  /* ============== COLORS — semantic tokens ============== */
+
+  --fg-1: var(--sage-950);
+  --fg-2: var(--bone-700);
+  --fg-3: var(--bone-500);
+  --fg-4: var(--bone-400);
+  --fg-on-dark: #FFFFFF;
+  --fg-on-dark-soft: var(--sage-200);
+
+  --bg-canvas: var(--bone-50);
+  --bg-canvas-soft: var(--bone-25);
+  --bg-surface: #FFFFFF;
+  --bg-sunken: var(--bone-100);
+  --bg-dark: var(--sage-900);
+  --bg-dark-deep: var(--sage-950);
+  --bg-tinted: var(--sage-50);
+
+  --line-1: var(--bone-100);
+  --line-2: var(--bone-200);
+  --line-on-dark: rgba(255, 255, 255, 0.10);
+
+  /* Brand */
+  --brand: var(--sage-800);
+  --brand-strong: var(--sage-900);
+  --brand-soft: var(--sage-100);
+  --brand-tint: var(--sage-50);
+  --accent: var(--sage-600);
+  --accent-soft: var(--sage-100);
+
+  /* ============== TYPOGRAPHY ============== */
+
+  --font-display: 'Instrument Serif', 'Times New Roman', Georgia, serif;
+  --font-sans:    'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+  --font-mono:    'Geist Mono', 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+  --fs-12: 0.75rem;
+  --fs-13: 0.8125rem;
+  --fs-14: 0.875rem;
+  --fs-15: 0.9375rem;
+  --fs-16: 1rem;
+  --fs-18: 1.125rem;
+  --fs-20: 1.25rem;
+  --fs-24: 1.5rem;
+  --fs-28: 1.75rem;
+  --fs-32: 2rem;
+  --fs-40: 2.5rem;
+  --fs-48: 3rem;
+  --fs-56: 3.5rem;
+  --fs-72: 4.5rem;
+  --fs-96: 6rem;
+
+  --lh-tight: 1.05;
+  --lh-snug:  1.2;
+  --lh-base:  1.5;
+  --lh-loose: 1.7;
+
+  --tracking-tight: -0.02em;
+  --tracking-snug:  -0.01em;
+  --tracking-wide:   0.04em;
+  --tracking-eyebrow: 0.18em;
+
+  /* ============== SPACING ============== */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-8:  32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+  --sp-24: 96px;
+  --sp-32: 128px;
+
+  /* ============== RADII ============== */
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-2xl: 28px;
+  --r-pill: 999px;
+
+  /* ============== ELEVATION ============== */
+  --shadow-1: 0 1px 2px rgba(14, 26, 17, 0.04), 0 1px 1px rgba(14, 26, 17, 0.03);
+  --shadow-2: 0 2px 8px rgba(14, 26, 17, 0.05), 0 1px 2px rgba(14, 26, 17, 0.04);
+  --shadow-3: 0 12px 32px -8px rgba(14, 26, 17, 0.10), 0 2px 6px rgba(14, 26, 17, 0.04);
+  --shadow-4: 0 24px 48px -12px rgba(14, 26, 17, 0.16), 0 4px 8px rgba(14, 26, 17, 0.05);
+  --shadow-glow-sage: 0 0 0 4px rgba(74, 122, 79, 0.15);
+  --shadow-inset: inset 0 1px 0 rgba(255,255,255,0.6);
+
+  /* ============== MOTION ============== */
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in-out: cubic-bezier(0.5, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --dur-fast: 120ms;
+  --dur-base: 220ms;
+  --dur-slow: 380ms;
+}
+
+html, body { background: var(--bg-canvas); color: var(--fg-1); font-family: var(--font-sans); font-size: var(--fs-16); line-height: var(--lh-base); -webkit-font-smoothing: antialiased; }
+
+h1, .h1, .display-1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(var(--fs-48), 7vw, var(--fs-96));
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+h2, .h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(var(--fs-32), 4.5vw, var(--fs-56));
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-tight);
+}
+h3, .h3 {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--fs-24);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-snug);
+}
+h4, .h4 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--fs-18);
+  line-height: var(--lh-snug);
+  letter-spacing: 0;
+}
+
+p, .body, .body-lg { font-family: var(--font-sans); font-size: var(--fs-16); line-height: var(--lh-base); color: var(--fg-2); }
+.body-lg { font-size: var(--fs-18); line-height: var(--lh-loose); }
+.body-sm { font-size: var(--fs-14); line-height: var(--lh-base); }
+.caption { font-size: var(--fs-13); color: var(--fg-3); letter-spacing: 0.01em; }
+.eyebrow { font-size: var(--fs-12); font-weight: 600; letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; color: var(--fg-3); }
+.serif-italic { font-family: var(--font-display); font-style: italic; }
+.numeric, .data { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+
+code, kbd, .code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  background: var(--bg-sunken);
+  padding: 0.1em 0.4em;
+  border-radius: var(--r-xs);
+}
+
+a { color: var(--brand); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; transition: color var(--dur-base) var(--ease-out); }
+a:hover { color: var(--brand-strong); }
+
+::selection { background: var(--sage-200); color: var(--sage-900); }

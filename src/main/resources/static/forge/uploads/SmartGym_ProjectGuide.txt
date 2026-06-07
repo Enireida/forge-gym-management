@@ -1,0 +1,813 @@
+Smart Gym Management System
+
+Project Master Guide
+
+Bachelor Thesis — UNyT Albania
+
+Full-Stack Web + React Native Mobile + Apple Watch / HealthKit + AI
+
+1. Project Overview
+
+The Smart Gym Management System is a complete digital platform for modern fitness centers. It replaces manual paper-based processes used by most Albanian gyms with a unified digital platform across three surfaces:
+
+Web application — admin and trainer dashboard (React.js + Supabase)
+
+Mobile application — member app for iOS (React Native + Expo)
+
+Apple Watch — health data display via HealthKit (steps + heart rate, read-only)
+
+The system handles three user roles: Administrator, Trainer, and Member. Each role has a dedicated interface with tailored permissions and features.
+
+2. Current Build Status
+
+The following table summarizes what has been built, what needs fixing, and what still needs to be built.
+
+Area
+
+Status
+
+Notes
+
+Landing page
+
+✓ Done
+
+Hero, pricing, PT packages, contact
+
+Login & registration
+
+⚠ Fix First
+
+Passwords hardcoded — needs Supabase Auth
+
+Admin dashboard
+
+✓ Done
+
+All pages built and connected to Supabase
+
+Trainer dashboard
+
+✓ Done
+
+Members, measurements, PT, exercises
+
+Member dashboard (web)
+
+✓ Done
+
+Home, progress, membership, PT, BMI
+
+Analytics charts
+
+○ To Do
+
+No visual charts yet — only text reports
+
+Member photo upload
+
+○ To Do
+
+Supabase Storage not wired up
+
+QR code generation
+
+○ To Do
+
+react-qr-code not implemented
+
+AI Fitness Assistant
+
+○ To Do
+
+Not started
+
+Trainer-client chat
+
+○ To Do
+
+Not started
+
+SMS notifications (Twilio)
+
+○ To Do
+
+Not started
+
+Email notifications (Nodemailer)
+
+○ To Do
+
+Not started
+
+Mobile app (React Native)
+
+○ To Do
+
+Not started
+
+HealthKit integration
+
+○ To Do
+
+Not started — needs one Mac session
+
+Security (.env, RLS, Auth)
+
+⚠ Fix First
+
+Credentials exposed, no RLS policies
+
+3. Web App — Tasks
+
+3.1 Immediate Security Fixes (Do These First)
+
+These must be done before pushing to GitHub or sharing the project with anyone.
+
+#
+
+Task
+
+Priority
+
+Est. Time
+
+1
+
+Move Supabase URL and key to .env file
+
+Critical
+
+30 min
+
+2
+
+Add .env to .gitignore
+
+Critical
+
+5 min
+
+3
+
+Replace hardcoded passwords with Supabase Auth
+
+Critical
+
+1 day
+
+4
+
+Set up Row Level Security (RLS) policies in Supabase dashboard
+
+Critical
+
+2-3 hours
+
+3.2 Missing Web Features
+
+#
+
+Task
+
+Notes
+
+5
+
+Add measurement charts to MyProgress.js
+
+Use Recharts LineChart — weight, body fat over time
+
+6
+
+Add revenue trend chart to ReportsPage
+
+Recharts BarChart — monthly revenue
+
+7
+
+Add attendance heatmap to ReportsPage
+
+Busiest hours and days grid
+
+8
+
+Add KPI cards to AdminHome
+
+Active members, daily check-ins, revenue, PT sessions
+
+9
+
+Add member retention / churn risk indicators
+
+Flag members not checked in for 30+ days
+
+10
+
+Member photo upload via Supabase Storage
+
+Add upload button to member profile
+
+11
+
+QR code display per member
+
+Install react-qr-code, show in member profile
+
+12
+
+Build AI Fitness Assistant chat UI (web)
+
+Message bubbles, input bar in member portal
+
+13
+
+Integrate Claude API or OpenAI API
+
+Pass member profile as context to AI
+
+14
+
+Build trainer-client chat
+
+Supabase Realtime subscriptions
+
+3.3 Notifications Backend
+
+#
+
+Task
+
+Notes
+
+15
+
+Twilio SMS — membership expiry reminders
+
+Send SMS 7 days before expiry
+
+16
+
+Nodemailer — payment confirmation emails
+
+Trigger on payment status change to Paid
+
+17
+
+Birthday email automation
+
+Check member DOB daily, send on birthday
+
+18
+
+Re-engagement SMS for inactive members
+
+Members with no check-in for 30+ days
+
+4. Mobile App — React Native
+
+The mobile app is built with React Native and Expo. It targets the member role only. The same Supabase backend powers both the web and mobile apps.
+
+4.1 Setup (Day 1)
+
+#
+
+Command / Task
+
+Notes
+
+1
+
+Install Node.js and Expo CLI on Dell
+
+npm install -g expo-cli
+
+2
+
+npx create-expo-app SmartGymMobile
+
+Creates the project scaffold
+
+3
+
+Install: @supabase/supabase-js expo-router react-native-reanimated
+
+Core dependencies
+
+4
+
+Create .env with Supabase credentials
+
+Same keys as web app
+
+5
+
+Install Expo Go on iPhone 14 and scan QR to preview
+
+Instant live preview, no Mac needed
+
+4.2 Auth & Navigation (Day 2)
+
+#
+
+Task
+
+Notes
+
+6
+
+Build login screen
+
+Email + password, member role only
+
+7
+
+Set up bottom tab navigation
+
+Home, Progress, PT, Profile tabs
+
+8
+
+Connect Supabase Auth and session persistence
+
+Use AsyncStorage for session
+
+4.3 Core Screens (Days 3-6)
+
+#
+
+Screen
+
+Features
+
+9
+
+Home screen
+
+Membership status card, expiry countdown, PIN display
+
+10
+
+Check-in screen
+
+PIN input with numeric keypad UI
+
+11
+
+Progress screen
+
+Measurement history list + Recharts line charts
+
+12
+
+Membership screen
+
+Plan details, payment history
+
+13
+
+PT screen
+
+Active subscriptions, session history, request new PT
+
+4.4 AI Assistant (Days 7-8)
+
+#
+
+Task
+
+Notes
+
+14
+
+Build chat UI component
+
+Message bubbles, input bar, loading indicator
+
+15
+
+Connect Claude API with member profile context
+
+Pass weight, height, BMI, goals to API
+
+16
+
+Test personalized responses
+
+Test across at least 3 different member profiles
+
+4.5 HealthKit — Apple Watch (Day 9, Needs Mac)
+
+This step requires one session on a Mac (borrowed or cloud). All other development is on Dell.
+
+#
+
+Task
+
+Where
+
+17
+
+npm install react-native-health
+
+Dell
+
+18
+
+Configure HealthKit entitlement in Xcode
+
+Mac
+
+19
+
+Add NSHealthShareUsageDescription to Info.plist
+
+Mac
+
+20
+
+Build and deploy to iPhone 14 via Xcode
+
+Mac
+
+21
+
+Write HealthKit permission request (steps + heart rate)
+
+Dell after Mac session
+
+22
+
+Fetch daily step count and display in home dashboard
+
+Dell
+
+23
+
+Fetch latest heart rate and display in home dashboard
+
+Dell
+
+4.6 Polish & Testing (Days 10-12)
+
+#
+
+Task
+
+Notes
+
+24
+
+Test all screens on iPhone 14
+
+Use real device, not simulator
+
+25
+
+Fix layout issues and loading states
+
+Check empty states and error handling
+
+26
+
+Test real-time sync between web and mobile
+
+Check-in on web, verify on mobile
+
+27
+
+Record demo video of full mobile flow
+
+Backup for defense in case of tech issues
+
+5. Complete Feature List
+
+5.1 Admin Features
+
+Member management: register, edit, delete, set status
+
+Automatic PIN generation on member registration
+
+Attendance tracking with PIN check-in and check-out
+
+Payments tracking: add, update status, view history
+
+Staff management: trainers and admin staff
+
+Equipment inventory management
+
+PT package configuration and subscription management
+
+PT request approval workflow
+
+Membership plans: create, edit, pricing, duration
+
+Reports: daily, monthly, yearly with export
+
+Announcements system
+
+Settings page
+
+5.2 Trainer Features
+
+View assigned members and their profiles
+
+Log body measurements (weight, height, body fat, circumferences)
+
+Record personal training sessions and track remaining sessions
+
+Exercise library management (add, edit, delete exercises)
+
+BMI calculator
+
+5.3 Member Features — Web
+
+Home dashboard: membership status, expiry warning, PIN display
+
+Progress tracking: measurement history with downloadable report
+
+Membership details and payment history
+
+PT subscription request and session history
+
+BMI calculator
+
+Exercise library (read-only)
+
+5.4 Member Features — Mobile App
+
+Login with email and password
+
+Home dashboard with membership status and PIN
+
+PIN-based check-in from phone
+
+Progress charts (weight, body fat, measurements over time)
+
+PT management and session requests
+
+AI Fitness Assistant chat (personalized to member profile)
+
+Steps display (from Apple Watch via HealthKit)
+
+Heart rate display (from Apple Watch via HealthKit)
+
+5.5 Features NOT Built (Thesis Future Work)
+
+Push notifications (mention in thesis as future work)
+
+QR code scanner in mobile app (PIN check-in covers this)
+
+Trainer-client chat in mobile app
+
+Full WatchKit Watch app (replaced by HealthKit read-only)
+
+6. Technology Stack
+
+Layer
+
+Technology
+
+Purpose
+
+Status
+
+Web frontend
+
+React.js
+
+Admin and trainer dashboard
+
+Built
+
+Mobile app
+
+React Native + Expo
+
+Member app for iOS
+
+Not started
+
+Backend & database
+
+Supabase (PostgreSQL)
+
+REST API, real-time, auth, storage
+
+Built
+
+File storage
+
+Supabase Storage
+
+Member photos
+
+Not wired up
+
+AI assistant
+
+Claude API / OpenAI API
+
+Personalized fitness chatbot
+
+Not started
+
+SMS
+
+Twilio API
+
+Membership expiry reminders
+
+Not started
+
+Email
+
+Nodemailer
+
+Payment confirmations, birthday emails
+
+Not started
+
+Health data
+
+react-native-health
+
+HealthKit bridge for steps + heart rate
+
+Not started
+
+Charts
+
+Recharts / Chart.js
+
+Analytics dashboards, progress charts
+
+Installed, not wired
+
+QR codes
+
+react-qr-code
+
+Member check-in QR generation
+
+Not implemented
+
+Auth
+
+Supabase Auth
+
+Currently hardcoded passwords — needs migration
+
+Needs fix
+
+Real-time chat
+
+Supabase Realtime
+
+Trainer-client messaging
+
+Not started
+
+7. Hardware & Development Environment
+
+Device
+
+Role
+
+Notes
+
+Dell (Windows)
+
+Primary development machine
+
+All code written here — web, React Native, backend
+
+iPhone 14
+
+Mobile testing device
+
+Expo Go for live preview, final build via Xcode
+
+Apple Watch
+
+Health data source
+
+Auto-syncs steps and heart rate to iPhone Health app
+
+Mac (borrowed/cloud)
+
+iOS build machine
+
+Needed once for Xcode + HealthKit entitlement setup
+
+Important: The Apple Watch does not require a custom Watch app. The Watch syncs health data automatically to the iPhone's Health app. The React Native app reads this data via the react-native-health library. The only Mac dependency is configuring HealthKit permissions in Xcode, which is a one-time setup.
+
+8. Recommended Timeline
+
+Week
+
+Focus
+
+Deliverable
+
+Week 1
+
+Security fixes + charts
+
+.env, Supabase Auth, RLS, add Recharts to web
+
+Week 2
+
+Remaining web features
+
+Photo upload, QR codes, KPI dashboard, churn indicators
+
+Week 3
+
+AI assistant (web)
+
+Claude API integrated, chat UI working in member portal
+
+Week 4
+
+Notifications
+
+Twilio SMS + Nodemailer email automation
+
+Week 5
+
+Mobile app setup + auth + home
+
+Expo running on iPhone, login and home screen done
+
+Week 6
+
+Mobile core screens
+
+Check-in, progress, membership, PT screens
+
+Week 7
+
+Mobile AI + HealthKit
+
+AI chat in mobile, steps + heart rate from Apple Watch
+
+Week 8
+
+Testing + polish
+
+All bugs fixed, demo video recorded
+
+Week 9
+
+Thesis writing
+
+All chapters drafted
+
+Week 10
+
+Defense preparation
+
+Slides, demo script, rehearsal
+
+9. Thesis Defense Checklist
+
+What to demonstrate live
+
+Admin login — show member list, attendance, payments, reports
+
+Trainer login — show assigned members, log a measurement
+
+Member login (web) — show dashboard, progress charts
+
+Mobile app — login, home screen, PIN check-in, progress
+
+HealthKit — show steps and heart rate in mobile dashboard
+
+AI assistant — ask a fitness question, show personalized response
+
+What to have ready as backup
+
+Recorded demo video of the full mobile flow
+
+Screenshots of every screen in the thesis document
+
+Database schema diagram in the thesis
+
+Architecture diagram (web / mobile / Supabase / APIs)
+
+Thesis chapters to write
+
+Chapter 1: Introduction — problem statement, objectives, scope
+
+Chapter 2: Literature review — related work, existing gym management systems
+
+Chapter 3: System design — architecture, database schema, user roles
+
+Chapter 4: Implementation — all modules described with code snippets
+
+Chapter 5: Testing — test cases, results, screenshots
+
+Chapter 6: Conclusion — summary, limitations, future work
+
+End of Document

@@ -1,0 +1,22 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Type — Numeric / Mono</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:24px;background:var(--bg-canvas);font-family:var(--font-sans);}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .stat{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:14px;padding:18px;}
+  .lbl{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--fg-3);margin-bottom:6px;}
+  .val{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:34px;font-weight:500;color:var(--fg-1);letter-spacing:-0.02em;}
+  .delta{font-family:var(--font-mono);font-size:13px;color:#4A7A4F;margin-top:4px;}
+  .clock{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:46px;font-weight:400;color:var(--sage-800);letter-spacing:-0.02em;}
+</style></head>
+<body>
+<div class="grid">
+  <div class="stat"><div class="lbl">Active members</div><div class="val">2,547</div><div class="delta">+12.3% mo</div></div>
+  <div class="stat"><div class="lbl">Heart rate · BPM</div><div class="val">148</div><div class="delta" style="color:#B8893A;">↑ Zone 4</div></div>
+  <div class="stat"><div class="lbl">Live clock</div><div class="clock">14:32:08</div></div>
+  <div class="stat"><div class="lbl">Revenue · this month</div><div class="val">€18,420</div><div class="delta">+8.1% mo</div></div>
+  <div class="stat"><div class="lbl">Steps today</div><div class="val">9,842</div><div class="delta">/ 10,000</div></div>
+  <div class="stat"><div class="lbl">Door PIN</div><div class="val" style="letter-spacing:.4em;">4 7 0 2</div></div>
+</div>
+</body></html>

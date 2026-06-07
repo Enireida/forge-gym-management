@@ -1,0 +1,238 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>Send Notification - Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .hint{font-size:12px;color:var(--stone-400);margin-top:6px}
+        .preview{margin-top:18px;background:var(--bg-sunken);border:1px solid var(--line-1);border-radius:var(--r-md);padding:14px 16px}
+        .preview .p-title{font-weight:600;font-size:14px;color:var(--fg-1)}
+        .preview .p-msg{font-size:13px;color:var(--fg-2);margin-top:3px;line-height:1.4}
+        .preview .p-tag{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--stone-400)}
+
+        /* ── Activity feed ── */
+        .day-section{margin-bottom:32px}
+        .day-label{font-family:var(--font-display);font-size:26px;font-weight:400;color:var(--fg-1);letter-spacing:-.01em;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line-1)}
+        .day-label em{font-style:italic;color:var(--accent-deep)}
+        .day-empty{padding:18px 16px;background:var(--bg-sunken);border:1px dashed var(--line-2);border-radius:var(--r-md);font-size:13px;color:var(--stone-400);text-align:center;font-style:italic}
+        .feed-table{width:100%;border-collapse:collapse;background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-lg);overflow:hidden}
+        .feed-table thead th{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--stone-500);padding:12px 18px;text-align:left;background:var(--bg-sunken);border-bottom:1px solid var(--line-1)}
+        .feed-table thead th.center{text-align:center}
+        .feed-table thead th.right{text-align:right}
+        .feed-table tbody tr{border-bottom:1px solid var(--line-1);transition:background .15s}
+        .feed-table tbody tr:last-child{border-bottom:none}
+        .feed-table tbody tr:hover{background:var(--bg-sunken)}
+        .feed-table td{padding:12px 18px;vertical-align:middle;font-size:14px}
+        .feed-avatar{width:38px;height:38px;border-radius:50%;background:var(--accent-pale);color:var(--accent-deep);display:grid;place-items:center;font-weight:700;font-size:14px;flex-shrink:0;overflow:hidden}
+        .feed-avatar img{width:100%;height:100%;object-fit:cover}
+        .feed-name-cell{display:flex;align-items:center;gap:12px}
+        .feed-name{font-weight:600;color:var(--fg-1)}
+        .feed-mail{font-size:11px;color:var(--stone-400);margin-top:1px}
+        .feed-date{font-family:var(--font-mono);font-size:12px;color:var(--stone-500);text-align:right;letter-spacing:.02em}
+        .feed-badge{display:inline-block;padding:5px 14px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:.01em}
+        .feed-badge.new{background:#16a34a;color:#fff}
+        .feed-badge.soon{background:#f59e0b;color:#fff}
+        .feed-badge.ended{background:#dc2626;color:#fff}
+        .feed-badge-cell{text-align:center}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('notifications')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Send Notification')}"></div>
+    <main class="main">
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+        <!-- ─────────── ACTIVITY FEED — TODAY ─────────── -->
+        <div class="day-section">
+            <h2 class="day-label">Sot <em th:text="${#temporals.format(today,'· EEEE, d MMM yyyy')}">· today</em></h2>
+
+            <div th:if="${#lists.isEmpty(newToday) and #lists.isEmpty(expiringToday) and #lists.isEmpty(expiringSoon)}"
+                 class="day-empty">No new registrations and no expiring memberships today.</div>
+
+            <table class="feed-table"
+                   th:unless="${#lists.isEmpty(newToday) and #lists.isEmpty(expiringToday) and #lists.isEmpty(expiringSoon)}">
+                <thead>
+                    <tr>
+                        <th>Klienti</th>
+                        <th class="center">Njoftim</th>
+                        <th class="right">Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- New registrations today -->
+                    <tr th:each="m : ${newToday}">
+                        <td>
+                            <div class="feed-name-cell">
+                                <div class="feed-avatar">
+                                    <img th:if="${m.photoData != null and !m.photoData.isEmpty()}" th:src="${m.photoData}" alt="">
+                                    <span th:if="${m.photoData == null or m.photoData.isEmpty()}"
+                                          th:text="${#strings.substring(m.name,0,1).toUpperCase()}">M</span>
+                                </div>
+                                <div>
+                                    <div class="feed-name" th:text="${m.name}">Name</div>
+                                    <div class="feed-mail" th:text="${m.email}">email</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="feed-badge-cell"><span class="feed-badge new">U krijua klient i ri</span></td>
+                        <td class="feed-date"
+                            th:text="${m.createdAt != null ? #temporals.format(m.createdAt,'dd-MM-yyyy HH:mm') : ''}">date</td>
+                    </tr>
+                    <!-- Memberships ending exactly today -->
+                    <tr th:each="m : ${expiringToday}">
+                        <td>
+                            <div class="feed-name-cell">
+                                <div class="feed-avatar">
+                                    <img th:if="${m.photoData != null and !m.photoData.isEmpty()}" th:src="${m.photoData}" alt="">
+                                    <span th:if="${m.photoData == null or m.photoData.isEmpty()}"
+                                          th:text="${#strings.substring(m.name,0,1).toUpperCase()}">M</span>
+                                </div>
+                                <div>
+                                    <div class="feed-name" th:text="${m.name}">Name</div>
+                                    <div class="feed-mail" th:text="${m.email}">email</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="feed-badge-cell"><span class="feed-badge ended">Abonimi ka përfunduar</span></td>
+                        <td class="feed-date"
+                            th:text="${m.expiryDate != null ? #temporals.format(m.expiryDate,'dd-MM-yyyy') : ''}">date</td>
+                    </tr>
+                    <!-- Memberships ending in the next 1–7 days -->
+                    <tr th:each="m : ${expiringSoon}">
+                        <td>
+                            <div class="feed-name-cell">
+                                <div class="feed-avatar">
+                                    <img th:if="${m.photoData != null and !m.photoData.isEmpty()}" th:src="${m.photoData}" alt="">
+                                    <span th:if="${m.photoData == null or m.photoData.isEmpty()}"
+                                          th:text="${#strings.substring(m.name,0,1).toUpperCase()}">M</span>
+                                </div>
+                                <div>
+                                    <div class="feed-name" th:text="${m.name}">Name</div>
+                                    <div class="feed-mail" th:text="${m.email}">email</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="feed-badge-cell"><span class="feed-badge soon">Abonimi po përfundon</span></td>
+                        <td class="feed-date"
+                            th:text="${m.expiryDate != null ? #temporals.format(m.expiryDate,'dd-MM-yyyy') : ''}">date</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ─────────── ACTIVITY FEED — YESTERDAY ─────────── -->
+        <div class="day-section">
+            <h2 class="day-label">Dje <em th:text="${#temporals.format(yesterday,'· EEEE, d MMM yyyy')}">· yesterday</em></h2>
+
+            <div th:if="${#lists.isEmpty(newYesterday) and #lists.isEmpty(expiredYesterday)}"
+                 class="day-empty">No activity recorded yesterday.</div>
+
+            <table class="feed-table"
+                   th:unless="${#lists.isEmpty(newYesterday) and #lists.isEmpty(expiredYesterday)}">
+                <thead>
+                    <tr>
+                        <th>Klienti</th>
+                        <th class="center">Njoftim</th>
+                        <th class="right">Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="m : ${newYesterday}">
+                        <td>
+                            <div class="feed-name-cell">
+                                <div class="feed-avatar">
+                                    <img th:if="${m.photoData != null and !m.photoData.isEmpty()}" th:src="${m.photoData}" alt="">
+                                    <span th:if="${m.photoData == null or m.photoData.isEmpty()}"
+                                          th:text="${#strings.substring(m.name,0,1).toUpperCase()}">M</span>
+                                </div>
+                                <div>
+                                    <div class="feed-name" th:text="${m.name}">Name</div>
+                                    <div class="feed-mail" th:text="${m.email}">email</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="feed-badge-cell"><span class="feed-badge new">U krijua klient i ri</span></td>
+                        <td class="feed-date"
+                            th:text="${m.createdAt != null ? #temporals.format(m.createdAt,'dd-MM-yyyy HH:mm') : ''}">date</td>
+                    </tr>
+                    <tr th:each="m : ${expiredYesterday}">
+                        <td>
+                            <div class="feed-name-cell">
+                                <div class="feed-avatar">
+                                    <img th:if="${m.photoData != null and !m.photoData.isEmpty()}" th:src="${m.photoData}" alt="">
+                                    <span th:if="${m.photoData == null or m.photoData.isEmpty()}"
+                                          th:text="${#strings.substring(m.name,0,1).toUpperCase()}">M</span>
+                                </div>
+                                <div>
+                                    <div class="feed-name" th:text="${m.name}">Name</div>
+                                    <div class="feed-mail" th:text="${m.email}">email</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="feed-badge-cell"><span class="feed-badge ended">Abonimi ka përfunduar</span></td>
+                        <td class="feed-date"
+                            th:text="${m.expiryDate != null ? #temporals.format(m.expiryDate,'dd-MM-yyyy') : ''}">date</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Send a message to members</div>
+            <p style="font-size:13px;color:var(--stone-500);margin-bottom:16px">
+                This appears in the member's in-app notification center (the bell icon). Leave the
+                recipient as <strong>All members</strong> to broadcast, or pick one person.
+            </p>
+            <form autocomplete="off" method="post" action="/admin/notifications/send">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Recipient</label>
+                        <select class="form-select" name="memberId">
+                            <option value="">All members (broadcast)</option>
+                            <option th:each="m : ${members}" th:value="${m.id}"
+                                    th:text="${m.name + ' (' + m.email + ')'}"></option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Title</label>
+                        <input class="form-input" name="title" id="nt_title" required maxlength="120"
+                               placeholder="e.g. Gym closed on public holiday"
+                               oninput="syncPreview()" autocomplete="nope">
+                    </div>
+                </div>
+                <div style="margin-top:12px">
+                    <label class="form-label">Message</label>
+                    <textarea class="form-input" name="message" id="nt_msg" required maxlength="500" rows="4"
+                              placeholder="Write your message…" oninput="syncPreview()"></textarea>
+                    <div class="hint">Up to 500 characters.</div>
+                </div>
+
+                <div class="preview">
+                    <div class="p-tag">Announcement &middot; Preview</div>
+                    <div class="p-title" id="pv_title">Your title…</div>
+                    <div class="p-msg" id="pv_msg">Your message…</div>
+                </div>
+
+                <div style="margin-top:16px">
+                    <button class="btn" type="submit">Send Notification</button>
+                </div>
+            </form>
+        </div>
+
+    </main>
+</div>
+<script>
+function syncPreview(){
+    var t = document.getElementById('nt_title').value;
+    var m = document.getElementById('nt_msg').value;
+    document.getElementById('pv_title').textContent = t || 'Your title…';
+    document.getElementById('pv_msg').textContent   = m || 'Your message…';
+}
+</script>
+</body>
+</html>

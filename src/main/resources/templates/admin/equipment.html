@@ -1,0 +1,240 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>Equipment, Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}">
+<style>
+    .modal-overlay{position:fixed;inset:0;background:rgba(6,15,26,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+    .modal-overlay.open{display:flex}
+    .modal-box{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-xl);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-3)}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:22px 24px 0}
+    .modal-title{font-family:var(--font-display);font-size:22px;font-weight:400;letter-spacing:-.01em;color:var(--fg-1)}
+    .modal-title em{font-style:italic;color:var(--accent-deep)}
+    .modal-close{background:none;border:none;cursor:pointer;color:var(--stone-400);font-size:26px;line-height:1;padding:4px 8px;border-radius:var(--r-sm)}
+    .modal-close:hover{background:var(--bg-sunken);color:var(--fg-1)}
+    .modal-body{padding:18px 24px 0}
+    .modal-footer{padding:16px 24px 22px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line-1);margin-top:18px}
+
+    /* ── Compact icon-form ── */
+    .iform-wrap{background:var(--bg-sunken);border:1px solid var(--line-1);border-radius:var(--r-lg);padding:16px 18px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+    .ifield{position:relative;flex:1;min-width:120px}
+    .ifield-label{display:flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--stone-400);margin-bottom:6px}
+    .ifield-label svg{color:var(--stone-400)}
+    .ifield .form-input,.ifield .form-select{width:100%;background:var(--paper)}
+
+    /* ── 3-dot menu ── */
+    .dot-wrap{position:relative;display:inline-block}
+    .dot-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:none;border:1px solid var(--line-1);border-radius:var(--r-sm);cursor:pointer;color:var(--stone-400);transition:all var(--dur-fast) var(--ease-out)}
+    .dot-btn:hover{background:var(--bg-sunken);border-color:var(--stone-200);color:var(--fg-1)}
+    .dot-btn.active{background:var(--accent-pale);border-color:var(--accent);color:var(--accent-deep)}
+    .dot-menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-lg);box-shadow:var(--shadow-3);min-width:180px;padding:5px;z-index:200;display:none;animation:dotIn .14s var(--ease-out)}
+    .dot-menu.open{display:block}
+    @keyframes dotIn{from{opacity:0;transform:translateY(4px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .dot-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r-sm);font-size:13px;font-weight:500;color:var(--fg-2);cursor:pointer;width:100%;text-align:left;background:none;border:none;text-decoration:none;transition:background var(--dur-fast);font-family:var(--font-sans)}
+    .dot-item:hover{background:var(--bg-sunken);color:var(--fg-1)}
+    .dot-item svg{color:var(--stone-400);flex-shrink:0}
+    .dot-item.copper svg{color:var(--accent-deep)}
+    .dot-item.copper:hover{background:var(--accent-pale);color:var(--accent-deep)}
+    .dot-sep{height:1px;background:var(--line-1);margin:4px 6px}
+    .dot-item.danger{color:var(--signal-danger)}
+    .dot-item.danger svg{color:var(--signal-danger)}
+    .dot-item.danger:hover{background:var(--signal-danger-bg)}
+</style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('equipment')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Equipment')}"></div>
+    <main class="main">
+
+        <!-- INVENTORY TABLE -->
+        <div class="card">
+            <div class="card-title">Inventory
+                <span style="display:flex;align-items:center;gap:10px">
+                    <span class="badge badge-info" style="font-size:12px" th:text="${#lists.size(equipment)} + ' items'">0</span>
+                    <a href="/admin/equipment/new" class="btn"
+                       style="white-space:nowrap;gap:7px;display:flex;align-items:center;text-decoration:none">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add Equipment
+                    </a>
+                </span>
+            </div>
+            <table>
+                <thead><tr>
+                    <th>Name</th><th>Category</th><th>Qty</th>
+                    <th>Status</th><th>Last Maintenance</th><th>Notes</th>
+                    <th style="width:48px;text-align:center"></th>
+                </tr></thead>
+                <tbody>
+                <tr th:each="e : ${equipment}">
+                    <td style="font-weight:600" th:text="${e.name}"></td>
+                    <td th:text="${e.category}"></td>
+                    <td><span style="font-family:var(--font-mono);font-size:13px" th:text="${e.quantity}"></span></td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${e.status=='Operational'}?'badge-success':'badge-warn'"
+                              th:text="${e.status}"></span>
+                    </td>
+                    <td style="font-family:var(--font-mono);font-size:12px;color:var(--stone-500)"
+                        th:text="${e.lastMaintenance != null ? e.lastMaintenance : ''}"></td>
+                    <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--stone-500);font-size:13px"
+                        th:text="${e.notes != null ? e.notes : ''}"></td>
+                    <td style="text-align:center">
+                        <div class="dot-wrap">
+                            <button class="dot-btn" type="button" onclick="toggleDotMenu(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+                                </svg>
+                            </button>
+                            <div class="dot-menu">
+                                <!-- Edit -->
+                                <button class="dot-item" type="button"
+                                        th:data-id="${e.id}" th:data-name="${e.name}"
+                                        th:data-category="${e.category}" th:data-quantity="${e.quantity}"
+                                        th:data-notes="${e.notes}"
+                                        onclick="openEditEquipment(this); closeDotMenus()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    Edit Details
+                                </button>
+                                <!-- Toggle Status -->
+                                <form autocomplete="off" method="post" th:action="@{'/admin/equipment/'+${e.id}+'/toggle'}" style="margin:0">
+                                    <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                                    <button class="dot-item" type="submit">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                                        <span th:text="${e.status=='Operational'} ? 'Set Under Maintenance' : 'Set Operational'">Toggle</span>
+                                    </button>
+                                </form>
+                                <!-- Log Maintenance -->
+                                <form autocomplete="off" method="post" th:action="@{'/admin/equipment/'+${e.id}+'/maintenance'}" style="margin:0">
+                                    <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                                    <button class="dot-item copper" type="submit">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                                        Mark Maintained Today
+                                    </button>
+                                </form>
+                                <div class="dot-sep"></div>
+                                <!-- Delete -->
+                                <form autocomplete="off" method="post" th:action="@{'/admin/equipment/'+${e.id}+'/delete'}" style="margin:0">
+                                    <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                                    <button class="dot-item danger" type="submit"
+                                            onclick="return confirm('Remove this equipment from inventory?')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+
+<!-- ===== ADD EQUIPMENT MODAL ===== -->
+<div id="addEquipmentModal" class="modal-overlay" onclick="if(event.target===this)closeModal('addEquipmentModal')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Add <em>Equipment</em></span>
+            <button class="modal-close" onclick="closeModal('addEquipmentModal')">×</button>
+        </div>
+        <form autocomplete="off" method="post" action="/admin/equipment">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div><label class="form-label">Name <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" name="name" placeholder="e.g. Treadmill Pro" required autocomplete="nope"></div>
+                    <div><label class="form-label">Category <span style="color:var(--signal-danger)">*</span></label>
+                        <select class="form-select" name="category" required>
+                            <option>Cardio</option><option>Strength</option>
+                            <option>Free Weights</option><option>Functional</option>
+                        </select></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Quantity <span style="color:var(--signal-danger)">*</span></label>
+                        <input class="form-input" type="number" name="quantity" min="1" value="1" required autocomplete="nope"></div>
+                    <div><label class="form-label">Notes <span style="font-weight:400;color:var(--stone-400)">(optional)</span></label>
+                        <input class="form-input" name="notes" placeholder="Serial no., location, condition…" autocomplete="nope"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addEquipmentModal')">Cancel</button>
+                <button type="submit" class="btn" style="display:flex;align-items:center;gap:7px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add to Inventory
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== EDIT EQUIPMENT MODAL ===== -->
+<div id="editEquipmentModal" class="modal-overlay" onclick="if(event.target===this)closeModal('editEquipmentModal')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Edit <em>Equipment</em></span>
+            <button class="modal-close" onclick="closeModal('editEquipmentModal')">×</button>
+        </div>
+        <form autocomplete="off" method="post" id="editEquipmentForm">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div><label class="form-label">Name</label>
+                        <input class="form-input" id="ee-name" name="name" required autocomplete="nope"></div>
+                    <div><label class="form-label">Category</label>
+                        <select class="form-select" id="ee-category" name="category" required>
+                            <option>Cardio</option><option>Strength</option>
+                            <option>Free Weights</option><option>Functional</option>
+                        </select></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Quantity</label>
+                        <input class="form-input" id="ee-quantity" name="quantity" type="number" min="1" required autocomplete="nope"></div>
+                    <div></div>
+                </div>
+                <label class="form-label">Notes</label>
+                <textarea class="form-input" id="ee-notes" name="notes" rows="2" style="resize:vertical"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editEquipmentModal')">Cancel</button>
+                <button type="submit" class="btn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal(id)  { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open')); } });
+
+    function openEditEquipment(btn) {
+        const d = btn.dataset;
+        document.getElementById('editEquipmentForm').action = '/admin/equipment/' + d.id + '/edit';
+        document.getElementById('ee-name').value     = d.name     || '';
+        document.getElementById('ee-quantity').value = d.quantity || '1';
+        document.getElementById('ee-notes').value    = d.notes    || '';
+        const sel = document.getElementById('ee-category');
+        for (let o of sel.options) o.selected = o.value === d.category;
+        openModal('editEquipmentModal');
+    }
+
+    function toggleDotMenu(btn) {
+        const menu = btn.closest('.dot-wrap').querySelector('.dot-menu');
+        const isOpen = menu.classList.contains('open');
+        closeDotMenus();
+        if (!isOpen) { menu.classList.add('open'); btn.classList.add('active'); }
+    }
+    function closeDotMenus() {
+        document.querySelectorAll('.dot-menu.open').forEach(m => {
+            m.classList.remove('open');
+            const b = m.closest('.dot-wrap')?.querySelector('.dot-btn');
+            if (b) b.classList.remove('active');
+        });
+    }
+    document.addEventListener('click', e => { if (!e.target.closest('.dot-wrap')) closeDotMenus(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDotMenus(); });
+</script>
+</body>
+</html>

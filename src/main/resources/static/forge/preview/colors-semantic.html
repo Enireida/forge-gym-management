@@ -1,0 +1,50 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Colors — Semantic + Accent</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:24px;background:var(--bg-canvas);}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .item{display:flex;flex-direction:column;gap:6px;}
+  .pair{display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--line-1);height:74px;}
+  .pair > div{flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;}
+  .pair .bg{flex:1.2;}
+  .pair .fg{flex:0.8;color:#fff;}
+  .label{font-family:var(--font-sans);font-size:13px;color:var(--fg-2);font-weight:500;}
+  .hex{font-family:var(--font-mono);font-size:11px;color:var(--fg-3);}
+</style></head>
+<body>
+<div class="grid">
+  <div class="item">
+    <div class="pair"><div class="bg" style="background:#E8EFE5;color:#4A7A4F">SUCCESS</div><div class="fg" style="background:#4A7A4F">#4A7A4F</div></div>
+    <div class="label">Success — paid, active, valid</div>
+  </div>
+  <div class="item">
+    <div class="pair"><div class="bg" style="background:#F4E7CC;color:#B8893A">WARNING</div><div class="fg" style="background:#B8893A">#B8893A</div></div>
+    <div class="label">Warning — expiring, attention</div>
+  </div>
+  <div class="item">
+    <div class="pair"><div class="bg" style="background:#F1D8D4;color:#A8413A">DANGER</div><div class="fg" style="background:#A8413A">#A8413A</div></div>
+    <div class="label">Danger — expired, error</div>
+  </div>
+  <div class="item">
+    <div class="pair"><div class="bg" style="background:#DCE6EA;color:#4B6B7A">INFO</div><div class="fg" style="background:#4B6B7A">#4B6B7A</div></div>
+    <div class="label">Info — neutral notice</div>
+  </div>
+  <div class="item">
+    <div class="pair"><div class="bg" style="background:#D2E0CB;color:#1A2E1A">ACCENT</div><div class="fg" style="background:#4A7A4F">#4A7A4F</div></div>
+    <div class="label">Copper — energy, CTAs (sparingly)</div>
+  </div>
+  <div class="item">
+    <div class="pair"><div class="bg" style="background:#E8EFE5;color:#1A2E1A">BRAND</div><div class="fg" style="background:#1A2E1A">#1A2E1A</div></div>
+    <div class="label">Brand — Forge sage</div>
+  </div>
+  <div class="item">
+    <div class="pair"><div class="bg" style="background:#FAFAFA;color:#0E0E0C;border-right:1px solid #D6D6D2">CANVAS</div><div class="fg" style="background:#0E0E0C">#0E0E0C</div></div>
+    <div class="label">Canvas + Text</div>
+  </div>
+  <div class="item">
+    <div class="pair"><div class="bg" style="background:#FFFFFF;color:#0E0E0C;border-right:1px solid #D6D6D2">SURFACE</div><div class="fg" style="background:#D6D6D2;color:#0E0E0C">LINE</div></div>
+    <div class="label">Surface white + 1px line</div>
+  </div>
+</div>
+</body></html>

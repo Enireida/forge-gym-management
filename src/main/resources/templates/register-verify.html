@@ -1,0 +1,136 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+<meta charset="UTF-8">
+<title>Forge, Verify Email</title>
+<link rel="stylesheet" th:href="@{/css/app.css}">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    background: #f5f5fb;
+    font-family: var(--font-sans);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 48px 44px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 32px rgba(0,0,0,.07);
+  }
+
+  .brand { display: inline-flex; align-items: baseline; gap: 2px; text-decoration: none; margin-bottom: 32px; }
+  .brand .word { font-family: var(--font-display); font-weight: 400; font-size: 26px; letter-spacing: -0.035em; color: var(--ink); }
+  .brand .dot  { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; display: inline-block; margin-left: 3px; transform: translateY(-2px); }
+
+  .icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: #DDDDF0;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+  }
+
+  h1 {
+    font-family: var(--font-display); font-size: 28px; font-weight: 400;
+    letter-spacing: -0.02em; color: var(--fg-1);
+    margin: 0 0 10px;
+  }
+  h1 em { font-style: italic; color: var(--accent-deep); }
+
+  .subtitle {
+    font-size: 14px; color: var(--stone-500);
+    line-height: 1.6; margin: 0 0 8px;
+  }
+  .email-hint {
+    font-size: 13px; color: var(--accent-deep);
+    font-weight: 600; margin-bottom: 36px;
+  }
+
+  .error-banner {
+    background: #fef2f2; border: 1px solid #fca5a5;
+    color: #dc2626; padding: 10px 16px; border-radius: 12px;
+    font-size: 13px; margin-bottom: 24px;
+  }
+
+  .choices {
+    display: flex; gap: 16px; justify-content: center;
+    margin-bottom: 32px;
+  }
+
+  .choice-form { margin: 0; }
+
+  .choice-btn {
+    width: 100px; height: 100px;
+    background: #DDDDF0;
+    border: 3px solid transparent;
+    border-radius: 20px;
+    font-family: var(--font-display);
+    font-size: 38px; font-weight: 400;
+    color: var(--fg-1);
+    cursor: pointer;
+    transition: background .15s, border-color .15s, transform .1s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .choice-btn:hover {
+    background: #CCCCE8;
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .choice-btn:active { transform: scale(.97); }
+
+  .note {
+    font-size: 12px; color: var(--stone-400);
+    line-height: 1.6;
+  }
+  .note a { color: var(--accent-deep); }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <a href="/" class="brand">
+    <span class="word">Forge</span><span class="dot"></span>
+  </a>
+
+  <div class="icon">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+         stroke="#6666AA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="3"/>
+      <polyline points="2,4 12,13 22,4"/>
+    </svg>
+  </div>
+
+  <h1>Check your <em>email</em></h1>
+  <p class="subtitle">
+    We sent a 2-digit number to your email address.<br>
+    Pick the number below that matches it.
+  </p>
+  <p class="email-hint" th:text="${email}">email@example.com</p>
+
+  <!-- Error -->
+  <div class="error-banner" th:if="${error}" th:text="${error}"></div>
+
+  <!-- The 3 number choices -->
+  <div class="choices">
+    <div th:each="choice : ${choices}" class="choice-form">
+      <form autocomplete="off" method="post" action="/register/verify">
+        <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+        <input type="hidden" name="selected" th:value="${choice}" autocomplete="nope">
+        <button type="submit" class="choice-btn" th:text="${choice}">00</button>
+      </form>
+    </div>
+  </div>
+
+  <p class="note">
+    Didn't receive the email? Check your spam folder.<br>
+    <a href="/register">Start over</a>
+  </p>
+</div>
+
+</body>
+</html>

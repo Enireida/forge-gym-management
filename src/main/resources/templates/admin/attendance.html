@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance - Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .filter-bar{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:0}
+        .stat-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:0}
+        .stat-chip{background:var(--bg-sunken);border-radius:var(--r-md);padding:12px 18px;min-width:110px}
+        .stat-chip .v{font-family:var(--font-display);font-size:24px;color:var(--fg-1)}
+        .stat-chip .l{font-size:11px;color:var(--stone-400);margin-top:2px}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('attendance')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Attendance')}"></div>
+    <main class="main">
+
+        <!-- DATE FILTER -->
+        <div class="card">
+            <div class="card-title">Filter by date</div>
+            <form autocomplete="off" method="get" action="/admin/attendance" class="filter-bar">
+                <div>
+                    <label class="form-label">Date</label>
+                    <input class="form-input" type="date" name="date" th:value="${targetDate}" autocomplete="nope">
+                </div>
+                <button class="btn btn-secondary" type="submit">Show</button>
+                <a class="btn btn-secondary" href="/admin/attendance">Today</a>
+                <a class="btn btn-secondary" th:href="@{'/admin/attendance/export?date=' + ${targetDate}}"
+                   style="display:flex;align-items:center;gap:6px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Export CSV
+                </a>
+            </form>
+        </div>
+
+        <!-- STATS -->
+        <div class="card">
+            <div class="card-title"
+                 th:text="'Check-ins for ' + ${targetDate}">Check-ins</div>
+
+            <div class="stat-row" style="margin-bottom:20px">
+                <div class="stat-chip">
+                    <div class="v" th:text="${#lists.size(records)}"></div>
+                    <div class="l">Total check-ins</div>
+                </div>
+                <div class="stat-chip">
+                    <div class="v"
+                         th:text="${#lists.size(records.?[checkOut != null])}">
+                    </div>
+                    <div class="l">Checked out</div>
+                </div>
+                <div class="stat-chip">
+                    <div class="v"
+                         th:text="${#lists.size(records.?[checkOut == null])}">
+                    </div>
+                    <div class="l">Still inside</div>
+                </div>
+            </div>
+
+            <!-- Empty state -->
+            <div th:if="${#lists.isEmpty(records)}"
+                 style="text-align:center;padding:36px;color:var(--stone-400);font-size:13px">
+                No check-ins recorded for this date.
+            </div>
+
+            <table th:unless="${#lists.isEmpty(records)}">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Member</th>
+                        <th>Plan</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr th:each="a,stat : ${records}">
+                    <td th:text="${stat.count}"></td>
+                    <td th:text="${a.member.name}"></td>
+                    <td th:text="${a.member.plan != null ? a.member.plan.name : ''}"></td>
+                    <td th:text="${a.checkIn}"></td>
+                    <td th:text="${a.checkOut != null ? a.checkOut : ''}"></td>
+                    <td>
+                        <span th:if="${a.checkOut != null}"
+                              th:text="${T(java.time.Duration).between(a.checkIn.atDate(a.date), a.checkOut.atDate(a.date)).toMinutes() + ' min'}">
+                        </span>
+                        <span th:unless="${a.checkOut != null}" style="color:var(--stone-400)"></span>
+                    </td>
+                    <td>
+                        <span class="badge badge-success" th:if="${a.checkOut != null}">Out</span>
+                        <span class="badge" style="background:var(--accent-pale);color:var(--accent-deep)"
+                              th:unless="${a.checkOut != null}">Inside</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+</body>
+</html>

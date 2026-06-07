@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>Water Intake - Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .water-hero{background:linear-gradient(135deg,var(--ink),#0c2d48);border-radius:var(--r-xl);padding:32px;text-align:center;color:#fff;margin-bottom:24px;position:relative;overflow:hidden}
+        .water-hero::before{content:'';position:absolute;bottom:-80px;left:50%;transform:translateX(-50%);width:400px;height:200px;background:radial-gradient(ellipse,rgba(56,189,248,.18),transparent 70%);pointer-events:none}
+        .water-count{font-family:var(--font-display);font-size:72px;font-weight:400;line-height:1}
+        .water-label{font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:6px}
+        .water-ml{font-size:16px;color:rgba(255,255,255,.6);margin-top:4px}
+        .water-bar-track{width:80%;max-width:300px;height:12px;background:rgba(255,255,255,.1);border-radius:99px;margin:16px auto 0;overflow:hidden}
+        .water-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#38bdf8,#06b6d4);transition:width .4s}
+        .glass-btns{display:flex;gap:12px;justify-content:center;margin-top:20px;position:relative}
+        .glass-btn{padding:10px 24px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:var(--r-pill);color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:.15s}
+        .glass-btn:hover{background:rgba(56,189,248,.3);border-color:rgba(56,189,248,.5)}
+        .history-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line-1)}
+        .history-row:last-child{border-bottom:none}
+        .glasses-dots{display:flex;gap:4px}
+        .glass-dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+        .glass-dot.empty{background:var(--bg-sunken);border:1px solid var(--line-2)}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: clientSidebar('water')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Water Intake')}"></div>
+    <main class="main">
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <!-- TODAY'S WATER -->
+        <div class="water-hero">
+            <div class="water-count" th:text="${today.glasses}">0</div>
+            <div class="water-label">glasses today</div>
+            <div class="water-ml" th:text="${today.glasses * 250} + ' ml / 2000 ml'">0 ml</div>
+            <div class="water-bar-track">
+                <div class="water-bar-fill" th:style="'width:' + ${T(Math).min(100, today.glasses * 250 * 100 / 2000)} + '%'"></div>
+            </div>
+            <div class="glass-btns">
+                <form autocomplete="off" method="post" action="/client/water/add" style="display:inline">
+                    <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                    <input type="hidden" name="glasses" value="1" autocomplete="nope">
+                    <button class="glass-btn" type="submit">+1 Glass</button>
+                </form>
+                <form autocomplete="off" method="post" action="/client/water/add" style="display:inline">
+                    <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                    <input type="hidden" name="glasses" value="2" autocomplete="nope">
+                    <button class="glass-btn" type="submit">+2 Glasses</button>
+                </form>
+                <form autocomplete="off" method="post" action="/client/water/reset" style="display:inline"
+                      onsubmit="return confirm('Reset today\'s count?')">
+                    <input type="hidden" name="_csrf" th:value="${csrfToken}" autocomplete="nope">
+                    <button class="glass-btn" type="submit" style="opacity:.6">Reset</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="card">
+            <div class="card-title">Last 7 days</div>
+            <div th:if="${#lists.isEmpty(weekHistory)}" style="text-align:center;padding:24px;color:var(--stone-400);font-style:italic">
+                No water tracked yet this week.
+            </div>
+            <div th:each="w : ${weekHistory}" class="history-row">
+                <div>
+                    <div style="font-weight:600;font-size:14px;color:var(--fg-1)" th:text="${w.date}"></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px">
+                    <div class="glasses-dots">
+                        <span th:each="i : ${#numbers.sequence(1,8)}" class="glass-dot"
+                              th:classappend="${i > w.glasses ? 'empty' : ''}"></span>
+                    </div>
+                    <span style="font-family:var(--font-mono);font-size:13px;color:var(--fg-2);min-width:70px;text-align:right"
+                          th:text="${w.glasses} + ' glasses'"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">30-day average</div>
+            <div style="font-family:var(--font-display);font-size:32px;color:var(--fg-1)"
+                 th:text="${#numbers.formatDecimal(avgGlasses, 1, 1)} + ' glasses/day'">0</div>
+            <div style="font-size:12px;color:var(--stone-400);margin-top:4px">Recommended: 8 glasses (2L) per day</div>
+        </div>
+
+    </main>
+</div>
+</body>
+</html>

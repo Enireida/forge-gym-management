@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard, Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        .greeting { margin: 4px 0 28px; }
+        .greeting h1 {
+            font-family: var(--font-display); font-weight: 300;
+            font-size: 40px; line-height: 1; letter-spacing: -0.03em;
+            color: var(--ink); margin: 0 0 6px;
+        }
+        .greeting h1 em { font-style: italic; color: var(--accent-deep); }
+        .greeting .sub {
+            font-family: var(--font-mono); font-size: 11px;
+            letter-spacing: 0.12em; text-transform: uppercase; color: var(--stone-400);
+        }
+
+        .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+        @media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+
+        .kpi {
+            background: var(--paper); border: 1px solid var(--line-1);
+            border-radius: var(--r-lg); padding: 20px 22px;
+            display: flex; flex-direction: column; gap: 10px;
+            transition: all var(--dur-base) var(--ease-out);
+        }
+        .kpi:hover { box-shadow: var(--shadow-2); border-color: var(--stone-200); transform: translateY(-1px); }
+        .kpi-head { display: flex; align-items: center; gap: 10px; }
+        .kpi-ico {
+            width: 30px; height: 30px; border-radius: 8px;
+            background: var(--accent-pale); display: grid; place-items: center;
+            color: var(--accent-deep);
+        }
+        .kpi-label {
+            font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+            letter-spacing: 0.12em; text-transform: uppercase; color: var(--stone-400);
+        }
+        .kpi-value {
+            font-family: var(--font-display); font-weight: 300;
+            font-size: 42px; line-height: 1; letter-spacing: -0.03em; color: var(--ink);
+        }
+        .kpi-delta {
+            font-size: 12px; color: var(--signal-success); font-weight: 600;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+
+        .row-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+        @media (max-width: 1100px) { .row-2 { grid-template-columns: 1fr; } }
+
+        .panel {
+            background: var(--paper); border: 1px solid var(--line-1);
+            border-radius: var(--r-lg); padding: 22px 24px;
+        }
+        .panel-head {
+            display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px;
+        }
+        .panel-title {
+            font-family: var(--font-display); font-weight: 400;
+            font-size: 20px; letter-spacing: -0.01em; color: var(--ink);
+        }
+        .panel-title em { font-style: italic; color: var(--accent-deep); }
+        .panel-eyebrow {
+            font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+            letter-spacing: 0.14em; text-transform: uppercase; color: var(--stone-400);
+        }
+
+        .top-list { display: flex; flex-direction: column; }
+        .top-row {
+            display: grid; grid-template-columns: 28px 1fr auto;
+            gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-1); align-items: center;
+        }
+        .top-row:last-child { border-bottom: 0; }
+        .top-rank { font-family: var(--font-mono); font-size: 11px; color: var(--stone-400); font-weight: 700; }
+        .top-name { font-size: 14px; color: var(--ink); }
+        .top-value { font-family: var(--font-mono); font-size: 14px; color: var(--ink); font-weight: 700; }
+
+        /* ── RFID Check-in Toast ───────────────────────────────── */
+        #rfid-toast {
+            position: fixed; top: 24px; right: 24px; z-index: 9999;
+            background: var(--ink); color: var(--paper);
+            border-radius: var(--r-lg); padding: 16px 20px;
+            display: flex; align-items: center; gap: 14px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+            min-width: 280px; max-width: 340px;
+            transform: translateX(calc(100% + 32px));
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+        #rfid-toast.show { transform: translateX(0); }
+
+        .toast-avatar {
+            width: 54px; height: 54px; border-radius: 50%;
+            border: 2px solid var(--accent-deep, #B8956A);
+            flex-shrink: 0; overflow: hidden;
+            background: var(--stone-200, #D8DCE2);
+            display: grid; place-items: center; color: var(--stone-400);
+        }
+        .toast-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .toast-info { flex: 1; min-width: 0; }
+        .toast-name {
+            font-size: 15px; font-weight: 700; color: var(--paper);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .toast-plan {
+            font-family: var(--font-mono); font-size: 11px;
+            letter-spacing: 0.08em; color: rgba(255,255,255,0.45); margin: 3px 0 7px;
+        }
+        .toast-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+            text-transform: uppercase; padding: 3px 9px; border-radius: 99px;
+        }
+        .toast-badge.checkin  { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .toast-badge.checkout { background: rgba(248,113,113,0.15); color: #f87171; }
+
+        .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+        .action {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 18px; border-radius: var(--r-pill);
+            font-size: 13px; font-weight: 600; text-decoration: none;
+            transition: all var(--dur-fast) var(--ease-out);
+            border: 1px solid var(--stone-200); background: var(--paper); color: var(--ink);
+        }
+        .action:hover { background: var(--paper-soft); border-color: var(--ink); color: var(--ink); transform: translateY(-1px); }
+        .action.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+        .action.primary:hover { background: var(--ink-soft); color: var(--paper); }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: adminSidebar('home')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Dashboard')}"></div>
+
+    <main class="main">
+
+        <div class="greeting">
+            <h1>Good morning, <em th:text="${user != null ? user.name : 'Admin'}">Admin</em>.</h1>
+        </div>
+
+        <!-- KPI cards -->
+        <div class="kpi-grid">
+            <div class="kpi">
+                <div class="kpi-head">
+                    <div class="kpi-ico">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <span class="kpi-label">Total members</span>
+                </div>
+                <div class="kpi-value" th:text="${totalMembers}">0</div>
+                <div class="kpi-delta">↗ all-time</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-head">
+                    <div class="kpi-ico">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <span class="kpi-label">Active members</span>
+                </div>
+                <div class="kpi-value" th:text="${activeMembers}">0</div>
+                <div class="kpi-delta">↗ subscribed</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-head">
+                    <div class="kpi-ico">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    </div>
+                    <span class="kpi-label">Check-ins today</span>
+                </div>
+                <div class="kpi-value" id="checkins-kpi" th:text="${checkinsToday}">0</div>
+                <div class="kpi-delta">↗ via kiosk &amp; PIN</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-head">
+                    <div class="kpi-ico">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </div>
+                    <span class="kpi-label">Total revenue</span>
+                </div>
+                <div class="kpi-value">€<span th:text="${totalRevenue}">0</span></div>
+                <div class="kpi-delta">↗ all payments</div>
+            </div>
+        </div>
+
+        <!-- Charts row -->
+        <div class="row-2">
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-title">Revenue <em>trend</em></span>
+                    <span class="panel-eyebrow">monthly · euro</span>
+                </div>
+                <canvas id="revChart" height="200"></canvas>
+            </div>
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-title">Member <em>status</em></span>
+                    <span class="panel-eyebrow">live breakdown</span>
+                </div>
+                <canvas id="statusChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Top spenders -->
+        <div class="panel" style="margin-bottom:24px">
+            <div class="panel-head">
+                <span class="panel-title">Top <em>spenders</em></span>
+                <span class="panel-eyebrow">cumulative · euro</span>
+            </div>
+            <div class="top-list">
+                <div class="top-row" th:each="entry, iter : ${topSpenders}">
+                    <div class="top-rank" th:text="'#' + ${iter.count}">#1</div>
+                    <div class="top-name" th:text="${entry.key}">Name</div>
+                    <div class="top-value">€<span th:text="${entry.value}">0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="panel">
+            <div class="panel-head">
+                <span class="panel-title">Quick <em>actions</em></span>
+            </div>
+            <div class="actions">
+                <a class="action primary" href="/admin/members">Manage members →</a>
+                <a class="action" href="/kiosk" target="_blank">Open door kiosk ↗</a>
+                <a class="action" href="/admin/reports">Full reports</a>
+                <a class="action" href="/admin/reports/download">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download Word report
+                </a>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- ── RFID Check-in Toast ──────────────────────────────────────── -->
+<div id="rfid-toast">
+    <div class="toast-avatar" id="toast-avatar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+        </svg>
+    </div>
+    <div class="toast-info">
+        <div class="toast-name"  id="toast-name">Member</div>
+        <div class="toast-plan"  id="toast-plan">Plan</div>
+        <div class="toast-badge checkin" id="toast-badge">● Checked in</div>
+    </div>
+</div>
+
+
+<script th:inline="javascript">
+
+    // ── RFID capture on dashboard ──────────────────────────────────
+    let rfidBuffer = '';
+    let rfidTimer  = null;
+    let toastTimer = null;
+
+    document.addEventListener('keydown', e => {
+        // skip if user is typing in an input
+        if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+        if (e.key === 'Enter') {
+            if (rfidBuffer.length >= 4) processRfid(rfidBuffer);
+            rfidBuffer = '';
+            clearTimeout(rfidTimer);
+        } else if (e.key.length === 1) {
+            rfidBuffer += e.key;
+            clearTimeout(rfidTimer);
+            rfidTimer = setTimeout(() => { rfidBuffer = ''; }, 500);
+        }
+    });
+
+    async function processRfid(code) {
+        try {
+            const res = await fetch('/api/members/checkin-rfid', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rfid: code })
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            showToast(data);
+            // update check-ins counter live
+            const kpi = document.getElementById('checkins-kpi');
+            if (kpi) kpi.textContent = parseInt(kpi.textContent || '0') + 1;
+        } catch(err) { /* silently ignore */ }
+    }
+
+    function showToast(data) {
+        const toast  = document.getElementById('rfid-toast');
+        const avatar = document.getElementById('toast-avatar');
+        const name   = document.getElementById('toast-name');
+        const plan   = document.getElementById('toast-plan');
+        const badge  = document.getElementById('toast-badge');
+
+        name.textContent = data.memberName || 'Unknown';
+        plan.textContent = data.memberPlan || '';
+
+        const isIn = data.action === 'checkin';
+        badge.className   = 'toast-badge ' + (isIn ? 'checkin' : 'checkout');
+        badge.textContent = isIn ? '● Checked in' : '● Checked out';
+
+        if (data.memberPhoto) {
+            avatar.innerHTML = '<img src="' + data.memberPhoto + '" alt="">';
+        } else {
+            avatar.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+        }
+
+        clearTimeout(toastTimer);
+        toast.classList.add('show');
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 4000);
+    }
+    // ───────────────────────────────────────────────────────────────
+
+    async function load() {
+        const [s, r] = await Promise.all([
+            fetch('/api/stats/summary').then(x => x.json()),
+            fetch('/api/stats/revenue-by-month').then(x => x.json())
+        ]);
+
+        // Revenue chart, copper accent
+        const labels = Object.keys(r);
+        const data   = Object.values(r).map(v => Number(v));
+        new Chart(document.getElementById('revChart'), {
+            type: 'line',
+            data: { labels, datasets: [{
+                label: 'Revenue (€)', data,
+                fill: true,
+                borderColor: '#8C6E47',
+                backgroundColor: 'rgba(184,149,106,0.10)',
+                tension: 0.35, pointRadius: 4,
+                pointBackgroundColor: '#8C6E47',
+                pointBorderColor: '#FFFFFF', pointBorderWidth: 2,
+            }]},
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#ECEEF1' }, ticks: { color: '#6B7886' } },
+                    x: { grid: { display: false }, ticks: { color: '#6B7886' } }
+                }
+            }
+        });
+
+        // Status doughnut, navy + copper
+        const sb = s.statusBreakdown;
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(sb),
+                datasets: [{
+                    data: Object.values(sb),
+                    backgroundColor: ['#0B1B2E', '#B8956A', '#D8DCE2', '#A8413A'],
+                    borderWidth: 2, borderColor: '#FFFFFF'
+                }]
+            },
+            options: {
+                cutout: '64%',
+                plugins: { legend: { position: 'bottom', labels: { color: '#364658', font: { size: 12 } } } }
+            }
+        });
+    }
+    load();
+</script>
+</body>
+</html>

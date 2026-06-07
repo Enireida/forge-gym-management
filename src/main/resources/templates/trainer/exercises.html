@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>Exercises - Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: trainerSidebar('exercises')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Exercise Library')}"></div>
+    <main class="main">
+        <div class="card">
+            <div class="card-title">Workout plans</div>
+            <div class="plan-grid">
+                <a th:each="p : ${plans}" th:href="@{'/trainer/plans/'+${p.id}}"
+                   class="plan-tile" style="text-decoration:none;color:inherit">
+                    <div class="plan-hero"
+                         th:classappend="${p.level == 'Beginner' ? 'beginner' : (p.level == 'Advanced' ? 'advanced' : 'intermediate')}">
+                        <div class="plan-tile-title" th:text="${p.name}"></div>
+                        <div class="plan-tile-meta" th:text="${p.level + ' • ' + p.goal}"></div>
+                    </div>
+                    <div class="plan-tile-body">
+                        <div class="plan-tile-desc" th:text="${p.description}"></div>
+                        <small><strong th:text="${#sets.size(p.exercises)}">0</strong> exercises</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">All exercises (<span th:text="${#lists.size(exercises)}">0</span>)</div>
+            <div class="exercise-grid">
+                <div th:each="e : ${exercises}" class="exercise-card">
+                    <div class="exercise-img"
+                         th:style="${e.imageUrl}!=null ? 'background-image:url(' + ${e.imageUrl} + ')':''">
+                        <span th:if="${e.imageUrl}==null">💪</span>
+                    </div>
+                    <div class="exercise-body">
+                        <div class="exercise-name" th:text="${e.name}"></div>
+                        <div class="exercise-meta">
+                            <span class="badge badge-info" th:text="${e.muscleGroup}"></span>
+                            <span class="badge badge-purple" th:text="${e.difficulty}"></span>
+                        </div>
+                        <div class="exercise-instructions" th:text="${e.instructions}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body></html>

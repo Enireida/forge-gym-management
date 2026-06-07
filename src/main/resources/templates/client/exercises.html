@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head><meta charset="UTF-8"><title>Exercises - Forge</title>
+<link rel="stylesheet" th:href="@{/css/app.css}">
+<style>
+    /* Workout-plans redesign — modern card with hero image, tags, and stats footer */
+    .wplan-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;margin-top:6px}
+    .wplan-card{background:var(--bg-surface);border:1px solid var(--line-1);border-radius:var(--r-xl);overflow:hidden;display:flex;flex-direction:column;text-decoration:none;color:inherit;transition:box-shadow .2s, transform .2s, border-color .2s;height:100%}
+    .wplan-card:hover{box-shadow:var(--shadow-3);transform:translateY(-3px);border-color:var(--accent)}
+    .wplan-hero{position:relative;aspect-ratio:16/10;background-color:var(--bg-sunken);background-size:cover;background-position:center}
+    .wplan-hero::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,27,46,0) 35%,rgba(11,27,46,.82) 100%)}
+    .wplan-level{position:absolute;top:12px;right:12px;z-index:2;padding:4px 10px;border-radius:999px;font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:rgba(255,255,255,.92);color:var(--fg-1);backdrop-filter:blur(4px)}
+    .wplan-level.beginner{color:#15803d}
+    .wplan-level.intermediate{color:#a16207}
+    .wplan-level.advanced{color:#b91c1c}
+    .wplan-hero-title{position:absolute;left:18px;right:18px;bottom:14px;z-index:2;font-family:var(--font-display);font-size:22px;font-weight:400;letter-spacing:-.01em;line-height:1.15;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+    .wplan-body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+    .wplan-tags{display:flex;flex-wrap:wrap;gap:6px}
+    .wplan-tag{padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;background:var(--bg-sunken);color:var(--stone-600);letter-spacing:.02em}
+    .wplan-desc{font-size:13px;color:var(--stone-600);line-height:1.5;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:1}
+    .wplan-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px;border-top:1px solid var(--line-1)}
+    .wplan-stats{display:flex;gap:14px}
+    .wplan-stat{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--stone-500)}
+    .wplan-stat svg{width:13px;height:13px;flex-shrink:0;color:var(--accent-deep)}
+    .wplan-stat strong{color:var(--fg-1);font-weight:600}
+    .wplan-cta{font-size:12px;color:var(--accent-deep);font-weight:600;display:inline-flex;align-items:center;gap:3px;transition:gap .15s}
+    .wplan-card:hover .wplan-cta{gap:7px}
+</style></head>
+<body>
+<div class="dashboard">
+    <div th:replace="~{fragments/layout :: clientSidebar('exercises')}"></div>
+    <div th:replace="~{fragments/layout :: topbar('Exercise Library')}"></div>
+    <main class="main">
+
+        <div class="card">
+            <div class="card-title">Filter exercises</div>
+            <form autocomplete="off" method="get" action="/client/exercises">
+                <div class="form-row">
+                    <div><label class="form-label">Muscle group</label>
+                        <select class="form-select" name="muscle">
+                            <option value="">All</option>
+                            <option th:selected="${muscle=='Chest'}">Chest</option>
+                            <option th:selected="${muscle=='Back'}">Back</option>
+                            <option th:selected="${muscle=='Legs'}">Legs</option>
+                            <option th:selected="${muscle=='Shoulders'}">Shoulders</option>
+                            <option th:selected="${muscle=='Arms'}">Arms</option>
+                            <option th:selected="${muscle=='Core'}">Core</option>
+                            <option th:selected="${muscle=='Cardio'}">Cardio</option>
+                        </select></div>
+                    <div><label class="form-label">Plan level</label>
+                        <select class="form-select" name="level">
+                            <option value="">All</option>
+                            <option th:selected="${level=='Beginner'}">Beginner</option>
+                            <option th:selected="${level=='Intermediate'}">Intermediate</option>
+                            <option th:selected="${level=='Advanced'}">Advanced</option>
+                        </select></div>
+                </div>
+                <button class="btn" type="submit">Apply</button>
+                <a class="btn btn-secondary" href="/client/exercises">Reset</a>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Workout plans
+                <span style="font-size:13px;font-weight:400;color:var(--stone-400)"
+                      th:text="'(' + ${#lists.size(plans)} + ')'"></span>
+            </div>
+            <div class="wplan-grid">
+                <a th:each="p : ${plans}" th:href="@{'/client/plans/' + ${p.id}}" class="wplan-card">
+                    <div class="wplan-hero"
+                         th:style="${p.imageUrl != null and !p.imageUrl.isEmpty()} ? 'background-image:url(' + ${p.imageUrl} + ')' : ''">
+                        <span class="wplan-level"
+                              th:classappend="${p.level == 'Beginner' ? 'beginner' : (p.level == 'Advanced' ? 'advanced' : 'intermediate')}"
+                              th:text="${p.level}">Level</span>
+                        <div class="wplan-hero-title" th:text="${p.name}">Plan name</div>
+                    </div>
+                    <div class="wplan-body">
+                        <div class="wplan-tags">
+                            <span class="wplan-tag" th:if="${p.goal}" th:text="${p.goal}">Goal</span>
+                            <span class="wplan-tag" th:if="${p.sessionsPerWeek}"
+                                  th:text="${p.sessionsPerWeek + ' sessions / week'}">3 sessions / week</span>
+                        </div>
+                        <p class="wplan-desc" th:text="${p.description}">Description</p>
+                        <div class="wplan-footer">
+                            <div class="wplan-stats">
+                                <span class="wplan-stat">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                                    <strong th:text="${#sets.size(p.exercises)}">0</strong>&nbsp;exercises
+                                </span>
+                                <span class="wplan-stat" th:if="${p.durationWeeks}">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                    <strong th:text="${p.durationWeeks}">8</strong>&nbsp;weeks
+                                </span>
+                            </div>
+                            <span class="wplan-cta">View plan &rarr;</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">All exercises (<span th:text="${#lists.size(exercises)}">0</span>)</div>
+            <div class="exercise-grid">
+                <div th:each="e : ${exercises}" class="exercise-card">
+                    <div class="exercise-img"
+                         th:style="${e.imageUrl}!=null ? 'background-image:url(' + ${e.imageUrl} + ')':''">
+                        <span th:if="${e.imageUrl}==null">💪</span>
+                    </div>
+                    <div class="exercise-body">
+                        <div class="exercise-name" th:text="${e.name}"></div>
+                        <div class="exercise-meta">
+                            <span class="badge badge-info" th:text="${e.muscleGroup}"></span>
+                            <span class="badge badge-purple" th:text="${e.difficulty}"></span>
+                            <span class="badge" th:if="${e.setsReps}" th:text="${e.setsReps}"></span>
+                        </div>
+                        <div class="exercise-instructions" th:text="${e.instructions}"></div>
+                        <p style="margin-top:8px;font-size:13px;color:var(--text-soft)"
+                           th:if="${e.equipment}">
+                            🛠️ <span th:text="${e.equipment}"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body></html>

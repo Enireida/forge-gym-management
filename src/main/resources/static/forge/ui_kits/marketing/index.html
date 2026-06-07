@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Forge — Run your gym with intent</title>
+<link rel="stylesheet" href="../../colors_and_type.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg-canvas); color: var(--fg-1); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
+  section { padding: 96px 0; }
+  h1, h2, h3 { margin: 0; }
+  p { margin: 0; }
+
+  /* ---------- NAV ---------- */
+  .nav { position: sticky; top: 0; z-index: 50; background: rgba(245,241,232,0.86); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(229,221,200,0.6); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+  .logo { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: 24px; color: var(--fg-1); text-decoration: none; }
+  .logo .dot { color: var(--sage-700); font-style: italic; }
+  .logo .name { font-style: italic; }
+  .logo svg { display: block; }
+  .nav-links { display: flex; gap: 36px; }
+  .nav-links a { font-size: 14px; color: var(--fg-2); text-decoration: none; transition: color .15s; }
+  .nav-links a:hover { color: var(--fg-1); }
+  .nav-right { display: flex; align-items: center; gap: 14px; }
+  .lang-toggle { display: flex; background: var(--bone-100); border-radius: 999px; padding: 3px; }
+  .lang-toggle button { all: unset; padding: 6px 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; border-radius: 999px; cursor: pointer; color: var(--bone-800); font-family: var(--font-mono); transition: all .15s; }
+  .lang-toggle button.active { background: #fff; color: var(--fg-1); box-shadow: var(--shadow-1); }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 12px; font-size: 14px; font-weight: 500; text-decoration: none; cursor: pointer; transition: all .18s cubic-bezier(.2,0,0,1); border: none; font-family: var(--font-sans); }
+  .btn-primary { background: var(--sage-800); color: var(--bone-50); }
+  .btn-primary:hover { background: var(--sage-900); transform: translateY(-1px); }
+  .btn-secondary { background: transparent; color: var(--fg-1); border: 1px solid var(--line-2); }
+  .btn-secondary:hover { background: #fff; border-color: var(--bone-700); }
+  .btn-ghost { background: transparent; color: var(--fg-1); padding: 9px 14px; }
+  .btn-ghost:hover { background: var(--bone-100); }
+  .btn-light { background: var(--bone-50); color: var(--sage-900); }
+  .btn-light:hover { background: #fff; }
+
+  /* ---------- HERO ---------- */
+  .hero { padding: 88px 0 80px; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; top: -200px; right: -300px; width: 700px; height: 700px; background: radial-gradient(circle, rgba(91,125,79,0.10), transparent 65%); pointer-events: none; }
+  .hero-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 72px; align-items: center; position: relative; }
+  .hero-eyebrow { display: inline-flex; align-items: center; gap: 10px; padding: 6px 14px; background: var(--sage-50); border-radius: 999px; font-size: 12px; font-weight: 500; color: var(--sage-800); margin-bottom: 28px; }
+  .hero-eyebrow .pulse { width: 6px; height: 6px; background: var(--copper-500); border-radius: 50%; box-shadow: 0 0 0 0 rgba(74,122,79,0.6); animation: pulse 2s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(74,122,79,0.5);} 70% { box-shadow: 0 0 0 10px rgba(74,122,79,0);} 100% { box-shadow: 0 0 0 0 rgba(74,122,79,0);} }
+  h1.hero-title { font-family: var(--font-display); font-weight: 400; font-size: 96px; line-height: 0.96; letter-spacing: -0.025em; color: var(--fg-1); margin-bottom: 28px; }
+  h1.hero-title em { font-style: italic; color: var(--sage-700); }
+  .hero-sub { font-size: 19px; line-height: 1.55; color: var(--fg-2); max-width: 540px; margin-bottom: 36px; }
+  .hero-ctas { display: flex; gap: 12px; align-items: center; margin-bottom: 32px; }
+  .hero-meta { display: flex; gap: 32px; padding-top: 24px; border-top: 1px solid var(--line-1); }
+  .hero-meta-item .k { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--bone-700); margin-bottom: 4px; }
+  .hero-meta-item .v { font-size: 14px; color: var(--fg-1); font-weight: 500; }
+
+  /* Hero visual — phone + ambient cards */
+  .hero-visual { position: relative; height: 600px; }
+  .phone { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 280px; height: 560px; background: linear-gradient(160deg, #2a2a2a, #0a0a0a); border-radius: 44px; padding: 12px; box-shadow: 0 30px 60px -20px rgba(26,40,28,0.35); }
+  .phone-screen { width: 100%; height: 100%; background: var(--bg-canvas); border-radius: 34px; overflow: hidden; position: relative; padding: 50px 22px 24px; }
+  .phone-screen::before { content: ''; position: absolute; top: 14px; left: 50%; transform: translateX(-50%); width: 100px; height: 28px; background: #000; border-radius: 999px; }
+  .phone-greeting { font-family: var(--font-display); font-size: 26px; line-height: 1.1; margin-bottom: 24px; color: var(--fg-1); }
+  .phone-greeting em { font-style: italic; color: var(--sage-700); }
+  .phone-card { background: #fff; border: 1px solid var(--line-1); border-radius: 16px; padding: 14px; margin-bottom: 10px; }
+  .phone-card-title { font-size: 10px; color: var(--bone-700); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; font-family: var(--font-mono); }
+  .phone-card-val { font-family: var(--font-mono); font-size: 22px; font-weight: 600; color: var(--fg-1); }
+  .phone-card-val .unit { font-size: 11px; color: var(--bone-700); margin-left: 4px; }
+  .phone-card .delta { font-size: 10px; color: var(--sage-700); font-weight: 600; margin-left: 8px; }
+  .phone-card.sage { background: var(--sage-800); color: var(--bone-50); border-color: var(--sage-800); }
+  .phone-card.sage .phone-card-title { color: var(--sage-200); }
+  .phone-card.sage .phone-card-val { color: var(--bone-50); }
+  .float-chip { position: absolute; background: #fff; border: 1px solid var(--line-1); border-radius: 14px; padding: 12px 16px; box-shadow: var(--shadow-3); display: flex; align-items: center; gap: 12px; animation: floatA 6s ease-in-out infinite; }
+  .float-chip.left { top: 8%; left: -2%; }
+  .float-chip.right { top: 60%; right: -4%; animation-delay: -3s; }
+  .float-chip.bottom { bottom: 4%; left: 10%; animation-delay: -1.5s; }
+  @keyframes floatA { 0%, 100% { transform: translateY(0);} 50% { transform: translateY(-10px);} }
+  .float-chip .ico { width: 36px; height: 36px; border-radius: 10px; background: var(--sage-50); display: grid; place-items: center; color: var(--sage-700); }
+  .float-chip .ico.copper { background: rgba(74,122,79,0.12); color: var(--copper-600); }
+  .float-chip .ico svg { width: 18px; height: 18px; }
+  .float-chip .l1 { font-size: 11px; color: var(--bone-700); }
+  .float-chip .l2 { font-size: 13px; font-weight: 600; color: var(--fg-1); }
+
+  /* ---------- LOGO STRIP ---------- */
+  .strip { padding: 48px 0; border-top: 1px solid var(--line-1); border-bottom: 1px solid var(--line-1); background: rgba(245,241,232,0.5); }
+  .strip-inner { display: flex; align-items: center; gap: 56px; flex-wrap: wrap; justify-content: center; }
+  .strip-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--bone-700); }
+  .strip-logos { display: flex; gap: 48px; flex-wrap: wrap; align-items: center; }
+  .strip-logo { font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--bone-800); opacity: 0.7; }
+
+  /* ---------- STATS ---------- */
+  .stats { padding: 80px 0; }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 1px solid var(--line-1); border-bottom: 1px solid var(--line-1); }
+  .stat { padding: 32px 28px; border-right: 1px solid var(--line-1); }
+  .stat:last-child { border-right: 0; }
+  .stat-num { font-family: var(--font-display); font-size: 56px; line-height: 1; color: var(--fg-1); margin-bottom: 10px; letter-spacing: -0.02em; }
+  .stat-num em { font-style: italic; color: var(--sage-700); }
+  .stat-lbl { font-size: 13px; color: var(--fg-2); line-height: 1.4; }
+
+  /* ---------- FEATURES ---------- */
+  .features { padding: 96px 0 80px; }
+  .section-head { display: flex; align-items: end; justify-content: space-between; margin-bottom: 56px; gap: 48px; }
+  .section-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sage-700); margin-bottom: 16px; }
+  h2.section-title { font-family: var(--font-display); font-weight: 400; font-size: 56px; line-height: 1.04; letter-spacing: -0.02em; max-width: 720px; }
+  h2.section-title em { font-style: italic; color: var(--sage-700); }
+  .section-lede { font-size: 16px; line-height: 1.55; color: var(--fg-2); max-width: 360px; }
+
+  .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .feature { background: #fff; border: 1px solid var(--line-1); border-radius: 20px; padding: 28px; transition: all .22s; min-height: 260px; display: flex; flex-direction: column; }
+  .feature:hover { box-shadow: var(--shadow-3); transform: translateY(-2px); border-color: var(--bone-300); }
+  .feature .ico { width: 44px; height: 44px; background: var(--sage-50); border-radius: 12px; display: grid; place-items: center; color: var(--sage-700); margin-bottom: 22px; }
+  .feature .ico svg { width: 22px; height: 22px; }
+  .feature h3 { font-family: var(--font-sans); font-size: 18px; font-weight: 600; color: var(--fg-1); margin-bottom: 10px; }
+  .feature p { font-size: 14px; line-height: 1.55; color: var(--fg-2); flex: 1; }
+  .feature .tag { display: inline-block; margin-top: 18px; font-family: var(--font-mono); font-size: 10.5px; padding: 3px 8px; background: var(--bone-100); color: var(--bone-800); border-radius: 999px; align-self: flex-start; letter-spacing: 0.04em; }
+  .feature.feat-ai .ico { background: rgba(74,122,79,0.12); color: var(--copper-600); }
+  .feature.feat-ai .tag { background: rgba(74,122,79,0.10); color: var(--copper-600); }
+
+  /* ---------- AI SECTION ---------- */
+  .ai-section { padding: 96px 0; background: var(--sage-900); color: var(--bone-50); border-radius: 32px; margin: 0 32px; position: relative; overflow: hidden; }
+  .ai-section::before { content: ''; position: absolute; right: -180px; top: -100px; width: 480px; height: 480px; background: radial-gradient(circle, rgba(74,122,79,0.18), transparent 60%); }
+  .ai-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 80px; align-items: center; position: relative; padding: 0 56px; }
+  .ai-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; color: var(--copper-400); margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+  .ai-eyebrow svg { width: 14px; height: 14px; }
+  h2.ai-title { font-family: var(--font-display); font-weight: 400; font-size: 56px; line-height: 1.04; letter-spacing: -0.02em; margin-bottom: 24px; color: var(--bone-50); }
+  h2.ai-title em { font-style: italic; color: var(--copper-400); }
+  .ai-sub { font-size: 16px; line-height: 1.6; color: var(--sage-200); margin-bottom: 32px; max-width: 460px; }
+  .ai-bullets { display: grid; gap: 14px; margin-bottom: 36px; }
+  .ai-bullet { display: flex; gap: 14px; align-items: flex-start; }
+  .ai-bullet .num { font-family: var(--font-mono); font-size: 11px; color: var(--copper-400); padding-top: 2px; min-width: 22px; }
+  .ai-bullet div { font-size: 14.5px; line-height: 1.55; color: var(--bone-100); }
+  .ai-bullet strong { color: var(--bone-50); font-weight: 600; display: block; margin-bottom: 2px; }
+  .chat-mock { background: rgba(245,241,232,0.05); backdrop-filter: blur(8px); border: 1px solid rgba(245,241,232,0.10); border-radius: 24px; padding: 26px; }
+  .chat-head { display: flex; align-items: center; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid rgba(245,241,232,0.10); margin-bottom: 20px; }
+  .chat-head .av { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--copper-500), var(--copper-400)); display: grid; place-items: center; color: #fff; }
+  .chat-head .av svg { width: 18px; height: 18px; }
+  .chat-head .name { font-size: 14px; font-weight: 600; color: var(--bone-50); }
+  .chat-head .status { font-size: 11px; color: var(--sage-300); display: flex; align-items: center; gap: 6px; }
+  .chat-head .status::before { content: ''; width: 6px; height: 6px; background: #6FBF73; border-radius: 50%; }
+  .bubble { padding: 12px 16px; border-radius: 16px; font-size: 13.5px; line-height: 1.55; max-width: 85%; margin-bottom: 10px; }
+  .bubble.you { background: rgba(74,122,79,0.22); color: var(--bone-50); margin-left: auto; border-bottom-right-radius: 6px; }
+  .bubble.ai { background: rgba(245,241,232,0.10); color: var(--bone-50); border-bottom-left-radius: 6px; }
+  .bubble.ai .meta { display: block; font-size: 10.5px; color: var(--sage-300); margin-top: 8px; font-family: var(--font-mono); letter-spacing: 0.04em; }
+
+  /* ---------- TESTIMONIAL ---------- */
+  .quote { padding: 120px 0; }
+  .quote-block { max-width: 920px; margin: 0 auto; text-align: center; }
+  .quote-mark { font-family: var(--font-display); font-style: italic; font-size: 100px; line-height: 1; color: var(--sage-200); margin-bottom: 12px; }
+  blockquote { font-family: var(--font-display); font-weight: 400; font-size: 36px; line-height: 1.25; letter-spacing: -0.015em; color: var(--fg-1); margin: 0 0 32px; }
+  blockquote em { font-style: italic; color: var(--sage-700); }
+  .quote-attr { display: flex; align-items: center; gap: 14px; justify-content: center; }
+  .quote-attr .avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--sage-700), var(--sage-500)); display: grid; place-items: center; color: var(--bone-50); font-family: var(--font-display); font-style: italic; font-size: 20px; }
+  .quote-attr .who { text-align: left; }
+  .quote-attr .who .n { font-size: 14px; font-weight: 600; color: var(--fg-1); }
+  .quote-attr .who .r { font-size: 13px; color: var(--fg-2); }
+
+  /* ---------- PRICING ---------- */
+  .pricing { padding: 96px 0; }
+  .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .price-card { background: #fff; border: 1px solid var(--line-1); border-radius: 24px; padding: 36px 32px; display: flex; flex-direction: column; position: relative; }
+  .price-card.featured { background: var(--sage-900); color: var(--bone-50); border-color: var(--sage-900); transform: scale(1.02); box-shadow: 0 30px 60px -20px rgba(26,40,28,0.30); }
+  .price-name { font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--sage-700); margin-bottom: 8px; }
+  .price-card.featured .price-name { color: var(--copper-400); }
+  .price-desc { font-size: 13px; color: var(--fg-2); margin-bottom: 24px; }
+  .price-card.featured .price-desc { color: var(--sage-200); }
+  .price-amt { display: flex; align-items: baseline; gap: 6px; margin-bottom: 6px; }
+  .price-amt .cur { font-family: var(--font-display); font-size: 28px; color: var(--fg-1); }
+  .price-card.featured .price-amt .cur { color: var(--bone-50); }
+  .price-amt .num { font-family: var(--font-display); font-size: 64px; line-height: 1; letter-spacing: -0.02em; color: var(--fg-1); }
+  .price-card.featured .price-amt .num { color: var(--bone-50); }
+  .price-amt .per { font-size: 13px; color: var(--bone-700); margin-left: 4px; }
+  .price-card.featured .price-amt .per { color: var(--sage-300); }
+  .price-sub { font-size: 12px; color: var(--bone-700); margin-bottom: 28px; }
+  .price-card.featured .price-sub { color: var(--sage-300); }
+  .price-features { list-style: none; padding: 0; margin: 0 0 32px; display: grid; gap: 12px; }
+  .price-features li { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+  .price-card.featured .price-features li { color: var(--bone-100); }
+  .price-features svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--sage-700); margin-top: 3px; }
+  .price-card.featured .price-features svg { color: var(--copper-400); }
+  .price-card .btn { width: 100%; justify-content: center; margin-top: auto; }
+  .price-badge { position: absolute; top: 20px; right: 24px; font-family: var(--font-mono); font-size: 10.5px; padding: 4px 10px; background: var(--copper-500); color: #fff; border-radius: 999px; letter-spacing: 0.08em; }
+
+  /* ---------- CTA BANNER ---------- */
+  .cta-banner { padding: 80px 56px; background: var(--bone-25); border: 1px solid var(--line-1); border-radius: 28px; margin: 0 32px 96px; display: grid; grid-template-columns: 1.5fr 1fr; gap: 56px; align-items: center; }
+  .cta-banner h2 { font-family: var(--font-display); font-weight: 400; font-size: 52px; line-height: 1.05; letter-spacing: -0.02em; }
+  .cta-banner h2 em { font-style: italic; color: var(--sage-700); }
+  .cta-banner p { font-size: 16px; color: var(--fg-2); margin-top: 16px; }
+  .cta-right { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+  .cta-right .micro { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--bone-700); margin-top: 8px; }
+
+  /* ---------- FOOTER ---------- */
+  footer { background: var(--sage-950); color: var(--bone-50); padding: 80px 0 36px; }
+  .footer-inner { padding: 0 32px; max-width: 1240px; margin: 0 auto; }
+  .footer-top { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr; gap: 48px; padding-bottom: 56px; border-bottom: 1px solid rgba(245,241,232,0.10); }
+  .footer-brand .logo { color: var(--bone-50); margin-bottom: 16px; }
+  .footer-brand .logo .dot { color: var(--copper-400); }
+  .footer-brand p { font-size: 14px; line-height: 1.6; color: var(--sage-300); max-width: 280px; }
+  .footer-col h4 { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sage-300); margin: 0 0 18px; font-weight: 600; }
+  .footer-col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .footer-col a { font-size: 14px; color: var(--bone-100); text-decoration: none; transition: color .15s; }
+  .footer-col a:hover { color: var(--copper-400); }
+  .footer-bot { display: flex; justify-content: space-between; align-items: center; padding-top: 28px; font-size: 12px; color: var(--sage-300); font-family: var(--font-mono); letter-spacing: 0.06em; }
+  .footer-bot .legal { display: flex; gap: 24px; }
+  .footer-bot a { color: var(--sage-300); text-decoration: none; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1024px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 48px; }
+    .hero-visual { height: 480px; }
+    h1.hero-title { font-size: 64px; }
+    .features-grid, .price-grid, .stats-grid { grid-template-columns: 1fr 1fr; }
+    .stat { border-right: none; border-bottom: 1px solid var(--line-1); }
+    .ai-grid { grid-template-columns: 1fr; gap: 48px; padding: 0 32px; }
+    .cta-banner { grid-template-columns: 1fr; padding: 56px 32px; }
+    .footer-top { grid-template-columns: 1fr 1fr; }
+    .section-head { flex-direction: column; align-items: flex-start; }
+  }
+  @media (max-width: 640px) {
+    .wrap { padding: 0 20px; }
+    section { padding: 64px 0; }
+    h1.hero-title { font-size: 48px; }
+    h2.section-title, h2.ai-title { font-size: 40px; }
+    blockquote { font-size: 24px; }
+    .features-grid, .price-grid, .stats-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .ai-section, .cta-banner { margin: 0 12px; border-radius: 20px; }
+    .cta-banner h2 { font-size: 36px; }
+    .footer-top { grid-template-columns: 1fr; gap: 32px; }
+  }
+</style>
+</head>
+<body data-screen-label="01 Marketing Landing">
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="logo" href="#">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="15" stroke="#1A2E1A" stroke-width="1.6"/>
+        <path d="M 11 22 L 11 10 L 21 10 M 11 16 L 18 16" stroke="#1A2E1A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="name">Forge<span class="dot">.</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="#features" data-en="Features" data-sq="Veçoritë">Features</a>
+      <a href="#ai" data-en="AI Coach" data-sq="AI Coach">AI Coach</a>
+      <a href="#pricing" data-en="Pricing" data-sq="Çmimet">Pricing</a>
+      <a href="#contact" data-en="Contact" data-sq="Kontakt">Contact</a>
+    </div>
+    <div class="nav-right">
+      <div class="lang-toggle" role="tablist">
+        <button id="lang-en" class="active" onclick="setLang('en')">EN</button>
+        <button id="lang-sq" onclick="setLang('sq')">SQ</button>
+      </div>
+      <a href="#" class="btn btn-ghost" data-en="Sign in" data-sq="Hyr">Sign in</a>
+      <a href="#cta" class="btn btn-primary" data-en="Get a demo" data-sq="Kërko demo">Get a demo</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="hero-eyebrow"><span class="pulse"></span><span data-en="New · AI Fitness Coach in beta" data-sq="E re · AI Coach në beta">New · AI Fitness Coach in beta</span></div>
+      <h1 class="hero-title" data-en-html="Run your gym with <em>intent</em>." data-sq-html="Menaxho palestrën me <em>qartësi</em>.">Run your gym with <em>intent</em>.</h1>
+      <p class="hero-sub" data-en="The complete platform behind Albania's modern fitness centers. Members, payments, trainers, equipment, and an AI coach — all on one quiet, considered system." data-sq="Platforma e plotë pas qendrave moderne të fitness-it në Shqipëri. Anëtarë, pagesa, trajnerë, pajisje dhe një trajner AI — të gjitha në një sistem të menduar.">The complete platform behind Albania's modern fitness centers. Members, payments, trainers, equipment, and an AI coach — all on one quiet, considered system.</p>
+      <div class="hero-ctas">
+        <a href="#cta" class="btn btn-primary" data-en="Get a demo" data-sq="Kërko demo">Get a demo
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#features" class="btn btn-secondary" data-en="See features" data-sq="Shiko veçoritë">See features</a>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <div class="k">SETUP</div>
+          <div class="v" data-en="30 minutes" data-sq="30 minuta">30 minutes</div>
+        </div>
+        <div class="hero-meta-item">
+          <div class="k">FREE TRIAL</div>
+          <div class="v" data-en="30 days, no card" data-sq="30 ditë, pa kartë">30 days, no card</div>
+        </div>
+        <div class="hero-meta-item">
+          <div class="k">SUPPORT</div>
+          <div class="v" data-en="Tiranë · Shqip & EN" data-sq="Tiranë · Shqip & EN">Tiranë · Shqip & EN</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero phone mock + chips -->
+    <div class="hero-visual">
+      <div class="float-chip left">
+        <div class="ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+        </div>
+        <div>
+          <div class="l1">Check-in</div>
+          <div class="l2">Elira Hoxha · 09:14</div>
+        </div>
+      </div>
+
+      <div class="float-chip right">
+        <div class="ico copper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg>
+        </div>
+        <div>
+          <div class="l1">AI Coach</div>
+          <div class="l2">Plan ready</div>
+        </div>
+      </div>
+
+      <div class="float-chip bottom">
+        <div class="ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        </div>
+        <div>
+          <div class="l1">Resting HR</div>
+          <div class="l2">62 bpm · −2</div>
+        </div>
+      </div>
+
+      <div class="phone" aria-hidden="true">
+        <div class="phone-screen">
+          <div class="phone-greeting">Hey, <em>Elira</em>.<br/>Today's session.</div>
+          <div class="phone-card sage">
+            <div class="phone-card-title">Membership</div>
+            <div class="phone-card-val">18 <span class="unit">days left</span></div>
+          </div>
+          <div class="phone-card">
+            <div class="phone-card-title">Steps today</div>
+            <div class="phone-card-val">8,412<span class="delta">+12%</span></div>
+          </div>
+          <div class="phone-card">
+            <div class="phone-card-title">PIN</div>
+            <div class="phone-card-val" style="letter-spacing: 0.2em;">4 7 2 9</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LOGO STRIP ============ -->
+<section class="strip" style="padding: 48px 0;">
+  <div class="wrap strip-inner">
+    <span class="strip-label" data-en="Trusted by gyms across Albania" data-sq="Përdoret nga palestra në mbarë Shqipërinë">Trusted by gyms across Albania</span>
+    <div class="strip-logos">
+      <span class="strip-logo">Apex Tiranë</span>
+      <span class="strip-logo">Forma Vlorë</span>
+      <span class="strip-logo">Iron Durrës</span>
+      <span class="strip-logo">Studio Pulse</span>
+      <span class="strip-logo">Mountain Fit</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STATS ============ -->
+<section class="stats">
+  <div class="wrap">
+    <div class="stats-grid">
+      <div class="stat">
+        <div class="stat-num"><em>42</em></div>
+        <div class="stat-lbl" data-en="Gyms running on Forge across Albania" data-sq="Palestra që përdorin Forge në Shqipëri">Gyms running on Forge across Albania</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num"><em>18k</em></div>
+        <div class="stat-lbl" data-en="Active members checked in monthly" data-sq="Anëtarë aktivë muajor">Active members checked in monthly</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num"><em>3.4×</em></div>
+        <div class="stat-lbl" data-en="Faster renewals vs paper workflows" data-sq="Më shpejt rinovime vs letër">Faster renewals vs paper workflows</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num"><em>30</em>m</div>
+        <div class="stat-lbl" data-en="From sign-up to first check-in" data-sq="Nga regjistrimi te check-in i parë">From sign-up to first check-in</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section class="features" id="features">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <div class="section-eyebrow" data-en="WHAT'S INSIDE" data-sq="ÇFARË PËRMBAN">WHAT'S INSIDE</div>
+        <h2 class="section-title" data-en-html="One platform.<br/>Every part of <em>running a gym</em>." data-sq-html="Një platformë.<br/>Çdo pjesë e <em>menaxhimit të një palestre</em>.">One platform.<br/>Every part of <em>running a gym</em>.</h2>
+      </div>
+      <p class="section-lede" data-en="Members, payments, equipment, plans, attendance, reports — and an AI coach that knows each member's profile. Built bilingual, mobile-first." data-sq="Anëtarë, pagesa, pajisje, plane, ndjekje, raporte — dhe një trajner AI që njeh profilin e secilit anëtar. Dygjuhësh, mobile-first.">Members, payments, equipment, plans, attendance, reports — and an AI coach that knows each member's profile. Built bilingual, mobile-first.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <h3 data-en="Member management" data-sq="Menaxhim anëtarësh">Member management</h3>
+        <p data-en="Sign-ups, renewals, expiry tracking. Assign 4-digit PINs and 10-digit RFID cards in seconds. Photo, BMI, full history per member." data-sq="Regjistrime, rinovime, ndjekje skadimi. Cakto PIN 4-shifrore dhe karta RFID 10-shifrore në sekonda.">Sign-ups, renewals, expiry tracking. Assign 4-digit PINs and 10-digit RFID cards in seconds. Photo, BMI, full history per member.</p>
+        <span class="tag">CRUD · STATUS</span>
+      </div>
+
+      <div class="feature">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+        <h3 data-en="Payments & plans" data-sq="Pagesa dhe plane">Payments & plans</h3>
+        <p data-en="Pricing, durations, payment status, history. SMS reminders 7 days before expiry. Receipts emailed automatically." data-sq="Çmime, kohëzgjatje, statuse pagese, histori. Kujtues SMS 7 ditë para skadimit.">Pricing, durations, payment status, history. SMS reminders 7 days before expiry. Receipts emailed automatically.</p>
+        <span class="tag">€ · ALL · SMS</span>
+      </div>
+
+      <div class="feature">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <h3 data-en="PIN & RFID check-in" data-sq="Hyrje me PIN ose RFID">PIN & RFID check-in</h3>
+        <p data-en="Tap-card or 4-digit PIN at the front-door kiosk. Real-time attendance feed for owners, fast greetings at the door." data-sq="Tap-kartë ose PIN 4-shifrore në kioskun e derës. Ndjekje aktuale për pronarët.">Tap-card or 4-digit PIN at the front-door kiosk. Real-time attendance feed for owners, fast greetings at the door.</p>
+        <span class="tag">KIOSK · REALTIME</span>
+      </div>
+
+      <div class="feature">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6.5 6.5 17.5 17.5M2 17l5-5M5 14l5 5M17 2l5 5M22 9l-7 7M14 4l6 6"/></svg></div>
+        <h3 data-en="PT & exercise library" data-sq="PT dhe biblioteka e ushtrimeve">PT & exercise library</h3>
+        <p data-en="Personal training packages, session tracking, request workflow. Trainers log measurements and build exercise plans." data-sq="Paketa PT, ndjekje sesionesh, kërkesa. Trajnerët regjistrojnë matjet.">Personal training packages, session tracking, request workflow. Trainers log measurements and build exercise plans.</p>
+        <span class="tag">TRAINERS</span>
+      </div>
+
+      <div class="feature feat-ai">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg></div>
+        <h3 data-en="AI Fitness Coach" data-sq="Trajner AI Fitness">AI Fitness Coach</h3>
+        <p data-en="Personalized to each member's weight, height, BMI, and goals. Answers questions, builds plans, flags plateaus. Powered by Claude." data-sq="I personalizuar për çdo anëtar. Përgjigjet, ndërton plane, sheh plateau-të. Mundësuar nga Claude.">Personalized to each member's weight, height, BMI, and goals. Answers questions, builds plans, flags plateaus. Powered by Claude.</p>
+        <span class="tag">NEW</span>
+      </div>
+
+      <div class="feature feat-ai">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20c4.4 0 8-3.6 8-8s-3.6-8-8-8c-1 0-2 .2-3 .6"/><path d="M12 4v8l4 4"/></svg></div>
+        <h3 data-en="Food tracker with AI" data-sq="Food tracker me AI">Food tracker with AI</h3>
+        <p data-en="Members snap a meal — AI estimates protein, carbs, fats. Suggests adjustments aligned to their goal. Logged to their profile." data-sq="Anëtari fotografon vaktin — AI vlerëson makro-t. Sugjeron rregullime.">Members snap a meal — AI estimates protein, carbs, fats. Suggests adjustments aligned to their goal. Logged to their profile.</p>
+        <span class="tag">NEW</span>
+      </div>
+
+      <div class="feature">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+        <h3 data-en="Apple Watch · HealthKit" data-sq="Apple Watch · HealthKit">Apple Watch · HealthKit</h3>
+        <p data-en="Steps and heart rate sync from the watch via HealthKit. No custom watch app required — it just works." data-sq="Hapat dhe rrahjet sinkronizohen nga ora. S'duhet app i veçantë.">Steps and heart rate sync from the watch via HealthKit. No custom watch app required — it just works.</p>
+        <span class="tag">iOS · WEARABLE</span>
+      </div>
+
+      <div class="feature">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg></div>
+        <h3 data-en="Reports & analytics" data-sq="Raporte dhe analitikë">Reports & analytics</h3>
+        <p data-en="Daily, monthly, yearly. Revenue trend, attendance heatmap, churn risk flags. Export to PDF for owners and accountants." data-sq="Ditore, mujore, vjetore. Trendi i të ardhurave, heatmap, churn risk.">Daily, monthly, yearly. Revenue trend, attendance heatmap, churn risk flags. Export to PDF for owners and accountants.</p>
+        <span class="tag">CHARTS · PDF</span>
+      </div>
+
+      <div class="feature">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+        <h3 data-en="Bilingual everywhere" data-sq="Dygjuhësh kudo">Bilingual everywhere</h3>
+        <p data-en="Full English and Shqip — every screen, every email, every SMS. Numbers and dates formatted locally. Members choose, we remember." data-sq="Anglisht dhe Shqip plotësisht — çdo ekran, çdo email, çdo SMS.">Full English and Shqip — every screen, every email, every SMS. Numbers and dates formatted locally. Members choose, we remember.</p>
+        <span class="tag">EN · SQ</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AI SECTION ============ -->
+<section id="ai" style="padding: 0;">
+  <div class="ai-section">
+    <div class="ai-grid">
+      <div>
+        <div class="ai-eyebrow">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg>
+          <span data-en="AI FITNESS COACH" data-sq="AI FITNESS COACH">AI FITNESS COACH</span>
+        </div>
+        <h2 class="ai-title" data-en-html="A coach in every member's <em>pocket</em>." data-sq-html="Një trajner në <em>xhepin</em> e çdo anëtari.">A coach in every member's <em>pocket</em>.</h2>
+        <p class="ai-sub" data-en="The AI knows each member's profile — weight, height, BMI, goals, training history. It answers questions, builds plans, flags plateaus before they become problems." data-sq="AI njeh profilin e çdo anëtari — peshë, gjatësi, BMI, qëllime, histori. Përgjigjet, ndërton plane, sheh plateau-të.">The AI knows each member's profile — weight, height, BMI, goals, training history. It answers questions, builds plans, flags plateaus before they become problems.</p>
+
+        <div class="ai-bullets">
+          <div class="ai-bullet">
+            <div class="num">01</div>
+            <div><strong data-en="Personalized, never generic" data-sq="I personalizuar">Personalized, never generic</strong><span data-en="Every reply factors in the member's BMI, recent measurements, and goal. No copy-pasted programs." data-sq="Çdo përgjigje bazohet në BMI, matje, qëllim.">Every reply factors in the member's BMI, recent measurements, and goal. No copy-pasted programs.</span></div>
+          </div>
+          <div class="ai-bullet">
+            <div class="num">02</div>
+            <div><strong data-en="Plateau detection" data-sq="Zbulim plateau-sh">Plateau detection</strong><span data-en="Three weeks of flat weight or strength? The AI surfaces it and proposes a structured shift." data-sq="Tre javë pa progres? AI e sjell dhe propozon zgjidhje.">Three weeks of flat weight or strength? The AI surfaces it and proposes a structured shift.</span></div>
+          </div>
+          <div class="ai-bullet">
+            <div class="num">03</div>
+            <div><strong data-en="Bilingual conversations" data-sq="Biseda dygjuhëshe">Bilingual conversations</strong><span data-en="Members chat in Shqip or English. Tone stays formal but warm — never hype, never patronizing." data-sq="Anëtarët flasin Shqip ose Anglisht. Toni mbetet formal, i ngrohtë.">Members chat in Shqip or English. Tone stays formal but warm — never hype, never patronizing.</span></div>
+          </div>
+        </div>
+
+        <a href="#cta" class="btn btn-light" data-en="See it in action" data-sq="Shihe në veprim">See it in action
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <!-- Chat mockup -->
+      <div class="chat-mock">
+        <div class="chat-head">
+          <div class="av"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg></div>
+          <div>
+            <div class="name">Forge Coach</div>
+            <div class="status">Online · knows your profile</div>
+          </div>
+        </div>
+        <div class="bubble you">My weight hasn't moved in 3 weeks. What should I change?</div>
+        <div class="bubble ai">Looking at your log — strength has held but weight has plateaued at 74.2&nbsp;kg. Three things to try this week:
+          <br/><br/>
+          1. Add 15&nbsp;min steady-state cardio twice a week.
+          <br/>
+          2. Reduce evening carbs by ~30g.
+          <br/>
+          3. We'll re-measure next Friday.
+          <span class="meta">Plan saved · context: BMI 23.4 · goal "tone"</span>
+        </div>
+        <div class="bubble you">Can you log it in my plan?</div>
+        <div class="bubble ai">Done. You'll see it on your phone home screen tomorrow morning. Good luck this week, Elira.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIAL ============ -->
+<section class="quote">
+  <div class="wrap quote-block">
+    <div class="quote-mark">"</div>
+    <blockquote data-en-html="Before Forge, we tracked members in three different notebooks. Now we just look at one screen — renewals, check-ins, who hasn't shown up in two weeks. The <em>AI assistant</em> is what made members renew this year." data-sq-html="Para Forge, mbanim anëtarët në tre fletore. Tani shohim një ekran. <em>Asistenti AI</em> është ai që i bëri anëtarët të rinovojnë këtë vit.">Before Forge, we tracked members in three different notebooks. Now we just look at one screen — renewals, check-ins, who hasn't shown up in two weeks. The <em>AI assistant</em> is what made members renew this year.</blockquote>
+    <div class="quote-attr">
+      <div class="avatar">A</div>
+      <div class="who">
+        <div class="n">Arben Krasniqi</div>
+        <div class="r" data-en="Owner, Apex Tiranë" data-sq="Pronar, Apex Tiranë">Owner, Apex Tiranë</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section class="pricing" id="pricing">
+  <div class="wrap">
+    <div class="section-head" style="margin-bottom: 48px;">
+      <div>
+        <div class="section-eyebrow" data-en="PRICING" data-sq="ÇMIMET">PRICING</div>
+        <h2 class="section-title" data-en-html="Honest pricing.<br/>Built for <em>Albanian gyms</em>." data-sq-html="Çmime të ndershme.<br/>Bërë për <em>palestra në Shqipëri</em>.">Honest pricing.<br/>Built for <em>Albanian gyms</em>.</h2>
+      </div>
+      <p class="section-lede" data-en="One flat monthly fee per location. Every feature included on every plan — you only pay more if you have more members." data-sq="Tarifë fikse mujore për lokacion. Çdo veçori e përfshirë në çdo plan.">One flat monthly fee per location. Every feature included on every plan — you only pay more if you have more members.</p>
+    </div>
+
+    <div class="price-grid">
+      <!-- Studio -->
+      <div class="price-card">
+        <div class="price-name">Studio</div>
+        <div class="price-desc" data-en="Up to 80 active members" data-sq="Deri në 80 anëtarë aktivë">Up to 80 active members</div>
+        <div class="price-amt"><span class="cur">€</span><span class="num">49</span><span class="per">/mo</span></div>
+        <div class="price-sub" data-en="One location · cancel anytime" data-sq="Një lokacion · anulim çdo kohë">One location · cancel anytime</div>
+        <ul class="price-features">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span data-en="Member, payment & plan management" data-sq="Menaxhim anëtarësh, pagesash">Member, payment & plan management</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span data-en="PIN check-in (RFID add-on)" data-sq="Hyrje me PIN (RFID add-on)">PIN check-in (RFID add-on)</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span data-en="Mobile app for members" data-sq="App mobile për anëtarët">Mobile app for members</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span data-en="Email support" data-sq="Mbështetje email">Email support</span></li>
+        </ul>
+        <a href="#cta" class="btn btn-secondary" data-en="Start free trial" data-sq="Fillo provën">Start free trial</a>
+      </div>
+
+      <!-- Club (featured) -->
+      <div class="price-card featured">
+        <span class="price-badge" data-en="Most chosen" data-sq="Më e zgjedhur">Most chosen</span>
+        <div class="price-name">Club</div>
+        <div class="price-desc" data-en="Up to 400 active members" data-sq="Deri në 400 anëtarë aktivë">Up to 400 active members</div>
+        <div class="price-amt"><span class="cur">€</span><span class="num">119</span><span class="per">/mo</span></div>
+        <div class="price-sub" data-en="One location · everything in Studio +" data-sq="Një lokacion · çdo gjë në Studio +">One location · everything in Studio +</div>
+        <ul class="price-features">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span data-en="RFID kiosk hardware included" data-sq="Hardware kiosk RFID i përfshirë">RFID kiosk hardware included</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span data-en="AI Fitness Coach (unlimited)" data-sq="AI Fitness Coach (pa limit)">AI Fitness Coach (unlimited)</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span data-en="Food tracker · Apple Watch sync" data-sq="Food tracker · Apple Watch">Food tracker · Apple Watch sync</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span data-en="SMS & email automation" data-sq="Automatizim SMS dhe email">SMS & email automation</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span data-en="Priority Tiranë support" data-sq="Mbështetje prioritare në Tiranë">Priority Tiranë support</span></li>
+        </ul>
+        <a href="#cta" class="btn btn-light" data-en="Get a demo" data-sq="Kërko demo">Get a demo</a>
+      </div>
+
+      <!-- Network -->
+      <div class="price-card">
+        <div class="price-name">Network</div>
+        <div class="price-desc" data-en="Multiple locations" data-sq="Lokacione të shumta">Multiple locations</div>
+        <div class="price-amt"><span class="cur"></span><span class="num" style="font-style: italic;">Custom</span></div>
+        <div class="price-sub" data-en="Tailored to your chain" data-sq="I përshtatur për zinxhirin tuaj">Tailored to your chain</div>
+        <ul class="price-features">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span data-en="Everything in Club, every location" data-sq="Çdo gjë në Club, çdo lokacion">Everything in Club, every location</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span data-en="Cross-location membership" data-sq="Anëtarësi midis lokacioneve">Cross-location membership</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span data-en="Owner dashboard with consolidated reports" data-sq="Dashboard për pronarë me raporte të konsoliduara">Owner dashboard with consolidated reports</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span data-en="Dedicated account manager" data-sq="Menaxher i dedikuar">Dedicated account manager</span></li>
+        </ul>
+        <a href="#cta" class="btn btn-secondary" data-en="Talk to us" data-sq="Na kontakto">Talk to us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA BANNER ============ -->
+<section style="padding: 32px 0 0;" id="cta">
+  <div class="cta-banner">
+    <div>
+      <h2 data-en-html="Ready to <em>forge</em> a smarter gym?" data-sq-html="Gati për të <em>ndërtuar</em> një palestër më të zgjuar?">Ready to <em>forge</em> a smarter gym?</h2>
+      <p data-en="30-minute setup. We'll migrate your member list from paper, Excel, or whatever you're using today — at no cost." data-sq="Konfigurim 30-minutësh. Ne migrojmë listën e anëtarëve nga letra ose Excel — pa pagesë.">30-minute setup. We'll migrate your member list from paper, Excel, or whatever you're using today — at no cost.</p>
+    </div>
+    <div class="cta-right">
+      <a href="mailto:demo@forge.al" class="btn btn-primary" style="padding: 14px 24px; font-size: 15px;" data-en="Get a 30-min demo" data-sq="Demo 30-minutëshe">Get a 30-min demo
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+      <a href="#" class="btn btn-ghost" data-en="Read the docs" data-sq="Lexo dokumentacionin">Read the docs</a>
+      <span class="micro" data-en="NO CARD REQUIRED · CANCEL ANYTIME" data-sq="PA KARTË · ANULIM I LIRË">NO CARD REQUIRED · CANCEL ANYTIME</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer id="contact">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a class="logo" href="#">
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="15" stroke="#FAFAFA" stroke-width="1.6"/>
+            <path d="M 11 22 L 11 10 L 21 10 M 11 16 L 18 16" stroke="#FAFAFA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="name">Forge<span class="dot">.</span></span>
+        </a>
+        <p data-en="The platform behind Albania's modern fitness centers. Built in Tiranë." data-sq="Platforma pas qendrave moderne të fitness-it në Shqipëri. Ndërtuar në Tiranë.">The platform behind Albania's modern fitness centers. Built in Tiranë.</p>
+      </div>
+      <div class="footer-col">
+        <h4 data-en="PRODUCT" data-sq="PRODUKTI">PRODUCT</h4>
+        <ul>
+          <li><a href="#features" data-en="Features" data-sq="Veçoritë">Features</a></li>
+          <li><a href="#ai" data-en="AI Coach" data-sq="AI Coach">AI Coach</a></li>
+          <li><a href="#pricing" data-en="Pricing" data-sq="Çmimet">Pricing</a></li>
+          <li><a href="#" data-en="Changelog" data-sq="Ndryshimet">Changelog</a></li>
+          <li><a href="#" data-en="Security" data-sq="Siguria">Security</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 data-en="COMPANY" data-sq="KOMPANIA">COMPANY</h4>
+        <ul>
+          <li><a href="#" data-en="About" data-sq="Rreth nesh">About</a></li>
+          <li><a href="#" data-en="Customers" data-sq="Klientët">Customers</a></li>
+          <li><a href="#" data-en="Careers" data-sq="Punësim">Careers</a></li>
+          <li><a href="#" data-en="Press" data-sq="Shtypi">Press</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 data-en="SUPPORT" data-sq="MBËSHTETJE">SUPPORT</h4>
+        <ul>
+          <li><a href="#" data-en="Docs" data-sq="Dokumentet">Docs</a></li>
+          <li><a href="#" data-en="Contact" data-sq="Kontakti">Contact</a></li>
+          <li><a href="#" data-en="Status" data-sq="Statusi">Status</a></li>
+          <li><a href="#" data-en="API" data-sq="API">API</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 data-en="CONTACT" data-sq="KONTAKT">CONTACT</h4>
+        <ul>
+          <li><a href="mailto:demo@forge.al">demo@forge.al</a></li>
+          <li><a href="tel:+355692122122">+355 69 212 2122</a></li>
+          <li><span data-en="Rr. Sami Frashëri 14, Tiranë" data-sq="Rr. Sami Frashëri 14, Tiranë">Rr. Sami Frashëri 14, Tiranë</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bot">
+      <div>© 2026 FORGE · BUILT IN TIRANË · UNYT ALBANIA</div>
+      <div class="legal">
+        <a href="#" data-en="Privacy" data-sq="Privatësia">Privacy</a>
+        <a href="#" data-en="Terms" data-sq="Termat">Terms</a>
+        <a href="#" data-en="Cookies" data-sq="Cookies">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function setLang(lang) {
+    document.documentElement.setAttribute('lang', lang === 'sq' ? 'sq' : 'en');
+    document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+    document.getElementById('lang-sq').classList.toggle('active', lang === 'sq');
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const v = el.getAttribute(`data-${lang}`);
+      if (v) el.textContent = v;
+    });
+    document.querySelectorAll('[data-en-html]').forEach(el => {
+      const v = el.getAttribute(`data-${lang}-html`);
+      if (v) el.innerHTML = v;
+    });
+  }
+</script>
+
+</body>
+</html>

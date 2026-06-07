@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Forge — Design System</title>
+<link rel="stylesheet" href="colors_and_type.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: #F5F1E8; color: #0E1A11; font-family: var(--font-sans); }
+
+  /* ============ TOP BAR ============ */
+  .top { padding: 22px 40px; display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: 24px; color: #0E1A11; text-decoration: none; }
+  .brand .dot { color: #E8814A; font-style: italic; }
+  .top-right { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #5A7D4F; display: flex; gap: 10px; align-items: center; }
+  .top-right .bullet { width: 5px; height: 5px; border-radius: 50%; background: #E8814A; }
+
+  /* ============ HERO ============ */
+  .hero { max-width: 1280px; margin: 0 auto; padding: 80px 40px 64px; }
+  .eyebrow-row { display: flex; align-items: center; gap: 14px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.20em; text-transform: uppercase; color: #1F3D2B; margin-bottom: 36px; }
+  .eyebrow-row .l { flex: 1; height: 1px; background: rgba(14,26,17,0.18); }
+  h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(72px, 11vw, 160px); line-height: 0.88; letter-spacing: -0.035em; margin: 0; color: #0E1A11; }
+  h1 em { font-style: italic; color: #2C5239; }
+  h1 .punct { color: #E8814A; }
+  .hero-foot { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 56px; padding-top: 24px; border-top: 1px solid rgba(14,26,17,0.12); gap: 48px; }
+  .hero-foot p { font-size: 17px; line-height: 1.5; color: #18271B; max-width: 460px; margin: 0; }
+  .hero-foot .meta { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #5A7D4F; text-align: right; line-height: 2; }
+
+  /* ============ SURFACES — magazine grid ============ */
+  .surfaces-wrap { max-width: 1280px; margin: 0 auto; padding: 24px 40px 24px; }
+  .surfaces { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 280px 280px; gap: 16px; }
+  .tile { position: relative; border-radius: 18px; overflow: hidden; text-decoration: none; color: inherit; padding: 28px; display: flex; flex-direction: column; transition: transform .3s var(--ease-out); }
+  .tile:hover { transform: translateY(-3px); }
+  .tile .idx { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; opacity: 0.7; }
+  .tile .label { font-family: var(--font-display); font-size: 36px; line-height: 1; letter-spacing: -0.015em; margin-top: auto; }
+  .tile .label em { font-style: italic; }
+  .tile .role { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; margin-top: 6px; opacity: 0.7; }
+  .tile .arrow { position: absolute; top: 26px; right: 26px; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; transition: all .3s; opacity: 0.6; }
+  .tile:hover .arrow { opacity: 1; transform: translate(2px, -2px); }
+
+  /* Tile 1 — Marketing (large, accent) */
+  .tile-mkt { grid-column: 1; grid-row: 1 / 3; background: #0E1A11; color: #DCE4D6; padding: 36px; }
+  .tile-mkt .label { font-size: 64px; }
+  .tile-mkt .label em { color: #E8814A; }
+  .tile-mkt .arrow { background: rgba(220,228,214,0.10); color: #DCE4D6; }
+  .tile-mkt .preview {
+    position: absolute; right: -40px; top: 20px; bottom: 20px; width: 60%;
+    border-radius: 12px; background: #18271B;
+    background-image:
+      linear-gradient(rgba(220,228,214,0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(220,228,214,0.08) 1px, transparent 1px);
+    background-size: 20px 20px;
+    border: 1px solid rgba(220,228,214,0.10);
+    padding: 32px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .tile-mkt .preview .ph-1 { font-family: var(--font-display); font-style: italic; font-size: 40px; line-height: 1; color: #DCE4D6; }
+  .tile-mkt .preview .ph-1 em { color: #E8814A; font-style: italic; }
+  .tile-mkt .preview .ph-2 { width: 80%; height: 8px; background: rgba(220,228,214,0.15); border-radius: 4px; }
+  .tile-mkt .preview .ph-3 { width: 60%; height: 8px; background: rgba(220,228,214,0.10); border-radius: 4px; }
+  .tile-mkt .preview .ph-btn { margin-top: auto; display: flex; gap: 8px; }
+  .tile-mkt .preview .ph-btn .b1 { padding: 10px 16px; background: #E8814A; color: #fff; border-radius: 8px; font-size: 11px; font-weight: 600; }
+  .tile-mkt .preview .ph-btn .b2 { padding: 10px 16px; border: 1px solid rgba(220,228,214,0.20); color: #DCE4D6; border-radius: 8px; font-size: 11px; }
+
+  /* Tile 2 — Admin */
+  .tile-admin { grid-column: 2; grid-row: 1; background: #E5DDC8; color: #0E1A11; }
+  .tile-admin .arrow { background: rgba(14,26,17,0.10); color: #0E1A11; }
+  .tile-admin .preview { position: absolute; right: -10px; top: 16px; width: 160px; height: 120px; border-radius: 8px; background: #fff; border: 1px solid rgba(14,26,17,0.12); padding: 8px; display: flex; gap: 4px; }
+  .tile-admin .preview .side { width: 26%; background: #0E1A11; border-radius: 4px; }
+  .tile-admin .preview .body { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 4px; }
+  .tile-admin .preview .body .bar { height: 6px; border-radius: 2px; background: rgba(14,26,17,0.10); }
+  .tile-admin .preview .body .bar.s { width: 60%; }
+  .tile-admin .preview .body .bar.accent { width: 40%; background: #E8814A; }
+
+  /* Tile 3 — Trainer */
+  .tile-trainer { grid-column: 3; grid-row: 1; background: #2C5239; color: #DCE4D6; }
+  .tile-trainer .label em { color: #E8814A; }
+  .tile-trainer .arrow { background: rgba(220,228,214,0.10); color: #DCE4D6; }
+  .tile-trainer .preview { position: absolute; right: -10px; top: 16px; width: 140px; height: 120px; border-radius: 8px; background: #18271B; border: 1px solid rgba(220,228,214,0.12); padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+  .tile-trainer .preview .row { display: flex; align-items: center; gap: 6px; }
+  .tile-trainer .preview .av { width: 12px; height: 12px; border-radius: 50%; background: #E8814A; }
+  .tile-trainer .preview .av.s { background: rgba(220,228,214,0.20); }
+  .tile-trainer .preview .bar { flex: 1; height: 5px; background: rgba(220,228,214,0.15); border-radius: 2px; }
+
+  /* Tile 4 — Member */
+  .tile-member { grid-column: 2; grid-row: 2; background: #FAF7F0; color: #0E1A11; border: 1px solid rgba(14,26,17,0.12); }
+  .tile-member .arrow { background: #0E1A11; color: #DCE4D6; }
+  .tile-member .label em { color: #2C5239; }
+  .tile-member .preview { position: absolute; right: 24px; top: 24px; bottom: 100px; width: 130px; display: flex; align-items: center; justify-content: center; }
+  .tile-member .preview svg { width: 100%; height: auto; }
+
+  /* Tile 5 — Mobile + Watch combined */
+  .tile-devices { grid-column: 3; grid-row: 2; background: #0E1A11; color: #DCE4D6; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .tile-devices .arrow { display: none; }
+  .tile-devices .row-links { display: flex; gap: 10px; height: 100%; }
+  .tile-devices .device { flex: 1; background: rgba(220,228,214,0.06); border: 1px solid rgba(220,228,214,0.12); border-radius: 14px; padding: 14px 12px; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: background .25s; position: relative; }
+  .tile-devices .device:hover { background: rgba(220,228,214,0.12); }
+  .tile-devices .device .idx { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.16em; color: rgba(220,228,214,0.6); }
+  .tile-devices .device .lbl { font-family: var(--font-display); font-size: 22px; line-height: 1; color: #DCE4D6; letter-spacing: -0.01em; margin-top: auto; }
+  .tile-devices .device .lbl em { font-style: italic; color: #E8814A; }
+  .tile-devices .device .rl { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.14em; color: rgba(220,228,214,0.5); text-transform: uppercase; margin-top: 4px; }
+  .tile-devices .mock-phone { width: 36px; height: 56px; border-radius: 8px; background: #18271B; border: 1px solid rgba(220,228,214,0.12); padding: 6px 4px; display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; }
+  .tile-devices .mock-phone .b { height: 3px; background: rgba(220,228,214,0.20); border-radius: 1px; }
+  .tile-devices .mock-phone .b.accent { background: #E8814A; }
+  .tile-devices .mock-watch { width: 36px; height: 42px; border-radius: 10px; background: #18271B; border: 1px solid rgba(220,228,214,0.12); display: grid; place-items: center; margin-bottom: 8px; }
+  .tile-devices .mock-watch .ring { width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid #E8814A; }
+
+  /* ============ FOUNDATIONS ============ */
+  .found-wrap { max-width: 1280px; margin: 0 auto; padding: 64px 40px 80px; }
+  .found-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 36px; padding-bottom: 18px; border-bottom: 1px solid rgba(14,26,17,0.12); }
+  .found-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 44px; line-height: 1; letter-spacing: -0.02em; color: #0E1A11; margin: 0; }
+  .found-head h2 em { font-style: italic; color: #2C5239; }
+  .found-head .num { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; color: #5A7D4F; }
+
+  .found-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; }
+  .found { background: #fff; border: 1px solid rgba(14,26,17,0.10); border-radius: 16px; padding: 24px; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 16px; transition: all .25s; }
+  .found:hover { border-color: rgba(14,26,17,0.20); transform: translateY(-2px); }
+  .found .ftitle { font-family: var(--font-display); font-size: 26px; line-height: 1; letter-spacing: -0.01em; color: #0E1A11; }
+  .found .ftitle em { font-style: italic; color: #2C5239; }
+  .found .fmeta { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.14em; color: #5A7D4F; text-transform: uppercase; margin-top: auto; }
+
+  .swatches { display: grid; grid-template-columns: repeat(11,1fr); gap: 0; border-radius: 8px; overflow: hidden; height: 56px; }
+  .swatches.bone { grid-template-columns: repeat(6,1fr); }
+  .swatches span { display: block; }
+
+  .typeshow .a { font-family: var(--font-display); font-size: 56px; line-height: 0.9; color: #0E1A11; }
+  .typeshow .a em { font-style: italic; color: #2C5239; }
+  .typeshow .b { font-family: var(--font-mono); font-size: 11px; color: #5A7D4F; letter-spacing: 0.10em; margin-top: 8px; }
+
+  /* ============ FOOTER ============ */
+  .footer { padding: 32px 40px 48px; }
+  .footer-inner { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid rgba(14,26,17,0.14); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; color: #5A7D4F; text-transform: uppercase; }
+
+  @media (max-width: 980px) {
+    .hero { padding: 56px 24px 40px; }
+    h1 { font-size: 72px; }
+    .surfaces-wrap, .found-wrap { padding-left: 24px; padding-right: 24px; }
+    .surfaces { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+    .tile-mkt, .tile-admin, .tile-trainer, .tile-member, .tile-devices { grid-column: auto; grid-row: auto; height: 220px; }
+    .tile-mkt .label { font-size: 40px; }
+    .tile-mkt .preview { display: none; }
+    .tile-admin .preview, .tile-trainer .preview, .tile-member .preview { display: none; }
+    .found-grid { grid-template-columns: 1fr 1fr; }
+    .hero-foot { flex-direction: column; align-items: flex-start; }
+    .hero-foot .meta { text-align: left; }
+  }
+  @media (max-width: 600px) {
+    .surfaces { grid-template-columns: 1fr; }
+    .found-grid { grid-template-columns: 1fr; }
+    h1 { font-size: 56px; }
+  }
+</style>
+</head>
+<body>
+
+  <nav class="top">
+    <a class="brand" href="#">
+      <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="15" stroke="#0E1A11" stroke-width="1.8"/>
+        <path d="M 11 22 L 11 10 L 21 10 M 11 16 L 18 16" stroke="#0E1A11" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Forge<span class="dot">.</span></span>
+    </a>
+    <div class="top-right">
+      <span>v1.0</span>
+      <span class="bullet"></span>
+      <span>Design System</span>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="eyebrow-row">
+      <span>The system</span>
+      <span class="l"></span>
+      <span>2026</span>
+    </div>
+    <h1>Train<br/>with <em>intent</em><span class="punct">.</span></h1>
+    <div class="hero-foot">
+      <p>One quiet, considered system across six surfaces — built for modern fitness centers from Tirana to the wrist.</p>
+      <div class="meta">
+        <div>6 surfaces · 3 roles</div>
+        <div>EN · SQ</div>
+      </div>
+    </div>
+  </header>
+
+  <section class="surfaces-wrap">
+    <div class="surfaces">
+
+      <a class="tile tile-mkt" href="ui_kits/marketing/index.html">
+        <span class="idx">01</span>
+        <span class="arrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M9 7h8v8"/></svg>
+        </span>
+        <div class="preview">
+          <div class="ph-1">Run your<br/>gym with <em>intent</em>.</div>
+          <div class="ph-2"></div>
+          <div class="ph-3"></div>
+          <div class="ph-btn">
+            <span class="b1">Get a demo</span>
+            <span class="b2">Watch tour</span>
+          </div>
+        </div>
+        <div class="label">Marketing<em>.</em></div>
+        <div class="role">Public · Landing · Pricing</div>
+      </a>
+
+      <a class="tile tile-admin" href="ui_kits/admin/index.html">
+        <span class="idx">02</span>
+        <span class="arrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M9 7h8v8"/></svg>
+        </span>
+        <div class="preview">
+          <div class="side"></div>
+          <div class="body">
+            <div class="bar"></div>
+            <div class="bar s"></div>
+            <div class="bar accent"></div>
+            <div class="bar"></div>
+          </div>
+        </div>
+        <div class="label">Admin</div>
+        <div class="role">Owner</div>
+      </a>
+
+      <a class="tile tile-trainer" href="ui_kits/trainer/index.html">
+        <span class="idx">03</span>
+        <span class="arrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M9 7h8v8"/></svg>
+        </span>
+        <div class="preview">
+          <div class="row"><div class="av"></div><div class="bar"></div></div>
+          <div class="row"><div class="av s"></div><div class="bar"></div></div>
+          <div class="row"><div class="av s"></div><div class="bar"></div></div>
+          <div class="row"><div class="av s"></div><div class="bar"></div></div>
+        </div>
+        <div class="label">Trainer<em>.</em></div>
+        <div class="role">Coach</div>
+      </a>
+
+      <a class="tile tile-member" href="ui_kits/member/index.html">
+        <span class="idx">04</span>
+        <span class="arrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M9 7h8v8"/></svg>
+        </span>
+        <div class="preview">
+          <svg viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="48" stroke="rgba(14,26,17,0.10)" stroke-width="6" fill="none"/>
+            <circle cx="60" cy="60" r="48" stroke="#2C5239" stroke-width="6" fill="none" stroke-dasharray="240 302" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+            <text x="60" y="58" text-anchor="middle" font-family="Instrument Serif" font-size="22" font-style="italic" fill="#0E1A11">78</text>
+            <text x="60" y="76" text-anchor="middle" font-family="Geist Mono" font-size="9" fill="#5A7D4F" letter-spacing="0.1em">KG · 80%</text>
+          </svg>
+        </div>
+        <div class="label">Member<em>.</em></div>
+        <div class="role">Web Portal</div>
+      </a>
+
+      <div class="tile tile-devices">
+        <div class="row-links">
+          <a class="device" href="ui_kits/mobile/index.html">
+            <span class="idx">05</span>
+            <div class="mock-phone">
+              <div class="b"></div>
+              <div class="b accent" style="width:70%;"></div>
+              <div class="b" style="width:50%;"></div>
+              <div class="b" style="width:60%;"></div>
+            </div>
+            <div class="lbl">Mobile<em>.</em></div>
+            <div class="rl">iOS · Member</div>
+          </a>
+          <a class="device" href="ui_kits/watch/index.html">
+            <span class="idx">06</span>
+            <div class="mock-watch">
+              <div class="ring"></div>
+            </div>
+            <div class="lbl">Watch<em>.</em></div>
+            <div class="rl">HealthKit</div>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="found-wrap">
+    <div class="found-head">
+      <h2>The <em>foundations</em>.</h2>
+      <span class="num">02 · TOKENS</span>
+    </div>
+
+    <div class="found-grid">
+
+      <a class="found" href="preview/colors-sage.html">
+        <div class="ftitle">Sage <em>palette</em></div>
+        <div class="swatches">
+          <span style="background:#0E1A11"></span>
+          <span style="background:#18271B"></span>
+          <span style="background:#1F3D2B"></span>
+          <span style="background:#2C5239"></span>
+          <span style="background:#3F6A4B"></span>
+          <span style="background:#5A7D4F"></span>
+          <span style="background:#7B9970"></span>
+          <span style="background:#9DB594"></span>
+          <span style="background:#BCCEB5"></span>
+          <span style="background:#DCE4D6"></span>
+          <span style="background:#EEF2EA"></span>
+        </div>
+        <div class="fmeta">11 STEPS · PRIMARY BRAND</div>
+      </a>
+
+      <a class="found" href="preview/type-display.html">
+        <div class="ftitle">Type</div>
+        <div class="typeshow">
+          <div class="a"><em>Aa</em>Aa</div>
+          <div class="b">INSTRUMENT SERIF · GEIST</div>
+        </div>
+        <div class="fmeta">DISPLAY · SANS · MONO</div>
+      </a>
+
+      <a class="found" href="preview/buttons.html">
+        <div class="ftitle">Accent</div>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="width:56px; height:56px; border-radius:50%; background:#E8814A;"></div>
+          <div>
+            <div style="font-family:var(--font-mono); font-size:13px; color:#0E1A11;">#E8814A</div>
+            <div style="font-family:var(--font-mono); font-size:10px; color:#5A7D4F; letter-spacing:0.12em;">COPPER</div>
+          </div>
+        </div>
+        <div class="fmeta">ONE ACCENT · SPARINGLY</div>
+      </a>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>Forge<span style="color:#E8814A;">.</span></span>
+      <span>© 2026 · UNYT Albania</span>
+    </div>
+  </footer>
+
+</body>
+</html>
