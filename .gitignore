@@ -26,3 +26,6 @@ data/uploads/
 
 # Claude Code config inside project
 .claude/
+
+# H2 lock files
+*.lock.db

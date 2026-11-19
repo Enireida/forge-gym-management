@@ -1,0 +1,4 @@
+# Language stats: count the Java application, not the design-system preview kit
+src/main/resources/static/forge/** linguist-documentation
+src/main/resources/templates/** linguist-detectable=false
+data/** linguist-vendored
