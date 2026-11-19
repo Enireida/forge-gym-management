@@ -8,6 +8,8 @@
 
 Built solo by [Enireida Reci](https://www.linkedin.com/in/enireida-reci-b900b1340/) as a Spring Boot monolith: ~13k lines of Java, 28 JPA entities, 19 controllers, and a bilingual (English / Albanian) server-rendered UI.
 
+<p align="center"><img src="docs/admin-new-member.jpg" width="520" alt="Forge admin portal: new member registration"></p>
+
 ---
 
 ## What it does
